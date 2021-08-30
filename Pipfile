@@ -10,6 +10,9 @@ django-environ = "*"
 
 [dev-packages]
 black = "==21.8b0"
+pylint = "*"
+pylint-django = "*"
+isort = "*"
 
 [requires]
 python_version = "3.9"
