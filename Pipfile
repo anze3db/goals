@@ -13,6 +13,8 @@ black = "==21.8b0"
 pylint = "*"
 pylint-django = "*"
 isort = "*"
+factory-boy = "*"
+mypy = "*"
 
 [requires]
 python_version = "3.9"
