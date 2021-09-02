@@ -15,6 +15,11 @@ pylint-django = "*"
 isort = "*"
 factory-boy = "*"
 mypy = "*"
+django-stubs = "*"
+django-pytest = "*"
+pytest-watch = "*"
+pytest-django = "*"
+pytest-cov = "*"
 
 [requires]
 python_version = "3.9"
