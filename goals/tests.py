@@ -1,3 +1,4 @@
+from goals.models import Group
 from goals.factories import GroupFactory
 from goals.services import create_monthly_goal
 from django.test import TestCase
@@ -6,7 +7,7 @@ from django.test import TestCase
 class GoalTest(TestCase):
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.group = GroupFactory.create()
+        cls.group: Group = GroupFactory.create()
 
     def test_monthly_goal_creation(self):
         with self.assertNumQueries(5):
