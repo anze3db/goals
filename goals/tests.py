@@ -9,7 +9,8 @@ class GoalTest(TestCase):
         cls.group = GroupFactory.create()
 
     def test_monthly_goal_creation(self):
-        goal = create_monthly_goal("My Monthly Goal", self.group, self.group.user)
+        with self.assertNumQueries(5):
+            goal = create_monthly_goal("My Monthly Goal", self.group, self.group.user)
         assert goal
         assert goal.results.count() == 12
         for result in goal.results.all():
