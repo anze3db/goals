@@ -7,8 +7,12 @@ class IndexTest(TestCase):
     @classmethod
     def setUpTestData(cls):
         cls.user = UserFactory()
-        board = BoardFactory(user=cls.user)
 
     def test_index(self):
+        response = self.client.get("/")
+        assert response.status_code == 200
+
+    def test_index_logged_in(self):
         self.client.force_login(self.user)
-        self.client.get("/")
+        response = self.client.get("/")
+        assert response.status_code == 302

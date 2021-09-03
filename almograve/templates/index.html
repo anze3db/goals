@@ -1,13 +1,1 @@
-<div>Hi {{ user.username }}!</div>
-{% for board in boards %}
-<a href="/boards/">{{ board.name }}</a>
-{% for group in board.groups.all %}
-<a href="/boards/{{ board.id }}/groups/{{ group.id }}">{{ group.name }}</a>
-{% for goal in group.goals.all %}
-{{ goal.name }}
-{% for result in goal.results.all %}
-<p>{{ result.name }} {{ result.amount }} {{ result.expected_amount }}</p>
-{% endfor %}
-{% endfor %}
-{% endfor %}
-{% endfor %}
+Hi

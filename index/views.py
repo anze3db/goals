@@ -1,9 +1,9 @@
 from users.models import User
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 
 def index_view(request):
-    user = request.user
-    boards = user.boards.all()
-    groups = boards.first().groups.all()
-    return render(request, "index.html", dict(user=user, boards=boards, groups=groups))
+    if request.user.is_anonymous:
+        return render(request, "index.html", dict())
+
+    return redirect("/boards")

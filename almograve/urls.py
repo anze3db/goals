@@ -16,6 +16,11 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 
-from index.views import index_view
+import index.views
+import goals.views
 
-urlpatterns = [path("admin/", admin.site.urls), path("", index_view)]
+urlpatterns = [
+    path("", index.views.index_view),
+    path("boards", goals.views.index_view),
+    path("admin/", admin.site.urls),
+]
