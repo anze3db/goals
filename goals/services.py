@@ -1,7 +1,9 @@
 from calendar import month_name
-from users.models import User
-from goals.models import Event, Goal, Group, Result
+
 from django.db import transaction
+
+from goals.models import Event, Goal, Group, Result
+from users.models import User
 
 
 @transaction.atomic

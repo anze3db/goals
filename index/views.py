@@ -1,5 +1,6 @@
-from users.models import User
 from django.shortcuts import redirect, render
+
+from users.models import User
 
 
 def index_view(request):

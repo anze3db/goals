@@ -1,6 +1,7 @@
-from users.factories import UserFactory
-from goals.factories import BoardFactory
 from django.test import TestCase
+
+from goals.factories import BoardFactory
+from users.factories import UserFactory
 
 
 class IndexTest(TestCase):

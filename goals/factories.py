@@ -1,6 +1,7 @@
-from users.factories import UserFactory
-from goals.models import Board, Group
 import factory
+
+from goals.models import Board, Group
+from users.factories import UserFactory
 
 
 class BoardFactory(factory.django.DjangoModelFactory):

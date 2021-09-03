@@ -1,8 +1,10 @@
-from goals.models import Group
-from users.factories import UserFactory
-from goals.factories import GroupFactory, BoardFactory
-from goals.services import create_monthly_goal
 from django.test import TestCase
+
+from goals.factories import BoardFactory, GroupFactory
+from goals.models import Group
+from goals.services import create_monthly_goal
+from users.factories import UserFactory
+
 
 # Create your tests here.
 class GoalTest(TestCase):
