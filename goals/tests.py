@@ -1,3 +1,5 @@
+from typing import ClassVar
+
 from django.test import TestCase
 
 from goals.factories import BoardFactory, GroupFactory
@@ -8,9 +10,11 @@ from users.factories import UserFactory
 
 # Create your tests here.
 class GoalTest(TestCase):
+    group: ClassVar[Group]
+
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.group: Group = GroupFactory.create()
+        cls.group = GroupFactory.create()
 
     def test_monthly_goal_creation(self):
         with self.assertNumQueries(5):
