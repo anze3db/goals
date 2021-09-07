@@ -7,12 +7,13 @@ from users.models import User
 
 
 @transaction.atomic
-def create_monthly_goal(name: str, group: Group, user: User):
+def create_monthly_goal(name: str, expected_amount: int, group: Group, user: User):
     goal = Goal.objects.create(name=name, group=group, user=user)
     results = [
         Result(
             name=month,
             goal=goal,
+            expected_amount=expected_amount,
         )
         for month in month_name[1:]
     ]

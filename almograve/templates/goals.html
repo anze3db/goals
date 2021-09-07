@@ -1,13 +1,29 @@
-<div>Hi {{ user.username }}!</div>
-{% for board in boards %}
-<a href="/boards/">{{ board.name }}</a>
-{% for group in board.groups.all %}
-<a href="/boards/{{ board.id }}/groups/{{ group.id }}">{{ group.name }}</a>
-{% for goal in group.goals.all %}
-{{ goal.name }}
-{% for result in goal.results.all %}
-<p>{{ result.name }} {{ result.amount }} {{ result.expected_amount }}</p>
-{% endfor %}
-{% endfor %}
-{% endfor %}
-{% endfor %}
+<head>
+    <title>Goals</title>
+</head>
+<body>
+    <div>Hi, {{ user.first_name }}!</div>
+    {% for board in boards %}
+        <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
+        <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span>
+    {% endfor %}
+    <form>
+        <input type="text" name="name">
+        <button hx-post="/boards" hx-target="#table">Add Board</button>
+    </form>
+    <form>
+        <input type="hidden" name="board_id" value="{{current_board.pk}}">
+        <input type="text" name="name" value="">
+        <button hx-post="/groups">Add Group</button>
+    </form>
+    {% include "table.html" %}
+    <div id="form"></div>
+    <script src="https://unpkg.com/htmx.org@1.5.0"
+        integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
+        crossorigin="anonymous"></script>
+    <script>
+        document.body.addEventListener('htmx:configRequest', (event) => {
+            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+        })
+    </script>
+</body>

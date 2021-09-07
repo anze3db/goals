@@ -1,0 +1,21 @@
+
+<p>
+    {{result.goal.name}} for {{result.name}}
+    <form>
+        <input name="amount" type="number"
+        value="{{ result.amount |default_if_none:"" }}" 
+        hx-post="/results/{{ result.pk }}"
+        hx-trigger="keyup changed delay:500ms" 
+        hx-target="#table"
+        onfocus="this.select();"
+        autofocus
+        >
+        <input name="expected_amount" type="number"
+        value="{{ result.expected_amount |default_if_none:"" }}" 
+        hx-post="/results/{{ result.pk }}"
+        hx-trigger="keyup changed delay:500ms" 
+        hx-target="#table"
+        onfocus="this.select();"
+        >
+    </form>
+</p>

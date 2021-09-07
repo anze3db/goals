@@ -18,9 +18,20 @@ from django.urls import path
 
 import goals.views
 import index.views
+import users.views
 
 urlpatterns = [
     path("", index.views.index_view),
-    path("boards", goals.views.index_view),
+    # Goals app
+    path("boards", goals.views.BoardsView.as_view()),
+    path("boards/<int:pk>", goals.views.BoardsView.as_view()),
+    path("groups", goals.views.GroupsView.as_view()),
+    path("groups/<int:pk>/", goals.views.GroupsView.as_view()),
+    path("goals", goals.views.goal_view),
+    path("goals/<int:pk>", goals.views.goal_delete_view),
+    path("results/<int:pk>", goals.views.result_put),
+    # User app
+    path("login", users.views.login),
+    # Admin
     path("admin/", admin.site.urls),
 ]

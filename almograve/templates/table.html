@@ -1,0 +1,47 @@
+<table id="table">
+    <tr>
+        {% for month in months %}
+        <th>{{month}}</th>
+        {% endfor %}
+        <th>Total</th>
+    </tr>
+    {% for group in current_board.groups.all %}
+    <tr style="background-color: #92c3ff; font-weight: bold;">
+        <td colspan="14">{{ group.name }} <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>            
+        </td>
+    </tr>
+    {% for goal in group.goals.all %}
+    <tr>
+        <td>{{ goal.name }}</td>
+        {% for result in goal.results.all %}
+        <td hx-get="/results/{{ result.pk }}"
+                hx-trigger="click" 
+                hx-target="#form"
+                {% if result.amount < result.expected_amount %}
+                style="cursor: pointer; color:orange; text-align: right;"
+                {% else %}
+                style="cursor: pointer; color:green; text-align: right;"
+                {% endif %}
+                {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
+                
+                {{ result.amount|floatformat:0 |default_if_none:"" }}
+        </td>
+        {% endfor %}
+        <td style="text-align: right; font-weight: bold; color: orange">{{goal.result_sum|floatformat:0}}</td>
+        <td>
+            <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
+        </td>
+    </tr>
+    {% endfor %}
+    <tr>
+        <td colspan="12">
+            <form style="display:inline">
+            <input type="text" name="name" placeholder="New Goal" >
+            <input type="number" name="expected_amount" placeholder="10">
+            <input type="hidden" name="group_id" value="{{group.pk}}">
+            <button hx-post="/goals" hx-target="#table">Add Goal</button>
+            </form>
+        </td>
+    </tr>
+    {% endfor %}
+</table>

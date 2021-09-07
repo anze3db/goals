@@ -7,6 +7,12 @@ from users.factories import UserFactory
 class BoardFactory(factory.django.DjangoModelFactory):
     name = factory.Sequence(lambda n: f"{n + 2020} Goals")
     user = factory.SubFactory(UserFactory)
+    boards = factory.RelatedFactoryList(
+        "goals.factories.GroupFactory",
+        factory_related_name="board",
+        size=1,
+        user=factory.SelfAttribute("..user"),
+    )
 
     class Meta:
         model = Board
