@@ -14,17 +14,19 @@
     <tr>
         <td>{{ goal.name }}</td>
         {% for result in goal.results.all %}
-        <td hx-get="/results/{{ result.pk }}"
-                hx-trigger="click" 
-                hx-target="#form"
-                {% if result.amount < result.expected_amount %}
-                style="cursor: pointer; color:orange; text-align: right;"
-                {% else %}
-                style="cursor: pointer; color:green; text-align: right;"
-                {% endif %}
-                {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
-                
-                {{ result.amount|floatformat:0 |default_if_none:"" }}
+        <td onmouseover="this.style.backgroundColor = '#eee'"
+            onmouseleave="this.style.backgroundColor = null"
+            hx-get="/results/{{ result.pk }}" 
+            hx-trigger="click" 
+            hx-target="#form"
+            {% if result.amount < result.expected_amount %}
+            style="cursor: pointer; color:orange; text-align: right;"
+            {% else %}
+            style="cursor: pointer; color:green; text-align: right;"
+            {% endif %}
+            {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
+            
+            {{ result.amount|floatformat:0|default_if_none:"" }}
         </td>
         {% endfor %}
         <td style="text-align: right; font-weight: bold; color: orange">{{goal.result_sum|floatformat:0}}</td>
