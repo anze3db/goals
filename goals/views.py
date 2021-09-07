@@ -1,15 +1,17 @@
+from calendar import month_abbr
 from datetime import datetime
-from django.http.response import HttpResponse
-from goals.models import Board, Goal, Group, Result
-from users.models import User
-from goals.services import create_monthly_goal
-from django.shortcuts import get_object_or_404, render, redirect
-from django.http import QueryDict
+
 from django.contrib.auth.decorators import login_required
+from django.http import QueryDict
+from django.http.response import HttpResponse
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
-from calendar import month_abbr
+
+from goals.models import Board, Goal, Group, Result
+from goals.services import create_monthly_goal
+from users.models import User
 
 
 def _get_table_data(user: User, board: Board):

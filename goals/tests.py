@@ -3,7 +3,7 @@ from typing import ClassVar
 from django.test import TestCase
 
 from goals.factories import BoardFactory, GroupFactory
-from goals.models import Group, Board
+from goals.models import Board, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
 
