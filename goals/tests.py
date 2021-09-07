@@ -35,7 +35,7 @@ class BoardsViewTest(TestCase):
         cls.board_2 = BoardFactory(user=cls.user)
 
     def setUp(self) -> None:
-        self.client.force_login(self.user)
+        self.client.force_login(self.user)  # type: ignore
 
     def test_default_board(self):
         response = self.client.get("/boards")
@@ -53,7 +53,7 @@ class BoardsViewTest(TestCase):
 
     def test_post_board(self):
         response = self.client.post("/boards", {"name": "2022 New Board"})
-        response.status_code == 200
+        assert response.status_code == 200
         assert Board.objects.filter(user=self.user, name="2022 New Board").exists()
 
     def test_404_page(self):

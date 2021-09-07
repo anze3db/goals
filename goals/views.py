@@ -4,7 +4,7 @@ from datetime import datetime
 from django.contrib.auth.decorators import login_required
 from django.http import QueryDict
 from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, redirect, render
+from django.shortcuts import get_object_or_404, render
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
@@ -35,7 +35,7 @@ class BoardsView(View):
         name = request.POST.get("name")
         safe_name = escape(name)
         board = Board.objects.create(name=safe_name, user=request.user)
-        group = Group.objects.create(
+        Group.objects.create(
             board=board, user=request.user, name="Default", color="#323"
         )
         r = HttpResponse("ok")
@@ -47,7 +47,7 @@ class BoardsView(View):
         board.date_deleted = datetime.now()
         board.save()
         r = HttpResponse("ok")
-        r.headers["HX-Redirect"] = f"/boards"
+        r.headers["HX-Redirect"] = "/boards"
         return r
 
     def get(self, request, pk=None):
@@ -57,7 +57,7 @@ class BoardsView(View):
         else:
             boards = user.boards.all()
             if not boards:
-                # TODO: Should probably redirect to the create board page
+                # Should probably redirect to the create board page
                 board = Board.objects.create(
                     name=str(datetime.now().year), user=request.user
                 )
@@ -78,7 +78,7 @@ class GroupsView(View):
         board_id = request.POST.get("board_id")
         board = get_object_or_404(Board.objects.all(), pk=board_id)
         safe_name = escape(name)
-        group = Group.objects.create(
+        Group.objects.create(
             board=board, user=request.user, name=safe_name, color="#323"
         )
         r = HttpResponse("ok")
