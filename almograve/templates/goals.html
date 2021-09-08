@@ -9,8 +9,9 @@
     <div>Hi, {{ user.first_name }}!</div>
     {% for board in boards %}
         <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
-        <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span>
+        {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
     {% endfor %}
+    {% comment %} 
     <form>
         <input type="text" name="name">
         <button hx-post="/boards" hx-target="#table">Add Board</button>
@@ -20,6 +21,7 @@
         <input type="text" name="name" value="">
         <button hx-post="/groups">Add Group</button>
     </form>
+    {% endcomment %}
     {% include "table.html" %}
     <div id="form"></div>
     <script src="https://unpkg.com/htmx.org@1.5.0"

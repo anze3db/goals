@@ -7,7 +7,11 @@
     </tr>
     {% for group in current_board.groups.all %}
     <tr style="background-color: #92c3ff; font-weight: bold;">
-        <td colspan="14">{{ group.name }} <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>            
+         <td colspan="14">
+            {{ group.name }} 
+            {% comment %} 
+                <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
+            {% endcomment %}
         </td>
     </tr>
     {% for goal in group.goals.all %}
@@ -31,11 +35,11 @@
         {% endfor %}
         <td style="text-align: right; font-weight: bold; color: orange">{{goal.result_sum|floatformat:0}}</td>
         <td>
-            <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
+            {% comment %} <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span> {% endcomment %}
         </td>
     </tr>
     {% endfor %}
-    <tr>
+    {% comment %} <tr>
         <td colspan="12">
             <form style="display:inline">
             <input type="text" name="name" placeholder="New Goal" >
@@ -44,6 +48,6 @@
             <button hx-post="/goals" hx-target="#table">Add Goal</button>
             </form>
         </td>
-    </tr>
+    </tr> {% endcomment %}
     {% endfor %}
 </table>
