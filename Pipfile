@@ -8,6 +8,7 @@ django = "*"
 psycopg2-binary = "*"
 django-environ = "*"
 gunicorn = "*"
+whitenoise = "*"
 
 [dev-packages]
 black = "==21.8b0"
