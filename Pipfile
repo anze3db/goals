@@ -10,6 +10,7 @@ django-environ = "*"
 gunicorn = "*"
 whitenoise = "*"
 django-tailwind = "*"
+sentry-sdk = "*"
 
 [dev-packages]
 black = "==21.8b0"
