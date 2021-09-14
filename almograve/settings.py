@@ -152,6 +152,8 @@ if SENTRY_DNS := env("SENTRY_DNS"):
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
+        release=os.environ.get("HEROKU_SLUG_COMMIT", ""),
+        environment=os.environ.get("HEROKU_APP_NAME", "local"),
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
