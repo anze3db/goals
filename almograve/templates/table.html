@@ -1,4 +1,4 @@
-<table class="border-separate border border-white-800">
+<table class="rounded border-separate border border-white-800">
     <tr>
         {% for month in months %}
         <th>{{month}}</th>
@@ -6,38 +6,40 @@
         <th>Total</th>
     </tr>
     {% for group in current_board.groups.all %}
-    <tr style="background-color: #92c3ff; font-weight: bold;">
-         <td colspan="14">
-            {{ group.name }} 
-            {% comment %} 
-                <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
+        <tr class="font-bold bg-gray-100 dark:bg-gray-700">
+            <td colspan="14">
+                {{ group.name }} 
+                {% comment %} 
+                    <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
+                {% endcomment %}
+            </td>
+        </tr>
+        {% for goal in group.goals.all %}
+        <tr>
+            <td>{{ goal.name }}</td>
+            {% for result in goal.results.all %}
+            <td onmouseover="this.classList.add('active')"
+                onmouseleave="this.classList.remove('active')"
+                hx-get="/results/{{ result.pk }}" 
+                hx-trigger="click" 
+                hx-target="#form"
+                {% if result.amount < result.expected_amount %}
+                class="text-right text-yellow-500 cursor-pointer"
+                {% else %}
+                class="text-right text-green-500 cursor-pointer"
+                {% endif %}
+                {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
+                
+                {{ result.amount|floatformat:0|default_if_none:"" }}
+            </td>
+            {% endfor %}
+            <td class="font-bold text-right text-yellow-500">{{goal.result_sum|floatformat:0}}</td>
+            {% comment %}
+            <td>
+                 <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
+            </td>
             {% endcomment %}
-        </td>
-    </tr>
-    {% for goal in group.goals.all %}
-    <tr>
-        <td>{{ goal.name }}</td>
-        {% for result in goal.results.all %}
-        <td onmouseover="this.style.backgroundColor = '#eee'"
-            onmouseleave="this.style.backgroundColor = null"
-            hx-get="/results/{{ result.pk }}" 
-            hx-trigger="click" 
-            hx-target="#form"
-            {% if result.amount < result.expected_amount %}
-            style="cursor: pointer; color:orange; text-align: right;"
-            {% else %}
-            style="cursor: pointer; color:green; text-align: right;"
-            {% endif %}
-            {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
-            
-            {{ result.amount|floatformat:0|default_if_none:"" }}
-        </td>
-        {% endfor %}
-        <td style="text-align: right; font-weight: bold; color: orange">{{goal.result_sum|floatformat:0}}</td>
-        <td>
-            {% comment %} <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span> {% endcomment %}
-        </td>
-    </tr>
+        </tr>
     {% endfor %}
     {% comment %} <tr>
         <td colspan="12">
