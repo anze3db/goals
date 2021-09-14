@@ -20,6 +20,8 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(str, ""),
     SENTRY_DNS=(str, ""),
+    HEROKU_RELEASE_VERSION=(str, "vXXX"),
+    HEROKU_APP_NAME=(str, "local"),
 )
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -152,8 +154,8 @@ if SENTRY_DNS := env("SENTRY_DNS"):
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
-        release=os.environ.get("HEROKU_SLUG_COMMIT", ""),
-        environment=os.environ.get("HEROKU_APP_NAME", "local"),
+        release=env("HEROKU_RELEASE_VERSION"),
+        environment=env("HEROKU_APP_NAME"),
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
