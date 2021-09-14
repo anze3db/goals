@@ -9,6 +9,7 @@
         hx-target="#table"
         onfocus="this.select();"
         autofocus
+        class="dark:bg-gray-700"
         >
         <input name="expected_amount" type="number"
         value="{{ result.expected_amount |default_if_none:"" }}" 
@@ -16,6 +17,7 @@
         hx-trigger="keyup changed delay:500ms" 
         hx-target="#table"
         onfocus="this.select();"
+        class="dark:bg-gray-700"
         >
     </form>
 </p>

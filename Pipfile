@@ -9,6 +9,7 @@ psycopg2-binary = "*"
 django-environ = "*"
 gunicorn = "*"
 whitenoise = "*"
+django-tailwind = "*"
 
 [dev-packages]
 black = "==21.8b0"

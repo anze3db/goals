@@ -1,35 +1,45 @@
-<!doctype html>
-<head>
-    <title>Goals</title>
-    <style>
-    body {font-family: Sans-Serif;}
-    </style>
-</head>
-<body>
-    <div>Hi, {{ user.first_name }}!</div>
-    {% for board in boards %}
-        <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
-        {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
-    {% endfor %}
-    {% comment %} 
-    <form>
-        <input type="text" name="name">
-        <button hx-post="/boards" hx-target="#table">Add Board</button>
-    </form>
-    <form>
-        <input type="hidden" name="board_id" value="{{current_board.pk}}">
-        <input type="text" name="name" value="">
-        <button hx-post="/groups">Add Group</button>
-    </form>
-    {% endcomment %}
-    {% include "table.html" %}
-    <div id="form"></div>
-    <script src="https://unpkg.com/htmx.org@1.5.0"
-        integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
-        crossorigin="anonymous"></script>
-    <script>
-        document.body.addEventListener('htmx:configRequest', (event) => {
-            event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
-        })
-    </script>
-</body>
+{% load static tailwind_tags %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Goals</title>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <meta http-equiv="X-UA-Compatible" content="ie=edge">
+        {% tailwind_css %}
+    </head>
+
+
+    <body class="bg-grey-lightest dark:bg-gray-800 dark:text-white leading-normal tracking-normal">
+        <div class="container mx-auto px-4">
+        <div>Hi, {{ user.first_name }}!</div>
+        {% for board in boards %}
+            <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
+            {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
+        {% endfor %}
+        {% comment %} 
+        <form>
+            <input type="text" name="name">
+            <button hx-post="/boards" hx-target="#table">Add Board</button>
+        </form>
+        <form>
+            <input type="hidden" name="board_id" value="{{current_board.pk}}">
+            <input type="text" name="name" value="">
+            <button hx-post="/groups">Add Group</button>
+        </form>
+        {% endcomment %}
+        <div id="table">
+            {% include "table.html" %}
+        </div>
+        <div id="form"></div>
+        <script src="https://unpkg.com/htmx.org@1.5.0"
+            integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
+            crossorigin="anonymous"></script>
+        <script>
+            document.body.addEventListener('htmx:configRequest', (event) => {
+                event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            })
+        </script>
+    </div>
+    </body>
+</html>
