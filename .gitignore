@@ -1,2 +1,3 @@
 .env
-static
+**/dist/styles.css
+/static
