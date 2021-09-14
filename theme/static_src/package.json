@@ -11,13 +11,12 @@
     "dev:tailwind": "cross-env NODE_ENV=development tailwindcss --postcss -i ./src/styles.css -o ../static/css/dist/styles.css -w",
     "dev:sync": "run-p dev:tailwind sync",
     "dev": "nodemon -x \"npm run dev:sync\" -w tailwind.config.js -w postcss.config.js -w bs.config.js -e js",
-    "tailwindcss": "node ./node_modules/tailwindcss/lib/cli.js",
-    "postinstall": "npm run build"
+    "tailwindcss": "node ./node_modules/tailwindcss/lib/cli.js"
   },
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "devDependencies": {
+  "dependencies": {
     "@tailwindcss/aspect-ratio": "^0.2.1",
     "@tailwindcss/forms": "^0.3.3",
     "@tailwindcss/line-clamp": "^0.2.1",
