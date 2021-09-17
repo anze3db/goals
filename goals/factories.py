@@ -1,7 +1,10 @@
 import factory
-
-from goals.models import Board, Group
+from faker_optional import OptionalProvider
+from random import randint
+from goals.models import Board, Group, Goal, Result
 from users.factories import UserFactory
+
+factory.Faker.add_provider(OptionalProvider)
 
 
 class BoardFactory(factory.django.DjangoModelFactory):
@@ -10,7 +13,7 @@ class BoardFactory(factory.django.DjangoModelFactory):
     boards = factory.RelatedFactoryList(
         "goals.factories.GroupFactory",
         factory_related_name="board",
-        size=1,
+        size=3,
         user=factory.SelfAttribute("..user"),
     )
 
@@ -19,10 +22,41 @@ class BoardFactory(factory.django.DjangoModelFactory):
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
-    name = factory.Faker("name")
+    name = factory.Faker("sentence", nb_words=1)
     board = factory.SubFactory(BoardFactory, user=factory.SelfAttribute("..user"))
     color = "#000"
     user = factory.SubFactory(UserFactory)
+    goals = factory.RelatedFactoryList(
+        "goals.factories.GoalFactory",
+        factory_related_name="group",
+        size=lambda: randint(1, 7),
+        user=factory.SelfAttribute("..user"),
+    )
 
     class Meta:
         model = Group
+
+
+class GoalFactory(factory.django.DjangoModelFactory):
+    name = factory.Faker("sentence", nb_words=3)
+    group = factory.SubFactory(GroupFactory, user=factory.SelfAttribute("..user"))
+    user = factory.SubFactory(UserFactory)
+    results = factory.RelatedFactoryList(
+        "goals.factories.ResultFactory",
+        factory_related_name="goal",
+        size=12,
+    )
+
+    class Meta:
+        model = Goal
+
+
+class ResultFactory(factory.django.DjangoModelFactory):
+    name = factory.Faker("word")
+    amount = factory.Faker("optional_int", ratio=0.7, min_value=-5, max_value=10)
+
+    expected_amount = factory.Faker("pyint", min_value=0, max_value=15)
+    goal = factory.SubFactory(GoalFactory, user=factory.SelfAttribute("..user"))
+
+    class Meta:
+        model = Result

@@ -24,6 +24,7 @@ django-pytest = "*"
 pytest-watch = "*"
 pytest-django = "*"
 pytest-cov = "*"
+faker-optional = "*"
 
 [requires]
 python_version = "3.9"
