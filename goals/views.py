@@ -1,13 +1,14 @@
 from calendar import month_abbr
-from datetime import datetime
+from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
 from django.http import QueryDict
 from django.http.response import HttpResponse
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
+from django.views.decorators.http import require_GET
 
 from goals.models import Board, Goal, Group, Result
 from goals.services import create_monthly_goal
@@ -43,9 +44,10 @@ class BoardsView(View):
         return r
 
     def delete(self, request, pk):
-        board = get_object_or_404(Board.objects, pk=pk)
-        board.date_deleted = datetime.now()
+        board = get_object_or_404(request.user.boards, pk=pk)
+        board.date_deleted = timezone.now()
         board.save()
+        # TODO: Update the user's default_board if we just deleted it
         r = HttpResponse("ok")
         r.headers["HX-Redirect"] = "/boards"
         return r
@@ -54,21 +56,21 @@ class BoardsView(View):
         user = request.user
         if pk is not None:
             board = get_object_or_404(user.boards, pk=pk)
-        else:
-            boards = user.boards.all()
-            if not boards:
-                # Should probably redirect to the create board page
-                board = Board.objects.create(
-                    name=str(datetime.now().year), user=request.user
-                )
-            else:
-                board = boards.first()
+            return render(
+                request,
+                "goals.html",
+                _get_table_data(user, board),
+            )
 
-        return render(
-            request,
-            "goals.html",
-            _get_table_data(user, board),
-        )
+        # If pk is not set then redirect to the default one
+        if user.default_board:
+            return redirect(f"/boards/{user.default_board.pk}")
+
+        return redirect(f"/boards/add")
+
+
+def create_board_view(request):
+    return HttpResponse("Add board create form here")
 
 
 @method_decorator(login_required(login_url="/login"), name="dispatch")
@@ -87,7 +89,7 @@ class GroupsView(View):
 
     def delete(self, request, pk):
         group = get_object_or_404(Group.objects, pk=pk)
-        group.date_deleted = datetime.utcnow()
+        group.date_deleted = timezone.now()
         group.save()
         r = HttpResponse("ok")
         r.headers["HX-Redirect"] = f"/boards/{group.board.pk}"

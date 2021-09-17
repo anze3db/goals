@@ -8,7 +8,6 @@ from goals.services import create_monthly_goal
 from users.factories import UserFactory
 
 
-# Create your tests here.
 class GoalTest(TestCase):
     group: ClassVar[Group]
 
@@ -33,16 +32,23 @@ class BoardsViewTest(TestCase):
         cls.user = UserFactory()
         cls.board = BoardFactory(user=cls.user)
         cls.board_2 = BoardFactory(user=cls.user)
+        cls.another_users_board = BoardFactory()
 
     def setUp(self) -> None:
         self.client.force_login(self.user)  # type: ignore
 
-    def test_default_board(self):
-        response = self.client.get("/boards")
-        assert response.status_code == 200
-        assert self.board.name in response.content.decode()
-        assert self.board.groups.first().name in response.content.decode()
-        assert self.board_2.groups.first().name not in response.content.decode()
+    def test_default_board_redirect(self):
+        self.user.default_board = self.board
+        self.user.save()
+
+        with self.assertNumQueries(3):
+            response = self.client.get("/boards")
+        self.assertRedirects(response, f"/boards/{self.board.pk}")
+
+    def test_no_default_board(self):
+        with self.assertNumQueries(2):
+            response = self.client.get("/boards")
+        self.assertRedirects(response, f"/boards/add")
 
     def test_specific_board(self):
         response = self.client.get(f"/boards/{self.board_2.pk}")
@@ -64,3 +70,15 @@ class BoardsViewTest(TestCase):
         self.client.logout()
         response = self.client.get("/boards")
         self.assertRedirects(response, "/login?next=/boards")
+
+    def test_delete_board(self):
+        with self.assertNumQueries(4):
+            self.client.delete(f"/boards/{self.board.pk}")
+        self.board.refresh_from_db()
+        assert self.board.date_deleted
+
+    def test_delete_board_from_another_user(self):
+        with self.assertNumQueries(3):
+            self.client.delete(f"/boards/{self.another_users_board.pk}")
+        self.another_users_board.refresh_from_db()
+        assert self.another_users_board.date_deleted is None

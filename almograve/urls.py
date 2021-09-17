@@ -27,6 +27,7 @@ urlpatterns = [
     # Goals app
     path("boards", goals.views.BoardsView.as_view()),
     path("boards/<int:pk>", goals.views.BoardsView.as_view()),
+    path("boards/add", goals.views.create_board_view),
     path("groups", goals.views.GroupsView.as_view()),
     path("groups/<int:pk>/", goals.views.GroupsView.as_view()),
     path("goals", goals.views.goal_view),
