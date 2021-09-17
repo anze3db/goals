@@ -17,14 +17,13 @@ from users.models import User
 
 def _get_table_data(user: User, board: Board):
     boards = user.boards.all()
-    groups = board.groups.all()
     months = month_abbr
+    groups = board.groups.prefetch_related("goals", "goals__results").all()
 
     return dict(
         user=user,
         boards=boards,
         months=months,
-        current_board=board,
         groups=groups,
         selected_result=0,
     )

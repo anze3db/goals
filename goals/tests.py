@@ -51,7 +51,8 @@ class BoardsViewTest(TestCase):
         self.assertRedirects(response, f"/boards/add")
 
     def test_specific_board(self):
-        response = self.client.get(f"/boards/{self.board_2.pk}")
+        with self.assertNumQueries(7):
+            response = self.client.get(f"/boards/{self.board_2.pk}")
         assert response.status_code == 200
         assert self.board_2.name in response.content.decode()
         assert self.board_2.groups.first().name in response.content.decode()

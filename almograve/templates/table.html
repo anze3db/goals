@@ -5,7 +5,7 @@
         {% endfor %}
         <th>Total</th>
     </tr>
-    {% for group in current_board.groups.all %}
+    {% for group in groups.all %}
         <tr class="font-bold bg-gray-100 dark:bg-gray-700">
             <td colspan="14">
                 {{ group.name }} 
