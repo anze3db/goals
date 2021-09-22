@@ -2,7 +2,7 @@ from typing import ClassVar
 
 from django.test import TestCase
 
-from goals.factories import BoardFactory, GroupFactory
+from goals.factories import BoardFactory, GroupFactory, ResultFactory, EventFactory
 from goals.models import Board, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
@@ -22,8 +22,9 @@ class GoalTest(TestCase):
             )
         assert goal
         assert goal.results.count() == 12
-        for result in goal.results.all():
+        for i, result in enumerate(goal.results.all()):
             assert result.events.count() == 1
+            assert result.index == i + 1
 
 
 class BoardsViewTest(TestCase):
@@ -83,3 +84,44 @@ class BoardsViewTest(TestCase):
             self.client.delete(f"/boards/{self.another_users_board.pk}")
         self.another_users_board.refresh_from_db()
         assert self.another_users_board.date_deleted is None
+
+
+class ResultsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.result = ResultFactory(amount=5, expected_amount=10)
+        cls.event = EventFactory(result=cls.result)
+
+    def setUp(self):
+        self.client.force_login(self.result.goal.user)
+
+    def test_result_get(self):
+        with self.assertNumQueries(5):
+            response = self.client.get(f"/results/{self.result.pk}")
+        assert response.status_code, 200
+        result = response.content.decode()
+        assert "<form>" in result
+        assert '<input name="amount" type="number"' in result
+        assert '<input name="amount" type="number"' in result
+        assert f'value="5.0"' in result
+        assert '<input name="expected_amount" type="number"' in result
+        assert f'value="10.0"'
+        assert "</form>" in result
+        assert self.result.events.count() == 2
+        assert self.result.events.first().description in result
+        assert self.result.events.last().description in result
+
+    def test_result_put(self):
+        initial_event_count = self.result.events.count()
+        with self.assertNumQueries(11):
+            self.client.post(
+                f"/results/{self.result.pk}",
+                dict(
+                    amount=8,
+                    expected_amount=12,
+                ),
+            )
+        self.result.refresh_from_db()
+        assert self.result.amount == 8.0
+        assert self.result.expected_amount == 12.0
+        assert self.result.events.count() == initial_event_count + 1

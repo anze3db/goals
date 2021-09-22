@@ -10,7 +10,7 @@ from django.utils.html import escape
 from django.views import View
 from django.views.decorators.http import require_GET
 
-from goals.models import Board, Goal, Group, Result
+from goals.models import Board, Event, Goal, Group, Result
 from goals.services import create_monthly_goal
 from users.models import User
 
@@ -122,16 +122,20 @@ def goal_delete_view(request, pk):
     )
 
 
+@login_required(login_url="/login")
 def result_put(request, pk):
     if request.method == "GET":
         result = Result.objects.get(pk=pk)
         return render(request, "form.html", dict(result=result))
 
-    data = QueryDict(request.body)
+    data = request.POST
     result = get_object_or_404(Result.objects, pk=pk)
-    result.amount = data.get("amount") or None
-    result.expected_amount = data.get("expected_amount") or None
+    diff = result.amount - float(data.get("amount"))
+    result.amount = float(data.get("amount")) or None
+    result.expected_amount = float(data.get("expected_amount")) or None
     result.save()
+
+    Event.objects.create(user=request.user, change_amount=diff, result=result)
 
     return render(
         request,
@@ -139,3 +143,14 @@ def result_put(request, pk):
         _get_table_data(request.user, result.goal.group.board)
         | dict(selected_result=pk),
     )
+
+
+@login_required(login_url="/login")
+def event_post(request, pk):
+    data = request.POST
+    event = get_object_or_404(Event.objects, pk=pk)
+
+    event.description = data.get("description")
+    event.save()
+
+    return HttpResponse("ok")

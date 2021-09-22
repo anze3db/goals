@@ -1,5 +1,3 @@
-from calendar import month_name
-
 from django.db import transaction
 
 from goals.models import Event, Goal, Group, Result
@@ -11,11 +9,11 @@ def create_monthly_goal(name: str, expected_amount: int, group: Group, user: Use
     goal = Goal.objects.create(name=name, group=group, user=user)
     results = [
         Result(
-            name=month,
+            index=index,
             goal=goal,
             expected_amount=expected_amount,
         )
-        for month in month_name[1:]
+        for index in range(1, 13)
     ]
     events = [
         Event(

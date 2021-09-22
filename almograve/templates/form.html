@@ -1,11 +1,11 @@
-
+{% load humanize %}
 <p>
     {{result.goal.name}} for {{result.name}}
     <form>
         <input name="amount" type="number"
         value="{{ result.amount |default_if_none:"" }}" 
         hx-post="/results/{{ result.pk }}"
-        hx-trigger="keyup changed delay:500ms" 
+        hx-trigger="keyup changed delay:500ms, change changed delay:500ms" 
         hx-target="#table"
         onfocus="this.select();"
         autofocus
@@ -14,10 +14,29 @@
         <input name="expected_amount" type="number"
         value="{{ result.expected_amount |default_if_none:"" }}" 
         hx-post="/results/{{ result.pk }}"
-        hx-trigger="keyup changed delay:500ms" 
+        hx-trigger="keyup changed delay:500ms, change changed delay:500ms" 
         hx-target="#table"
         onfocus="this.select();"
         class="dark:bg-gray-700"
         >
     </form>
+    <h2>Edit history</h2>
+    <ul>
+    {% for event in result.events.all %}
+    <li>
+        {{event.date_created|naturaltime}}: {{event.change_amount}}
+        <br>
+        <form>
+        <input name="description" type="text"
+            hx-post="/events/{{ event.pk }}"
+            hx-trigger="keyup changed delay:500ms" 
+            onfocus="this.select();"
+            class="dark:bg-gray-700"
+            value="{{ event.description |default_if_none:"" }}"
+        />
+        </form>
+    </li>
+    {% endfor %}
+    </ul>
+    
 </p>

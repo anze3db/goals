@@ -60,13 +60,13 @@ class Goal(models.Model):
 
 
 class Result(models.Model):
-    name = models.TextField()
+    index = models.IntegerField(default=0)
     amount = models.FloatField(default=None, null=True)
     expected_amount = models.FloatField(default=0, null=True)
     goal = models.ForeignKey(Goal, on_delete=models.CASCADE, related_name="results")
 
     class Meta:
-        ordering = ["id"]
+        ordering = ["goal", "index"]
 
 
 class Event(models.Model):
@@ -77,3 +77,6 @@ class Event(models.Model):
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="events")
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date_created"]

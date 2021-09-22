@@ -33,6 +33,7 @@ urlpatterns = [
     path("goals", goals.views.goal_view),
     path("goals/<int:pk>", goals.views.goal_delete_view),
     path("results/<int:pk>", goals.views.result_put),
+    path("events/<int:pk>", goals.views.event_post),
     # User app
     path("login", users.views.login),
     # Admin
