@@ -13,7 +13,7 @@ django-tailwind = "*"
 sentry-sdk = "*"
 
 [dev-packages]
-black = "==21.8b0"
+black = "==21.9b0"
 pylint = "*"
 pylint-django = "*"
 isort = "*"
