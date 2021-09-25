@@ -2,7 +2,6 @@ from calendar import month_abbr
 from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
-from django.http import QueryDict
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
@@ -11,11 +10,11 @@ from django.views import View
 from django.views.decorators.http import require_GET
 
 from goals.models import Board, Event, Goal, Group, Result
-from goals.services import create_monthly_goal
+from goals.services import create_monthly_goal, update_result
 from users.models import User
 
 
-def _get_table_data(user: User, board: Board):
+def _get_table_data(user: User, board: Board, result: Result = None):
     boards = user.boards.all()
     months = month_abbr
     groups = board.groups.prefetch_related("goals", "goals__results").all()
@@ -25,7 +24,7 @@ def _get_table_data(user: User, board: Board):
         boards=boards,
         months=months,
         groups=groups,
-        selected_result=0,
+        selected_result=result,
     )
 
 
@@ -68,6 +67,28 @@ class BoardsView(View):
         return redirect(f"/boards/add")
 
 
+@login_required(login_url="/login")
+def board_with_result_view(request, board_id, result_id):
+    user = request.user
+    board = get_object_or_404(user.boards, pk=board_id)
+    result = get_object_or_404(
+        Result.objects, goal__group__board_id=board.pk, pk=result_id
+    )
+    if data := request.POST:
+        amount = float(data.get("amount")) if data.get("amount") else None
+        expected_amount = (
+            float(data.get("expected_amount")) if data.get("expected_amount") else None
+        )
+        update_result(result, amount, expected_amount, request.user)
+
+    return render(
+        request,
+        "goals.html",
+        _get_table_data(user, board, result),
+    )
+
+
+@login_required(login_url="/login")
 def create_board_view(request):
     return HttpResponse("Add board create form here")
 
@@ -95,6 +116,7 @@ class GroupsView(View):
         return r
 
 
+@login_required(login_url="/login")
 def goal_view(request):
     user = request.user
     group_id = request.POST.get("group_id")
@@ -111,6 +133,7 @@ def goal_view(request):
     )
 
 
+@login_required(login_url="/login")
 def goal_delete_view(request, pk):
     board = Board.objects.get(groups__goals__pk=pk)
     Goal.objects.filter(pk=pk).delete()
@@ -130,23 +153,17 @@ def result_put(request, pk):
 
     data = request.POST
     result = get_object_or_404(Result.objects, pk=pk)
-    old_amount = result.amount
-    result.amount = float(data.get("amount")) or None
-    result.expected_amount = float(data.get("expected_amount")) or None
-    result.save()
-
-    Event.objects.create(
-        user=request.user,
-        old_amount=old_amount,
-        new_amount=result.amount,
-        result=result,
+    amount = float(data.get("amount")) if data.get("amount") else None
+    expected_amount = (
+        float(data.get("expected_amount")) if data.get("expected_amount") else None
     )
+    update_result(result, amount, expected_amount, request.user)
 
     return render(
         request,
         "table.html",
         _get_table_data(request.user, result.goal.group.board)
-        | dict(selected_result=pk),
+        | dict(selected_result=result),
     )
 
 

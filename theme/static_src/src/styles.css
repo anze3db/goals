@@ -7,4 +7,7 @@
     .active {
       @apply rounded bg-gray-100 dark:bg-gray-700;
     }
+    .activepage {
+      @apply rounded bg-gray-100 dark:bg-gray-700;
+    }
   }

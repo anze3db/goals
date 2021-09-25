@@ -20,15 +20,18 @@
             {% for result in goal.results.all %}
             <td onmouseover="this.classList.add('active')"
                 onmouseleave="this.classList.remove('active')"
-                hx-get="/results/{{ result.pk }}" 
-                hx-trigger="click" 
-                hx-target="#form"
-                {% if result.amount < result.expected_amount %}
-                class="text-right text-yellow-500 cursor-pointer"
+                onclick="location = '/boards/{{ group.board.pk }}/results/{{ result.pk }}'" 
+                {% if result.pk == selected_result.pk %}
+                class="text-right cursor-pointer activepage"
                 {% else %}
-                class="text-right text-green-500 cursor-pointer"
+                class="text-right cursor-pointer"
                 {% endif %}
-                {% if result.pk == selected_result %}style="border:1px solid blue"{% endif %}>
+                {% if result.amount >= result.expected_amount %}
+                style="color:green"
+                {% else %}
+                style="color:orange"
+                {% endif %}
+                >
                 
                 {{ result.amount|floatformat:0|default_if_none:"" }}
             </td>
@@ -53,3 +56,6 @@
     </tr> {% endcomment %}
     {% endfor %}
 </table>
+{% if selected_result %}
+    {% include "form.html" with result=selected_result %}
+{% endif %}
