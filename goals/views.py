@@ -130,12 +130,17 @@ def result_put(request, pk):
 
     data = request.POST
     result = get_object_or_404(Result.objects, pk=pk)
-    diff = result.amount - float(data.get("amount"))
+    old_amount = result.amount
     result.amount = float(data.get("amount")) or None
     result.expected_amount = float(data.get("expected_amount")) or None
     result.save()
 
-    Event.objects.create(user=request.user, change_amount=diff, result=result)
+    Event.objects.create(
+        user=request.user,
+        old_amount=old_amount,
+        new_amount=result.amount,
+        result=result,
+    )
 
     return render(
         request,

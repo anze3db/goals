@@ -70,7 +70,6 @@ class ResultFactory(factory.django.DjangoModelFactory):
 
 class EventFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("text")
-    change_amount = factory.Faker("pyint", min_value=1, max_value=3)
 
     result = factory.SubFactory(
         ResultFactory, goal__user=factory.SelfAttribute("...user")

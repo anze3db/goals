@@ -24,7 +24,7 @@
     <ul>
     {% for event in result.events.all %}
     <li>
-        {{event.date_created|naturaltime}}: {{event.change_amount}}
+        {{event.date_created|naturaltime}}: From {{event.old_amount}} to {{event.new_format}}
         <br>
         <form>
         <input name="description" type="text"

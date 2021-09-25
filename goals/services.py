@@ -18,7 +18,6 @@ def create_monthly_goal(name: str, expected_amount: int, group: Group, user: Use
     events = [
         Event(
             description="Created",
-            change_amount=None,
             result=result,
             user=user,
         )

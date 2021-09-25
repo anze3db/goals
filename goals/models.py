@@ -71,7 +71,8 @@ class Result(models.Model):
 
 class Event(models.Model):
     description = models.TextField()
-    change_amount = models.FloatField(null=True)
+    old_amount = models.IntegerField(null=True)
+    new_amount = models.IntegerField(null=True)
     result = models.ForeignKey(Result, on_delete=models.CASCADE, related_name="events")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="events")
