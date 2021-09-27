@@ -80,6 +80,7 @@ def board_with_result_view(request, board_id, result_id):
             float(data.get("expected_amount")) if data.get("expected_amount") else None
         )
         update_result(result, amount, expected_amount, request.user)
+        return redirect(f"/boards/{board_id}/results/{result_id}")
 
     return render(
         request,
