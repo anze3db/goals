@@ -35,6 +35,7 @@ def update_result(
     amount: Optional[float],
     expected_amount: Optional[float],
     user: User,
+    description: str = "",
 ):
     old_amount = result.amount
     result.amount = amount
@@ -46,4 +47,5 @@ def update_result(
         old_amount=old_amount,
         new_amount=result.amount,
         result=result,
+        description=description,
     )

@@ -7,7 +7,6 @@ from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
-from django.views.decorators.http import require_GET
 
 from goals.models import Board, Event, Goal, Group, Result
 from goals.services import create_monthly_goal, update_result
@@ -79,7 +78,8 @@ def board_with_result_view(request, board_id, result_id):
         expected_amount = (
             float(data.get("expected_amount")) if data.get("expected_amount") else None
         )
-        update_result(result, amount, expected_amount, request.user)
+        description = escape(data.get("description"))
+        update_result(result, amount, expected_amount, request.user, description)
         return redirect(f"/boards/{board_id}/results/{result_id}")
 
     return render(
@@ -173,7 +173,7 @@ def event_post(request, pk):
     data = request.POST
     event = get_object_or_404(Event.objects, pk=pk)
 
-    event.description = data.get("description")
+    event.description = escape(data.get("description"))
     event.save()
 
     return HttpResponse("ok")
