@@ -27,7 +27,9 @@ jobs:
           --health-interval 10s
           --health-timeout 5s
           --health-retries 5
-
+    env:
+      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      SECRET_KEY: something_very_secret
     steps:
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
@@ -59,12 +61,8 @@ jobs:
         run: pipenv run python manage.py collectstatic --no-input
       - name: Run Tests
         run: |
-          isort . 
-          black . 
-          mypy . 
-          pylint almograve goals index users 
-          pytest
-        env:
-          # The hostname used to communicate with the PostgreSQL service container
-          DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
-          SECRET_KEY: something_very_secret
+          pipenv run isort . 
+          pipenv run black . 
+          pipenv run mypy . 
+          pipenv run pylint almograve goals index users 
+          pipenv run pytest
