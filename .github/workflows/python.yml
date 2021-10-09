@@ -28,6 +28,7 @@ jobs:
           --health-timeout 5s
           --health-retries 5
     env:
+      WORKON_HOME: ~/.venvs
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
       SECRET_KEY: something_very_secret
     steps:
