@@ -96,7 +96,7 @@ class ResultsViewTest(TestCase):
         self.client.force_login(self.result.goal.user)
 
     def test_result_get(self):
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(7):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
@@ -114,7 +114,7 @@ class ResultsViewTest(TestCase):
     def test_result_put(self):
         initial_event_count = self.result.events.count()
         old_amount = self.result.amount
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(14):
             self.client.post(
                 f"/results/{self.result.pk}",
                 dict(
@@ -128,3 +128,19 @@ class ResultsViewTest(TestCase):
         assert self.result.events.count() == initial_event_count + 1
         assert self.result.events.first().new_amount == 8.0
         assert self.result.events.first().old_amount == old_amount
+
+
+class BoardWithResultViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.result = ResultFactory(amount=5, expected_amount=10)
+
+    def setUp(self):
+        self.client.force_login(self.result.goal.user)
+
+    def test_result_get(self):
+        board = self.result.goal.group.board
+        # with self.assertNumQueries(7):
+        response = self.client.get(f"/boards/{board.pk}/results/{self.result.pk}")
+        assert response.status_code == 200
+        # TODO: Add post stuff
