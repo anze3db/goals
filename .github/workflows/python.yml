@@ -56,10 +56,7 @@ jobs:
         if: steps.cache-pip-node.outputs.cache-hit != 'true'
         run: pipenv sync --bare --dev
       - name: Install node_modules
-        if: steps.cache-pip-node.outputs.cache-hit != 'true'
         run: npm install
-      - name: Build tailwind
-        run: cd theme/static_src && npm run build
       - name: Collect static
         run: pipenv run python manage.py collectstatic --no-input
       - name: Run Tests
