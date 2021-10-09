@@ -55,8 +55,7 @@ jobs:
       - name: Install dependencies
         if: steps.cache-pip-node.outputs.cache-hit != 'true'
         run: pipenv sync --bare --dev
-      - name: Install node_modules  
-        if: steps.cache-pip-node.outputs.cache-hit != 'true'
+      - name: Install node_modules
         run: npm install
       - name: Collect static
         run: pipenv run python manage.py collectstatic --no-input
