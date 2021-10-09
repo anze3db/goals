@@ -61,8 +61,4 @@ jobs:
         run: pipenv run python manage.py collectstatic --no-input
       - name: Run Tests
         run: |
-          pipenv run isort . 
-          pipenv run black . 
-          pipenv run mypy . 
-          pipenv run pylint almograve goals index users 
           pipenv run pytest
