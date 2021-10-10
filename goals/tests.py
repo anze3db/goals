@@ -2,7 +2,8 @@ from typing import ClassVar
 
 from django.test import TestCase
 
-from goals.factories import BoardFactory, GroupFactory, ResultFactory, EventFactory
+from goals.factories import (BoardFactory, EventFactory, GroupFactory,
+                             ResultFactory)
 from goals.models import Board, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory

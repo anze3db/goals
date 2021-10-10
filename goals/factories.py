@@ -1,7 +1,9 @@
+from random import randint
+
 import factory
 from faker_optional import OptionalProvider
-from random import randint
-from goals.models import Board, Event, Group, Goal, Result
+
+from goals.models import Board, Event, Goal, Group, Result
 from users.factories import UserFactory
 
 factory.Faker.add_provider(OptionalProvider)

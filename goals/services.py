@@ -1,4 +1,5 @@
 from typing import Optional
+
 from django.db import transaction
 
 from goals.models import Event, Goal, Group, Result
