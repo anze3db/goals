@@ -1,4 +1,4 @@
-<div class="grid grid-cols-2 lg:grid-cols-3 gap-4">
+<div class="inline-grid grid-cols-2 lg:grid-cols-3 gap-4">
 <table class="rounded border-separate border border-white-800 col-span-2">
     <tr>
         {% for month in months %}
@@ -57,9 +57,9 @@
     </tr> {% endcomment %}
     {% endfor %}
 </table>
-<div>
+<div class="row-span-2">
 {% if selected_result %}
-    {% include "form.html" with result=selected_result %}
+    {% include "form.html" with result=selected_result selected_month=selected_month %}
 {% endif %}
 </div>
 </div>

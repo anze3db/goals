@@ -1,9 +1,10 @@
+import calendar
 from calendar import month_abbr
-from django.utils import timezone
 
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
@@ -24,6 +25,7 @@ def _get_table_data(user: User, board: Board, result: Result = None):
         months=months,
         groups=groups,
         selected_result=result,
+        selected_month=calendar.month_name[result.index]
     )
 
 

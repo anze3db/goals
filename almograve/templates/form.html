@@ -1,42 +1,31 @@
 {% load humanize %}
-<p>
-    {{result.goal.name}} for {{result.name}}
-    <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
-        {% csrf_token %}
-        <input name="amount" type="number"
-        value="{{ result.amount |default_if_none:"" }}" 
-        onfocus="this.select();"
-        autofocus
-        class="dark:bg-gray-700"
-        >
-        <input name="expected_amount" type="number"
-        value="{{ result.expected_amount |default_if_none:"" }}" 
-        onfocus="this.select();"
-        class="dark:bg-gray-700"
-        >
-        <br>
-        <br>
-        <textarea name="description" class="dark:bg-gray-800"></textarea>
-        <br>
-        <input type="submit" class="dark:bg-gray-700">
-    </form>
-    <h2>Edit history</h2>
-    <ul>
-    {% for event in result.events.all %}
-    <li>
-        {{event.date_created|naturaltime}}: From {{event.old_amount|floatformat:0|default_if_none:"nothing" }} to {{event.new_amount|floatformat:0|default_if_none:"nothing" }}
-        <br>
-        <form>
-        <input name="description" type="text"
-            hx-post="/events/{{ event.pk }}"
-            hx-trigger="keyup changed delay:500ms" 
-            onfocus="this.select();"
-            class="dark:bg-gray-700"
-            value="{{ event.description |default_if_none:"" }}"
-        />
-        </form>
-    </li>
-    {% endfor %}
-    </ul>
-    
-</p>
+
+<h1 class="text-lg">{{result.goal.name}} for {{selected_month}}</h1>
+<form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
+    {% csrf_token %}
+    <input name="amount" type="number"
+    value="{{ result.amount |default_if_none:"" }}" 
+    onfocus="this.select();"
+    autofocus
+    class="dark:bg-gray-700 mt-2"
+    >
+    <input name="expected_amount" type="number"
+    value="{{ result.expected_amount |default_if_none:"" }}" 
+    onfocus="this.select();"
+    class="dark:bg-gray-700 mt-2"
+    >
+    <textarea name="description" class="mt-2 dark:bg-gray-700"></textarea>
+    <br>
+    <input type="submit" class="dark:bg-gray-700 p-2 rounded">
+</form>
+<h2 class="text-lg mt-4">Edit history</h2>
+<ul>
+{% for event in result.events.all %}
+<li>
+    <p class="text-sm">{{event.date_created|naturaltime}} {{event.old_amount|default_if_none:"n/a" }} to <strong>{{event.new_amount|default_if_none:"n/a" }}</strong></p>
+    <p>
+    {{ event.description |default_if_none:"" }}
+    </p>
+</li>
+{% endfor %}
+</ul>
