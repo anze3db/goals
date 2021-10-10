@@ -14,7 +14,7 @@ from goals.services import create_monthly_goal, update_result
 from users.models import User
 
 
-def _get_table_data(user: User, board: Board, result: Result = None):
+def _get_table_data(user: User, board: Board, result: Result | None = None):
     boards = user.boards.all()
     months = month_abbr
     groups = board.groups.prefetch_related("goals", "goals__results").all()
@@ -25,7 +25,7 @@ def _get_table_data(user: User, board: Board, result: Result = None):
         months=months,
         groups=groups,
         selected_result=result,
-        selected_month=calendar.month_name[result.index]
+        selected_month="" if not result else calendar.month_name[result.index % 12],
     )
 
 

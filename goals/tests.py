@@ -2,8 +2,7 @@ from typing import ClassVar
 
 from django.test import TestCase
 
-from goals.factories import (BoardFactory, EventFactory, GroupFactory,
-                             ResultFactory)
+from goals.factories import BoardFactory, EventFactory, GroupFactory, ResultFactory
 from goals.models import Board, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
@@ -101,7 +100,7 @@ class ResultsViewTest(TestCase):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
-        assert "<form>" in result
+        assert "<form" in result
         assert '<input name="amount" type="number"' in result
         assert '<input name="amount" type="number"' in result
         assert f'value="5.0"' in result
