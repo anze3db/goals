@@ -4,25 +4,25 @@
 <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
     {% csrf_token %}
     <label class="block">
-        <span>Amount</span>
+        <div>Amount</div>
         <input name="amount" type="number"
         value="{{ result.amount |default_if_none:"" }}" 
         onfocus="this.select();"
         autofocus
-        class="dark:bg-gray-700 w-full"
+        class="dark:bg-gray-700 w-1/2"
         >
     </label>
     
     <label class="block">
-        <span>Expected</span>
+        <div>Expected</div>
         <input name="expected_amount" type="number"
         value="{{ result.expected_amount |default_if_none:"" }}" 
         onfocus="this.select();"
-        class="dark:bg-gray-700 w-full"
+        class="dark:bg-gray-700 w-1/2"
         >
     </label>
-        <label class="block">
-        <span>Description</span>
+    <label class="block">
+        <div>Description</div>
         <textarea name="description" class="w-full dark:bg-gray-700"></textarea>
     </label>
     <input type="submit" class="dark:bg-gray-700 p-2 rounded">
