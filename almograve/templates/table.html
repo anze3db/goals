@@ -1,5 +1,5 @@
 {% load humanize %}
-<div id="table" class="inline-grid grid-cols-1 xl:grid-cols-4 gap-4">
+<div id="table" class="inline-grid grid-cols-2 gap-4">
     <table class="rounded border-separate border border-white-800 col-span-2">
         <tr>
             {% for month in months %}
@@ -58,12 +58,12 @@
         </tr> {% endcomment %}
         {% endfor %}
     </table>
-    <div class="row-span-2 col-span-2 md:col-span-1">
+    <div class="row-span-2 col-span-2 sm:col-span-1">
     {% if selected_result %}
         {% include "form.html" with result=selected_result selected_month=selected_month %}
     {% endif %}
     </div>
-    <div class="row-span-2">
+    <div class="row-span-2 col-span-2 sm:col-span-1">
     <h2 class="text-lg">Edit history</h2>
     <ul>
     {% for event in selected_result.events.all %}
