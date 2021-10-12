@@ -96,7 +96,7 @@ class ResultsViewTest(TestCase):
         self.client.force_login(self.result.goal.user)
 
     def test_result_get(self):
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(6):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
@@ -107,9 +107,6 @@ class ResultsViewTest(TestCase):
         assert '<input name="expected_amount" type="number"' in result
         assert f'value="10.0"'
         assert "</form>" in result
-        assert self.result.events.count() == 2
-        assert self.result.events.first().description in result
-        assert self.result.events.last().description in result
 
     def test_result_put(self):
         initial_event_count = self.result.events.count()
