@@ -13,10 +13,12 @@
     <body class="bg-grey-lightest dark:bg-gray-800 dark:text-white leading-normal tracking-normal">
         <div class="container mx-auto px-4">
         <div>Hi, {{ user.first_name }}!</div>
+        <div>
         {% for board in boards %}
             <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
             {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
         {% endfor %}
+        </div>
         {% comment %} 
         <form>
             <input type="text" name="name">
@@ -28,9 +30,7 @@
             <button hx-post="/groups">Add Group</button>
         </form>
         {% endcomment %}
-        <div id="table">
-            {% include "table.html" %}
-        </div>
+        {% include "table.html" %}
         <script src="https://unpkg.com/htmx.org@1.5.0"
             integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
             crossorigin="anonymous"></script>

@@ -1,31 +1,31 @@
 {% load humanize %}
-
+<div>
 <h1 class="text-lg">{{result.goal.name}} for {{selected_month}}</h1>
 <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
     {% csrf_token %}
-    <input name="amount" type="number"
-    value="{{ result.amount |default_if_none:"" }}" 
-    onfocus="this.select();"
-    autofocus
-    class="dark:bg-gray-700 mt-2"
-    >
-    <input name="expected_amount" type="number"
-    value="{{ result.expected_amount |default_if_none:"" }}" 
-    onfocus="this.select();"
-    class="dark:bg-gray-700 mt-2"
-    >
-    <textarea name="description" class="mt-2 dark:bg-gray-700"></textarea>
-    <br>
+    <label class="block">
+        <span>Amount</span>
+        <input name="amount" type="number"
+        value="{{ result.amount |default_if_none:"" }}" 
+        onfocus="this.select();"
+        autofocus
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    
+    <label class="block">
+        <span>Expected</span>
+        <input name="expected_amount" type="number"
+        value="{{ result.expected_amount |default_if_none:"" }}" 
+        onfocus="this.select();"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+        <label class="block">
+        <span>Description</span>
+        <textarea name="description" class="w-full dark:bg-gray-700"></textarea>
+    </label>
     <input type="submit" class="dark:bg-gray-700 p-2 rounded">
 </form>
-<h2 class="text-lg mt-4">Edit history</h2>
-<ul>
-{% for event in result.events.all %}
-<li>
-    <p class="text-sm">{{event.date_created|naturaltime}} {{event.old_amount|default_if_none:"n/a" }} to <strong>{{event.new_amount|default_if_none:"n/a" }}</strong></p>
-    <p>
-    {{ event.description |default_if_none:"" }}
-    </p>
-</li>
-{% endfor %}
-</ul>
+</div>
+

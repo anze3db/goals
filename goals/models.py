@@ -81,3 +81,17 @@ class Event(models.Model):
 
     class Meta:
         ordering = ["-date_created"]
+
+    @property
+    def amount(self) -> str:
+        pad_amount = 5
+        if self.new_amount is None:
+            return "N/A".rjust(pad_amount)
+
+        if self.old_amount is None:
+            return f"{self.new_amount}".rjust(pad_amount)
+
+        change = self.new_amount - self.old_amount
+        if change > 0:
+            return f"+{change}".rjust(pad_amount)
+        return f"{change}".rjust(pad_amount)
