@@ -5,9 +5,9 @@ python_files = ["tests.py"]
 DJANGO_SETTINGS_MODULE = "almograve.settings"
 
 [tool.mypy]
-python_version = "3.9"
+python_version = "3.10"
 plugins = ["mypy_django_plugin.main"]
 ignore_missing_imports = "true"
 
-[mypy.plugins.django-stubs]
+[tool.django-stubs]
 django_settings_module = "almograve.settings"
