@@ -151,7 +151,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 import sentry_sdk
 from sentry_sdk.integrations.django import DjangoIntegration
 
-if SENTRY_DNS := env("SENTRY_DNS"):
+if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
