@@ -1,5 +1,5 @@
 from random import randint
-
+from django.utils import timezone
 import factory
 from faker_optional import OptionalProvider
 
@@ -77,6 +77,7 @@ class EventFactory(factory.django.DjangoModelFactory):
         ResultFactory, goal__user=factory.SelfAttribute("...user")
     )
     user = factory.SubFactory(UserFactory)
+    date_event = factory.LazyFunction(timezone.now)
 
     class Meta:
         model = Event

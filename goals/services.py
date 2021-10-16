@@ -1,6 +1,7 @@
-from typing import Optional
+from datetime import datetime
 
 from django.db import transaction
+from django.utils import timezone
 
 from goals.models import Event, Goal, Group, Result
 from users.models import User
@@ -22,6 +23,7 @@ def create_monthly_goal(name: str, expected_amount: int, group: Group, user: Use
             description="Created",
             result=result,
             user=user,
+            date_event=timezone.now(),
         )
         for result in results
     ]
@@ -33,8 +35,9 @@ def create_monthly_goal(name: str, expected_amount: int, group: Group, user: Use
 @transaction.atomic
 def update_result(
     result: Result,
-    amount: Optional[float],
-    expected_amount: Optional[float],
+    amount: float | None,
+    expected_amount: float | None,
+    date_event: datetime,
     user: User,
     description: str = "",
 ):
@@ -49,4 +52,5 @@ def update_result(
         new_amount=result.amount,
         result=result,
         description=description,
+        date_event=date_event,
     )

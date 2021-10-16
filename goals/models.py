@@ -79,6 +79,7 @@ class Event(models.Model):
     result = models.ForeignKey(Result, on_delete=models.CASCADE, related_name="events")
 
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="events")
+    date_event = models.DateTimeField()
     date_created = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 

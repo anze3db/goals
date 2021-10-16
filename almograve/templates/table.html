@@ -86,7 +86,7 @@
             </div>
             <div class="col-span-5">
                 {{ event.description | default_if_none:"" }}
-                <span class="text-gray-400 text-sm">{{event.date_created|naturaltime}}</span>
+                <span class="text-gray-400 text-sm">{{event.date_event|naturaltime}}</span>
             </div>
         </li>
         {% endfor %}

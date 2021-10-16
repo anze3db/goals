@@ -1,4 +1,5 @@
 from typing import ClassVar
+from django.utils import timezone
 
 from django.test import TestCase
 
@@ -117,14 +118,20 @@ class ResultsViewTest(TestCase):
                 dict(
                     amount=8,
                     expected_amount=12,
+                    date_event="1987-01-01T12:12",
+                    time_zone="UTC",
                 ),
             )
+
         self.result.refresh_from_db()
         assert self.result.amount == 8.0
         assert self.result.expected_amount == 12.0
         assert self.result.events.count() == initial_event_count + 1
         assert self.result.events.first().new_amount == 8.0
         assert self.result.events.first().old_amount == old_amount
+        assert self.result.events.first().date_event == timezone.datetime(
+            1987, 1, 1, 12, 12, tzinfo=timezone.utc
+        )
 
 
 class BoardWithResultViewTest(TestCase):

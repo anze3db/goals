@@ -1,4 +1,6 @@
 {% load humanize %}
+{% load tz %}
+{% get_current_timezone as TIME_ZONE %}
 <div>
 <h1 class="text-lg">{{result.goal.name}} for {{selected_month}}</h1>
 <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
@@ -20,6 +22,14 @@
         onfocus="this.select();"
         class="dark:bg-gray-700 w-1/2"
         >
+    </label>
+    <label class="block">
+        <div>Date</div>
+        <input name="date_event" type="datetime-local"
+        value="{% now "Y-m-d\TH:i" %}" 
+        class="dark:bg-gray-700"
+        >
+        <input type="hidden" id="timezone" name="timezone" value="{{TIME_ZONE}}">
     </label>
     <label class="block">
         <div>Description</div>

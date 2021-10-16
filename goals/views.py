@@ -1,5 +1,6 @@
 import calendar
 from calendar import month_abbr
+from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse
@@ -81,7 +82,10 @@ def board_with_result_view(request, board_id, result_id):
             float(data.get("expected_amount")) if data.get("expected_amount") else None
         )
         description = escape(data.get("description"))
-        update_result(result, amount, expected_amount, request.user, description)
+        date_event = datetime.fromisoformat(data.get("date_event"))
+        update_result(
+            result, amount, expected_amount, date_event, request.user, description
+        )
         return redirect(f"/boards/{board_id}/results/{result_id}")
 
     return render(
@@ -160,7 +164,8 @@ def result_put(request, pk):
     expected_amount = (
         float(data.get("expected_amount")) if data.get("expected_amount") else None
     )
-    update_result(result, amount, expected_amount, request.user)
+    date_event = datetime.fromisoformat(data.get("date_event"))
+    update_result(result, amount, expected_amount, date_event, request.user)
 
     return render(
         request,
