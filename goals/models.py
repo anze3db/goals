@@ -54,6 +54,9 @@ class Goal(models.Model):
     def result_sum(self):
         return sum([r.amount for r in self.results.all() if r.amount])
 
+    def expected_sum(self):
+        return sum([r.expected_amount for r in self.results.all() if r.expected_amount])
+
     class Meta:
         ordering = ["date_created"]
         indexes = [models.Index(fields=["date_deleted", "group", "date_created"])]
