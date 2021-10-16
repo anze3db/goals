@@ -6,6 +6,7 @@ pipenv install --dev
 npm install
 docker compose up -d
 
+python manage.py collectstatic
 python manage.py runserver
 python manage.py tailwind start
 ptw
