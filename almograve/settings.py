@@ -148,10 +148,10 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-import sentry_sdk
-from sentry_sdk.integrations.django import DjangoIntegration
-
 if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
+    import sentry_sdk
+    from sentry_sdk.integrations.django import DjangoIntegration
+
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
