@@ -153,7 +153,7 @@ class ResultsViewTest(TestCase):
     def test_result_put(self):
         initial_event_count = self.result.events.count()
         old_amount = self.result.amount
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(15):
             self.client.post(
                 f"/results/{self.result.pk}",
                 dict(
