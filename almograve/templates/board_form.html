@@ -1,0 +1,125 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load humanize %}
+
+<form action="/boards/add" method="post" class="grid grid-cols-3 gap-4">
+    <div style="color:orange">
+        {{ form.non_field_errors }}
+    </div>
+    {% csrf_token %}
+    <label class="block col-span-3">
+        <div>Board Name</div>
+        <div style="color:orange">{{ form.name.errors }}</div>
+        <input name="name" type="text"
+        value="{{ form.name.value |default_if_none:"" }}" 
+        placeholder="{% now 'Y' %}"
+        autofocus
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <label class="block">
+        <div>Goal</div>
+        <div style="color:orange"></div>
+        <input name="goals" type="text"
+        value="" 
+        placeholder="Daily walks"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div>Group</div>
+        <div style="color:orange"></div>
+        <input name="groups" type="text"
+        value="" 
+        placeholder="Personal"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div>Amount</div>
+        <div style="color:orange"></div>
+        <input name="amounts" type="number"
+        value="" 
+        placeholder="10"
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="goals" type="text"
+        value="" 
+        placeholder="Daily walks"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="groups" type="text"
+        value="" 
+        placeholder="Personal"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="amounts" type="number"
+        value="" 
+        placeholder="10"
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="goals" type="text"
+        value="" 
+        placeholder="Daily walks"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="groups" type="text"
+        value="" 
+        placeholder="Personal"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="amounts" type="number"
+        value="" 
+        placeholder="10"
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="goals" type="text"
+        value="" 
+        placeholder="Daily walks"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="groups" type="text"
+        value="" 
+        placeholder="Personal"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div style="color:orange"></div>
+        <input name="amounts" type="number"
+        value="" 
+        placeholder="10"
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <input type="submit" class="dark:bg-blue-700 p-2 rounded" value="Add Board">
+    </div>
+    
+</form>
+
+{% endblock %}

@@ -87,6 +87,47 @@ class BoardsViewTest(TestCase):
         assert self.another_users_board.date_deleted is None
 
 
+class AddBoardViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_get(self):
+        response = self.client.get("/boards/add")
+        assert response.status_code == 200
+        assert "Board Name" in response.content.decode()
+
+    def test_post(self):
+        response = self.client.post(
+            "/boards/add",
+            dict(
+                name="2021",
+                goals=["First Goal", "Second Goal", "Second Personal Goal"],
+                groups=["Personal", "Business", "Personal"],
+                amounts=["10", "20", "30"],
+            ),
+        )
+        assert response.status_code == 302
+        self.user.refresh_from_db()
+        board = self.user.default_board
+        assert board
+        assert board.name == "2021"
+        groups = board.groups.all().order_by("name")
+        assert [g.name for g in groups] == [
+            "Business",
+            "Personal",
+        ]
+        assert [
+            ", ".join(group.goals.values_list("name", flat=True)) for group in groups
+        ] == [
+            "Second Goal",
+            "First Goal, Second Personal Goal",
+        ]
+
+
 class ResultsViewTest(TestCase):
     @classmethod
     def setUpTestData(cls):

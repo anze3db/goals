@@ -1,3 +1,18 @@
+{% extends "base.html" %}
+
+{% block header %}
+<div>Hi, {{ user.username }}!</div>
+<div>
+    {% for board in boards %}
+        <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
+        {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
+    {% endfor %}
+    <a href="/boards/add">+</a>
+</div>
+{% endblock %}
+
+{% block content %}
+
 {% load humanize %}
 <div id="table" class="inline-grid grid-cols-2 gap-4 max-w-3xl">
     <table class="rounded border-separate border border-white-800 col-span-2">
@@ -94,3 +109,4 @@
         {% endif %}
     </div>
 </div>
+{% endblock %}

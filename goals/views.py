@@ -1,17 +1,19 @@
 import calendar
 from calendar import month_abbr
 from datetime import datetime
+from django import forms
 
 from django.contrib.auth.decorators import login_required
-from django.http.response import HttpResponse
+from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
 
+from goals.forms import BoardForm
 from goals.models import Board, Event, Goal, Group, Result
-from goals.services import create_monthly_goal, update_result
+from goals.services import create_board, create_monthly_goal, update_result
 from users.models import User
 
 
@@ -58,7 +60,7 @@ class BoardsView(View):
             board = get_object_or_404(user.boards, pk=pk)
             return render(
                 request,
-                "goals.html",
+                "table.html",
                 _get_table_data(user, board),
             )
 
@@ -66,7 +68,7 @@ class BoardsView(View):
         if user.default_board:
             return redirect(f"/boards/{user.default_board.pk}")
 
-        return redirect(f"/boards/add")
+        return redirect("/boards/add")
 
 
 @login_required(login_url="/login")
@@ -90,14 +92,61 @@ def board_with_result_view(request, board_id, result_id):
 
     return render(
         request,
-        "goals.html",
+        "table.html",
         _get_table_data(user, board, result),
     )
 
 
 @login_required(login_url="/login")
-def create_board_view(request):
-    return HttpResponse("Add board create form here")
+def add_board_view(request):
+    # if this is a POST request we need to process the form data
+    if request.method == "POST":
+        # create a form instance and populate it with data from the request:
+        form = BoardForm(request.POST)
+        # check whether it's valid:
+        if form.is_valid():
+            goals = []
+            groups = []
+            amounts = []
+            for goal, group, amount in zip(
+                request.POST.getlist("goals"),
+                request.POST.getlist("groups"),
+                request.POST.getlist("amounts"),
+            ):
+                if not goal and not group and not amount:
+                    # Skip where no value was added
+                    continue
+                if not goal or not group or not group:
+                    continue
+                    # TODO: Tell the user that the row will not be added
+                    # form.add_error(None, "Not all fields set.")
+                    # return render(
+                    #     request,
+                    #     "board_form.html",
+                    #     {"form": form},
+                    # )
+
+                goals.append(forms.CharField().clean(goal))
+                groups.append(forms.CharField().clean(group))
+                amounts.append(forms.FloatField().clean(amount))
+
+            board = create_board(
+                user=request.user,
+                name=form.cleaned_data["name"],
+                goals=goals,
+                groups=groups,
+                amounts=amounts,
+            )
+            return HttpResponseRedirect(f"/boards/{board.pk}")
+        else:
+            print(form.errors)
+            render(request, "board_form.html", {"form": form})
+
+    # if a GET (or any other method) we'll create a blank form
+    else:
+        form = BoardForm()
+
+    return render(request, "board_form.html", {"form": form})
 
 
 @method_decorator(login_required(login_url="/login"), name="dispatch")

@@ -9,28 +9,10 @@
         {% tailwind_css %}
     </head>
 
-
     <body class="bg-grey-lightest dark:bg-gray-800 dark:text-white font-mono leading-normal tracking-normal">
         <div class="container mx-auto px-4">
-        <div>Hi, {{ user.first_name }}!</div>
-        <div>
-        {% for board in boards %}
-            <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
-            {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
-        {% endfor %}
-        </div>
-        {% comment %} 
-        <form>
-            <input type="text" name="name">
-            <button hx-post="/boards" hx-target="#table">Add Board</button>
-        </form>
-        <form>
-            <input type="hidden" name="board_id" value="{{current_board.pk}}">
-            <input type="text" name="name" value="">
-            <button hx-post="/groups">Add Group</button>
-        </form>
-        {% endcomment %}
-        {% include "table.html" %}
+        {%block header %}{% endblock %}
+        {%block content %}{% endblock %}
         <script src="https://unpkg.com/htmx.org@1.5.0"
             integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
             crossorigin="anonymous"></script>
@@ -39,6 +21,5 @@
                 event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
             })
         </script>
-    </div>
     </body>
 </html>
