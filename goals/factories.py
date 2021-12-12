@@ -1,6 +1,7 @@
 from random import randint
-from django.utils import timezone
+
 import factory
+from django.utils import timezone
 from faker_optional import OptionalProvider
 
 from goals.models import Board, Event, Goal, Group, Result
