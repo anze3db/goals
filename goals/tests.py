@@ -1,9 +1,10 @@
 from typing import ClassVar
-from django.utils import timezone
 
 from django.test import TestCase
+from django.utils import timezone
 
-from goals.factories import BoardFactory, EventFactory, GroupFactory, ResultFactory
+from goals.factories import (BoardFactory, EventFactory, GroupFactory,
+                             ResultFactory)
 from goals.models import Board, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
@@ -159,7 +160,7 @@ class ResultsViewTest(TestCase):
                 dict(
                     amount=8,
                     expected_amount=12,
-                    date_event="1987-01-01T12:12",
+                    date_event="1987-01-01T12:12Z",
                     time_zone="UTC",
                 ),
             )
