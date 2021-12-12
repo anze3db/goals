@@ -4,8 +4,9 @@
 <div>
 <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
     {% csrf_token %}
+
     <label class="block">
-        <div>Amount</div>
+        <div>New Amount</div>
         <input name="amount" type="number"
         step="any"
         value="{{ result.amount |default_if_none:"" }}" 
@@ -14,29 +15,36 @@
         class="dark:bg-gray-700 w-1/2"
         >
     </label>
-    
-    <label class="block">
-        <div>Expected</div>
-        <input name="expected_amount" type="number"
-        step="any"
-        value="{{ result.expected_amount |default_if_none:"" }}" 
-        onfocus="this.select();"
-        class="dark:bg-gray-700 w-1/2"
-        >
-    </label>
-    <label class="block">
-        <div>Date</div>
-        <input name="date_event" type="datetime-local"
-        value="{% now "Y-m-d\TH:i" %}" 
-        class="dark:bg-gray-700"
-        >
-        <input type="hidden" id="timezone" name="timezone" value="{{TIME_ZONE}}">
-    </label>
+
     <label class="block">
         <div>Description</div>
         <textarea name="description" class="w-full dark:bg-gray-700"></textarea>
     </label>
-    <input type="submit" class="dark:bg-gray-700 p-2 rounded">
+
+    <details>
+        <summary class="cursor-pointer">
+          Configuration
+        </summary>
+        <label class="block">
+            <div>Date</div>
+            <input name="date_event" type="datetime-local"
+            value="{% now "Y-m-d\TH:i" %}" 
+            class="dark:bg-gray-700"
+            >
+            <input type="hidden" id="timezone" name="timezone" value="{{TIME_ZONE}}">
+        </label>
+        <label class="block">
+            <div>Expected</div>
+            <input name="expected_amount" type="number"
+            step="any"
+            value="{{ result.expected_amount |default_if_none:"" }}" 
+            onfocus="this.select();"
+            class="dark:bg-gray-700 w-1/2"
+            >
+        </label>
+      </details>
+
+    <input type="submit" class="dark:bg-gray-700 mt-2 p-2 rounded">
 </form>
 </div>
 
