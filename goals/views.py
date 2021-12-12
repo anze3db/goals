@@ -1,12 +1,12 @@
 import calendar
 from calendar import month_abbr
-from datetime import datetime
-from django import forms
 
+from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
+from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
@@ -84,7 +84,8 @@ def board_with_result_view(request, board_id, result_id):
             float(data.get("expected_amount")) if data.get("expected_amount") else None
         )
         description = escape(data.get("description"))
-        date_event = datetime.fromisoformat(data.get("date_event"))
+        date_event = parse_datetime(data.get("date_event")) or timezone.now()
+
         update_result(
             result, amount, expected_amount, date_event, request.user, description
         )
@@ -213,7 +214,9 @@ def result_put(request, pk):
     expected_amount = (
         float(data.get("expected_amount")) if data.get("expected_amount") else None
     )
-    date_event = datetime.fromisoformat(data.get("date_event"))
+
+    date_event = parse_datetime(data.get("date_event")) or timezone.now()
+
     update_result(result, amount, expected_amount, date_event, request.user)
 
     return render(
