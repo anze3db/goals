@@ -15,72 +15,74 @@
 
 {% load humanize %}
 <div id="table" class="inline-grid grid-cols-2 gap-4 max-w-3xl">
-    <table class="rounded border-separate border border-white-800 col-span-2">
-        <tr>
-            {% for month in months %}
-            <th>{{month}}</th>
-            {% endfor %}
-            <th>Total</th>
-        </tr>
-        {% for group in groups.all %}
-            <tr class="font-bold bg-gray-100 dark:bg-gray-700">
-                <td colspan="14">
-                    {{ group.name }} 
-                    {% comment %} 
-                        <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
-                    {% endcomment %}
-                </td>
-            </tr>
-            {% for goal in group.goals.all %}
+    <div class="overflow-x-auto border-white-800 col-span-2">
+        <table class="rounded border-separate border">
             <tr>
-                <td>{{ goal.name }}</td>
-                {% for result in goal.results.all %}
-                <td onmouseover="this.classList.add('active')"
-                    onmouseleave="this.classList.remove('active')"
-                    onclick="location = '/boards/{{ group.board.pk }}/results/{{ result.pk }}'" 
-                    {% if result.pk == selected_result.pk %}
-                    class="font-mono text-right cursor-pointer activepage"
-                    {% else %}
-                    class="font-mono text-right cursor-pointer"
-                    {% endif %}
-                    {% if result.amount >= result.expected_amount %}
-                    style="color:green"
-                    {% else %}
-                    style="color:orange"
-                    {% endif %}
-                    >
-                    
-                    {{ result.amount|floatformat:0|default_if_none:"" }}
-                </td>
+                {% for month in months %}
+                <th>{{month}}</th>
                 {% endfor %}
-                <td class="font-bold font-mono text-right text-yellow-500"                    
-                    {% if goal.result_sum >= goal.expected_sum %}
-                    style="color:green"
-                    {% else %}
-                    style="color:orange"
-                    {% endif %}
-                    title="{{goal.result_sum}} of {{goal.expected_sum}}">
-                        {{goal.result_sum|floatformat:0}}
-                </td>
-                {% comment %}
-                <td>
-                    <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
-                </td>
-                {% endcomment %}
+                <th>Total</th>
             </tr>
-        {% endfor %}
-        {% comment %} <tr>
-            <td colspan="12">
-                <form style="display:inline">
-                <input type="text" name="name" placeholder="New Goal" >
-                <input type="number" name="expected_amount" placeholder="10">
-                <input type="hidden" name="group_id" value="{{group.pk}}">
-                <button hx-post="/goals" hx-target="#table">Add Goal</button>
-                </form>
-            </td>
-        </tr> {% endcomment %}
-        {% endfor %}
-    </table>
+            {% for group in groups.all %}
+                <tr class="font-bold bg-gray-100 dark:bg-gray-700">
+                    <td colspan="14">
+                        {{ group.name }} 
+                        {% comment %} 
+                            <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
+                        {% endcomment %}
+                    </td>
+                </tr>
+                {% for goal in group.goals.all %}
+                <tr>
+                    <td>{{ goal.name }}</td>
+                    {% for result in goal.results.all %}
+                    <td onmouseover="this.classList.add('active')"
+                        onmouseleave="this.classList.remove('active')"
+                        onclick="location = '/boards/{{ group.board.pk }}/results/{{ result.pk }}'" 
+                        {% if result.pk == selected_result.pk %}
+                        class="font-mono text-right cursor-pointer activepage"
+                        {% else %}
+                        class="font-mono text-right cursor-pointer"
+                        {% endif %}
+                        {% if result.amount >= result.expected_amount %}
+                        style="color:green"
+                        {% else %}
+                        style="color:orange"
+                        {% endif %}
+                        >
+                        
+                        {{ result.amount|floatformat:0|default_if_none:"" }}
+                    </td>
+                    {% endfor %}
+                    <td class="font-bold font-mono text-right text-yellow-500"                    
+                        {% if goal.result_sum >= goal.expected_sum %}
+                        style="color:green"
+                        {% else %}
+                        style="color:orange"
+                        {% endif %}
+                        title="{{goal.result_sum}} of {{goal.expected_sum}}">
+                            {{goal.result_sum|floatformat:0}}
+                    </td>
+                    {% comment %}
+                    <td>
+                        <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
+                    </td>
+                    {% endcomment %}
+                </tr>
+            {% endfor %}
+            {% comment %} <tr>
+                <td colspan="12">
+                    <form style="display:inline">
+                    <input type="text" name="name" placeholder="New Goal" >
+                    <input type="number" name="expected_amount" placeholder="10">
+                    <input type="hidden" name="group_id" value="{{group.pk}}">
+                    <button hx-post="/goals" hx-target="#table">Add Goal</button>
+                    </form>
+                </td>
+            </tr> {% endcomment %}
+            {% endfor %}
+        </table>
+    </div>
     <div class="row-span-2 col-span-2 sm:col-span-1">
     {% if selected_result %}
         {% include "form.html" with result=selected_result selected_month=selected_month %}
