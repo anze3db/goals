@@ -83,35 +83,33 @@
             {% endfor %}
         </table>
     </div>
-    <div class="col-span-2">
-        <h1 class="text-lg">{{selected_result.goal.name}} for {{selected_month}}</h1>
-    </div>
-    <div class="row-span-2 col-span-2 sm:col-span-1">
     {% if selected_result %}
-        {% include "form.html" with result=selected_result selected_month=selected_month %}
+        <div class="col-span-2">
+            <h1 class="text-lg">{{selected_result.goal.name}} for {{selected_month}}</h1>
+        </div>
+        <div class="row-span-2 col-span-2 sm:col-span-1">
+            {% include "form.html" with result=selected_result selected_month=selected_month %}
+        </div>
+        <div class="row-span-2 col-span-2 sm:col-span-1">
+            <h2 class="text-lg">History</h2>
+            <ul>
+            {% for event in selected_result.events.all %}
+            <li class="grid grid-cols-6 gap-2">
+                <div class="text-right overflow-hidden">
+                    {% if event.new_amount >= selected_result.expected_amount %}
+                        <p title={{event.amount}} style="color:green; display:inline;">{{event.amount}}</p>
+                    {% else %}
+                        <p title={{event.amount}} style="color:orange; display:inline;">{{event.amount}}</p>
+                    {% endif %}
+                </div>
+                <div class="col-span-5">
+                    {{ event.description | default_if_none:"" }}
+                    <span class="text-gray-400 text-sm">{{event.date_event|naturaltime}}</span>
+                </div>
+            </li>
+            {% endfor %}
+            </ul>
+        </div>
     {% endif %}
-    </div>
-    <div class="row-span-2 col-span-2 sm:col-span-1">
-        {% if selected_result %}
-        <h2 class="text-lg">History</h2>
-        <ul>
-        {% for event in selected_result.events.all %}
-        <li class="grid grid-cols-6 gap-2">
-            <div class="text-right overflow-hidden">
-                {% if event.new_amount >= selected_result.expected_amount %}
-                    <p title={{event.amount}} style="color:green; display:inline;">{{event.amount}}</p>
-                {% else %}
-                    <p title={{event.amount}} style="color:orange; display:inline;">{{event.amount}}</p>
-                {% endif %}
-            </div>
-            <div class="col-span-5">
-                {{ event.description | default_if_none:"" }}
-                <span class="text-gray-400 text-sm">{{event.date_event|naturaltime}}</span>
-            </div>
-        </li>
-        {% endfor %}
-        </ul>
-        {% endif %}
-    </div>
 </div>
 {% endblock %}
