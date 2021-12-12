@@ -8,6 +8,7 @@
     <label class="block">
         <div>Amount</div>
         <input name="amount" type="number"
+        step="any"
         value="{{ result.amount |default_if_none:"" }}" 
         onfocus="this.select();"
         autofocus
@@ -18,6 +19,7 @@
     <label class="block">
         <div>Expected</div>
         <input name="expected_amount" type="number"
+        step="any"
         value="{{ result.expected_amount |default_if_none:"" }}" 
         onfocus="this.select();"
         class="dark:bg-gray-700 w-1/2"
