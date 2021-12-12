@@ -83,6 +83,9 @@
             {% endfor %}
         </table>
     </div>
+    <div class="col-span-2">
+        <h1 class="text-lg">{{selected_result.goal.name}} for {{selected_month}}</h1>
+    </div>
     <div class="row-span-2 col-span-2 sm:col-span-1">
     {% if selected_result %}
         {% include "form.html" with result=selected_result selected_month=selected_month %}
@@ -90,7 +93,7 @@
     </div>
     <div class="row-span-2 col-span-2 sm:col-span-1">
         {% if selected_result %}
-        <h2 class="text-lg">Edit history</h2>
+        <h2 class="text-lg">History</h2>
         <ul>
         {% for event in selected_result.events.all %}
         <li class="grid grid-cols-6 gap-2">

@@ -2,7 +2,6 @@
 {% load tz %}
 {% get_current_timezone as TIME_ZONE %}
 <div>
-<h1 class="text-lg">{{result.goal.name}} for {{selected_month}}</h1>
 <form method="POST" action="/boards/{{ result.goal.group.board.pk }}/results/{{ result.pk }}" >
     {% csrf_token %}
     <label class="block">
