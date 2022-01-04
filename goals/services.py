@@ -51,6 +51,7 @@ def create_monthly_goal(name: str, expected_amount: float, group: Group, user: U
             index=index,
             goal=goal,
             expected_amount=expected_amount if index >= current_month else None,
+            amount=0 if index == current_month else None,
         )
         for index in range(1, 13)
     ]
