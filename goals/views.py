@@ -147,7 +147,7 @@ def add_board_view(request):
     else:
         form = BoardForm()
 
-    return render(request, "board_form.html", {"form": form})
+    return render(request, "board_form.html", {"form": form, "fields_loop": range(15)})
 
 
 @method_decorator(login_required(login_url="/login"), name="dispatch")

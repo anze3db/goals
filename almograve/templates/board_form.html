@@ -46,6 +46,7 @@
         class="dark:bg-gray-700 w-1/2"
         >
     </label>
+    {% for i in fields_loop %}
     <label class="block">
         <div style="color:orange"></div>
         <input name="goals" type="text"
@@ -70,54 +71,7 @@
         class="dark:bg-gray-700 w-1/2"
         >
     </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="goals" type="text"
-        value="" 
-        placeholder="Daily walks"
-        class="dark:bg-gray-700 w-full"
-        >
-    </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="groups" type="text"
-        value="" 
-        placeholder="Personal"
-        class="dark:bg-gray-700 w-full"
-        >
-    </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="amounts" type="number"
-        value="" 
-        placeholder="10"
-        class="dark:bg-gray-700 w-1/2"
-        >
-    </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="goals" type="text"
-        value="" 
-        placeholder="Daily walks"
-        class="dark:bg-gray-700 w-full"
-        >
-    </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="groups" type="text"
-        value="" 
-        placeholder="Personal"
-        class="dark:bg-gray-700 w-full"
-        >
-    </label>
-    <label class="block">
-        <div style="color:orange"></div>
-        <input name="amounts" type="number"
-        value="" 
-        placeholder="10"
-        class="dark:bg-gray-700 w-1/2"
-        >
-    </label>
+    {% endfor %}
     <input type="submit" class="dark:bg-blue-700 p-2 rounded" value="Add Board">
     </div>
     
