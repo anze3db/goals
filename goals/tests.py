@@ -3,9 +3,8 @@ from typing import ClassVar
 from django.test import TestCase
 from django.utils import timezone
 
-from goals.factories import (BoardFactory, EventFactory, GroupFactory,
-                             ResultFactory)
-from goals.models import Board, Group
+from goals.factories import BoardFactory, EventFactory, GroupFactory, ResultFactory
+from goals.models import Board, Goal, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
 
@@ -190,3 +189,52 @@ class BoardWithResultViewTest(TestCase):
         response = self.client.get(f"/boards/{board.pk}/results/{self.result.pk}")
         assert response.status_code == 200
         # TODO: Add post stuff
+
+
+class GoalViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls) -> None:
+        cls.board = BoardFactory()
+
+    def setUp(self):
+        self.client.force_login(self.board.user)
+
+    def test_form_view(self):
+        response = self.client.get(f"/boards/{self.board.pk}/goals/add")
+        assert response.status_code == 200
+        response_text = response.content.decode()
+        assert self.board.name in response_text
+        assert '<input name="group"' in response_text
+        assert '<input name="name"' in response_text, response_text
+        assert '<input name="amount"' in response_text
+
+    def test_form_post(self):
+        response = self.client.post(
+            f"/boards/{self.board.pk}/goals/add",
+            dict(name="my new goal", group="my new group", amount=123),
+        )
+        assert response.status_code == 302
+        Goal.objects.get(
+            name="my new goal", group__name="my new group", group__board=self.board
+        )
+
+    def test_form_post_existing_group(self):
+        group = GroupFactory(board=self.board, name="my new group")
+        response = self.client.post(
+            f"/boards/{self.board.pk}/goals/add",
+            dict(name="my new goal", group="my new group", amount=123),
+        )
+        assert response.status_code == 302
+        goal = Goal.objects.get(
+            name="my new goal", group__name="my new group", group__board=self.board
+        )
+        assert goal.group == group
+
+    def test_invalid_form_post(self):
+        response = self.client.post(
+            f"/boards/{self.board.pk}/goals/add",
+            dict(group="my new group", amount=123),
+        )
+        assert response.status_code == 200
+        response_text = response.content.decode()
+        assert "This field is required." in response_text

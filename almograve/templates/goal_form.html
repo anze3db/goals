@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+
+{% block content %}
+{% load humanize %}
+
+<h1>Add goal for {{board.name}}</h1>
+<form action="/boards/{{board.id}}/goals/add" method="post" class="grid grid-cols-1">
+    <div style="color:orange">
+        {{ form.errors }}
+    </div>
+    {% csrf_token %}
+    <label class="block">
+        <div>Goal</div>
+        <div style="color:orange"></div>
+        <input name="name" type="text"
+        value="" 
+        placeholder="Daily walks"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div>Group</div>
+        <div style="color:orange"></div>
+        <input name="group" type="text"
+        value="" 
+        placeholder="Personal"
+        class="dark:bg-gray-700 w-full"
+        >
+    </label>
+    <label class="block">
+        <div>Amount</div>
+        <div style="color:orange"></div>
+        <input name="amount" type="number"
+        step="any"
+        value="" 
+        placeholder="10"
+        class="dark:bg-gray-700 w-1/2"
+        >
+    </label>
+    <input type="submit" class="dark:bg-blue-700 p-2 rounded" value="Add Goal">
+    </div>
+</form>
+
+{% endblock %}

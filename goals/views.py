@@ -11,7 +11,7 @@ from django.utils.decorators import method_decorator
 from django.utils.html import escape
 from django.views import View
 
-from goals.forms import BoardForm
+from goals.forms import BoardForm, GoalForm
 from goals.models import Board, Event, Goal, Group, Result
 from goals.services import create_board, create_monthly_goal, update_result
 from users.models import User
@@ -100,7 +100,13 @@ def board_with_result_view(request, board_id, result_id):
 
 @login_required(login_url="/login")
 def add_board_view(request):
-    # if this is a POST request we need to process the form data
+
+    if request.method == "GET":
+        form = BoardForm()
+        return render(
+            request, "board_form.html", {"form": form, "fields_loop": range(15)}
+        )
+
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
         form = BoardForm(request.POST)
@@ -140,14 +146,34 @@ def add_board_view(request):
             )
             return HttpResponseRedirect(f"/boards/{board.pk}")
         else:
-            print(form.errors)
-            render(request, "board_form.html", {"form": form})
+            return render(request, "board_form.html", {"form": form})
 
-    # if a GET (or any other method) we'll create a blank form
+
+@login_required(login_url="/login")
+def add_goal_view(request, board_id):
+    # if this is a POST request we need to process the form data
+    user = request.user
+    board = get_object_or_404(user.boards, pk=board_id)
+    if request.method != "POST":
+        form = GoalForm()
+        return render(request, "goal_form.html", {"form": form, "board": board})
+
+    # create a form instance and populate it with data from the request:
+    form = GoalForm(request.POST)
+    # check whether it's valid:
+    if form.is_valid():
+        group, _ = Group.objects.get_or_create(
+            name=form.data.get("group"), board=board, defaults=dict(user=user)
+        )
+        create_monthly_goal(
+            name=form.data.get("name"),
+            expected_amount=form.data.get("amount"),
+            group=group,
+            user=user,
+        )
+        return HttpResponseRedirect(f"/boards/{board.pk}")
     else:
-        form = BoardForm()
-
-    return render(request, "board_form.html", {"form": form, "fields_loop": range(15)})
+        return render(request, "goal_form.html", {"form": form, "board": board})
 
 
 @method_decorator(login_required(login_url="/login"), name="dispatch")
