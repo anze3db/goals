@@ -177,58 +177,6 @@ def add_goal_view(request, board_id):
         return render(request, "goal_form.html", {"form": form, "board": board})
 
 
-@method_decorator(login_required(login_url="/login"), name="dispatch")
-class GroupsView(View):
-    def post(self, request):
-        name = request.POST.get("name")
-        board_id = request.POST.get("board_id")
-        board = get_object_or_404(Board.objects.all(), pk=board_id)
-        safe_name = escape(name)
-        Group.objects.create(
-            board=board, user=request.user, name=safe_name, color="#323"
-        )
-        r = HttpResponse("ok")
-        r.headers["HX-Redirect"] = f"/boards/{board.pk}"
-        return r
-
-    def delete(self, request, pk):
-        group = get_object_or_404(Group.objects, pk=pk)
-        group.date_deleted = timezone.now()
-        group.save()
-        r = HttpResponse("ok")
-        r.headers["HX-Redirect"] = f"/boards/{group.board.pk}"
-        return r
-
-
-@login_required(login_url="/login")
-def goal_view(request):
-    user = request.user
-    group_id = request.POST.get("group_id")
-    name = request.POST.get("name")
-    expected_amount = int(request.POST.get("expected_amount"))
-    safe_name = escape(name)
-    group = get_object_or_404(Group.objects, pk=group_id)
-    board = group.board
-    create_monthly_goal(safe_name, expected_amount, group, user)
-    return render(
-        request,
-        "table.html",
-        _get_table_data(user, board),
-    )
-
-
-@login_required(login_url="/login")
-def goal_delete_view(request, pk):
-    board = Board.objects.get(groups__goals__pk=pk)
-    Goal.objects.filter(pk=pk).delete()
-
-    return render(
-        request,
-        "table.html",
-        _get_table_data(request.user, board),
-    )
-
-
 @login_required(login_url="/login")
 def result_put(request, pk):
     if request.method == "GET":
@@ -252,14 +200,3 @@ def result_put(request, pk):
         _get_table_data(request.user, result.goal.group.board)
         | dict(selected_result=result),
     )
-
-
-@login_required(login_url="/login")
-def event_post(request, pk):
-    data = request.POST
-    event = get_object_or_404(Event.objects, pk=pk)
-
-    event.description = escape(data.get("description"))
-    event.save()
-
-    return HttpResponse("ok")

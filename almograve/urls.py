@@ -33,12 +33,7 @@ urlpatterns = [
     ),
     path("boards/add", goals.views.add_board_view),
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
-    path("groups", goals.views.GroupsView.as_view()),
-    path("groups/<int:pk>/", goals.views.GroupsView.as_view()),
-    path("goals", goals.views.goal_view),
-    path("goals/<int:pk>", goals.views.goal_delete_view),
     path("results/<int:pk>", goals.views.result_put),
-    path("events/<int:pk>", goals.views.event_post),
     # User app
     path("login", users.views.login),
     # Admin
