@@ -83,6 +83,7 @@
             {% endfor %}
         </table>
     </div>
+    <div><a href="/boards/{{board.pk}}/goals/add">Add goal</a></div>
     {% if selected_result %}
         <div class="col-span-2">
             <h1 class="text-lg">{{selected_result.goal.name}} for {{selected_month}}</h1>

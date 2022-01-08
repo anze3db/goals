@@ -27,6 +27,7 @@ def _get_table_data(user: User, board: Board, result: Result | None = None):
         boards=boards,
         months=months,
         groups=groups,
+        board=board,
         selected_result=result,
         selected_month="" if not result else calendar.month_name[result.index % 12],
     )
