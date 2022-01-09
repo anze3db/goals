@@ -22,10 +22,16 @@
         <div>Group</div>
         <div style="color:orange"></div>
         <input name="group" type="text"
+        list="groups"
         value="" 
         placeholder="Personal"
         class="dark:bg-gray-700 w-full"
         >
+        <datalist id="groups">
+            {% for group in board.groups.all %}
+            <option>{{group.name}}</option>
+            {% endfor %}
+        </datalist>
     </label>
     <label class="block">
         <div>Amount</div>
