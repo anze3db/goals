@@ -3,19 +3,20 @@
 {% block content %}
 {% load humanize %}
 
-<h1>Add goal for {{board.name}}</h1>
-<form action="/boards/{{board.id}}/goals/add" method="post" class="grid grid-cols-1">
+<h1>Add goal to {{board.name}}</h1>
+<form action="/boards/{{board.id}}/goals/add" method="post" class="grid grid-cols-2 gap-4">
     <div style="color:orange">
         {{ form.errors }}
     </div>
     {% csrf_token %}
-    <label class="block">
-        <div>Goal</div>
+    <label class="block col-span-2">
+        <div>Name</div>
         <div style="color:orange"></div>
         <input name="name" type="text"
         value="" 
         placeholder="Daily walks"
         class="dark:bg-gray-700 w-full"
+        autofocus
         >
     </label>
     <label class="block">
@@ -34,16 +35,17 @@
         </datalist>
     </label>
     <label class="block">
-        <div>Amount</div>
+        <div>Monthly Amount</div>
         <div style="color:orange"></div>
         <input name="amount" type="number"
         step="any"
         value="" 
         placeholder="10"
-        class="dark:bg-gray-700 w-1/2"
+        class="dark:bg-gray-700 w-full"
         >
     </label>
-    <input type="submit" class="dark:bg-blue-700 p-2 rounded" value="Add Goal">
+    <div class="block col-span-2">
+        <input type="submit" class="dark:bg-blue-700 p-2 rounded w-full" value="Add Goal">
     </div>
 </form>
 
