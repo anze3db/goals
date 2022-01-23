@@ -3,7 +3,8 @@ from typing import ClassVar
 from django.test import TestCase
 from django.utils import timezone
 
-from goals.factories import BoardFactory, EventFactory, GroupFactory, ResultFactory
+from goals.factories import (BoardFactory, EventFactory, GroupFactory,
+                             ResultFactory)
 from goals.models import Board, Goal, Group
 from goals.services import create_monthly_goal
 from users.factories import UserFactory
