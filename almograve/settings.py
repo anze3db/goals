@@ -17,6 +17,7 @@ import environ
 env = environ.Env(
     # set casting, default value
     CSRF_COOKIE_DOMAIN=(str, None),
+    CSRF_TRUSTED_ORIGINS=(str, ""),
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(str, ""),
     SENTRY_DNS=(str, ""),
@@ -47,6 +48,8 @@ DEBUG = env("DEBUG")
 ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS").split(",")
 
 CSRF_COOKIE_DOMAIN: str = env("CSRF_COOKIE_DOMAIN")
+
+CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS").split(",")
 
 
 # Application definition
