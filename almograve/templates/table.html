@@ -44,7 +44,9 @@
                         {% else %}
                         class="font-mono text-right cursor-pointer"
                         {% endif %}
-                        {% if result.amount >= result.expected_amount %}
+                        {% if result.amount == 0 %}
+                        style="color:gray"
+                        {% elif result.amount >= result.expected_amount %}
                         style="color:green"
                         {% else %}
                         style="color:orange"
@@ -54,8 +56,10 @@
                         {{ result.amount|floatformat:0|default_if_none:"" }}
                     </td>
                     {% endfor %}
-                    <td class="font-bold font-mono text-right text-yellow-500"                    
-                        {% if goal.result_sum >= goal.expected_sum %}
+                    <td class="font-bold font-mono text-right text-yellow-500"
+                        {% if goal.result_sum == 0 %}
+                        style="color:gray"
+                        {% elif goal.result_sum >= goal.expected_sum %}
                         style="color:green"
                         {% else %}
                         style="color:orange"
