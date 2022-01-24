@@ -40,7 +40,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v2
         with:
-          node-version: '16'
+          node-version: "16"
       - name: Cache
         id: cache-pip-node
         uses: actions/cache@v2
@@ -53,7 +53,6 @@ jobs:
       - name: Install Pipenv
         run: pip install pipenv
       - name: Install dependencies
-        if: steps.cache-pip-node.outputs.cache-hit != 'true'
         run: pipenv sync --bare --dev
       - name: Install node_modules
         run: npm install
