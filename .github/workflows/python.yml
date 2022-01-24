@@ -28,7 +28,6 @@ jobs:
           --health-timeout 10s
           --health-retries 5
     env:
-      WORKON_HOME: ~/.venvs
       DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
       SECRET_KEY: something_very_secret
     steps:
@@ -41,15 +40,6 @@ jobs:
         uses: actions/setup-node@v2
         with:
           node-version: "16"
-      - name: Cache
-        id: cache-pip-node
-        uses: actions/cache@v2
-        with:
-          path: |
-            ~/.cache/pip
-            ~/.venvs
-            node_modules
-          key: ${{ runner.os }}-${{ hashFiles('**/Pipfile.lock') }}-${{ hashFiles('**/package-lock.json') }}
       - name: Install Pipenv
         run: pip install pipenv
       - name: Install dependencies
