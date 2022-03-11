@@ -51,7 +51,7 @@ def create_monthly_goal(name: str, expected_amount: float, group: Group, user: U
             index=index,
             goal=goal,
             expected_amount=expected_amount if index >= current_month else None,
-            amount=0 if index == current_month else None,
+            amount=0 if index >= current_month else None,
         )
         for index in range(1, 13)
     ]
@@ -91,3 +91,10 @@ def update_result(
         description=description,
         date_event=date_event,
     )
+
+
+@transaction.atomic
+def set_month_amounts():
+    Result.objects.filter(
+        amount=None, index=datetime.now().month, goal__group__board_id=2
+    ).update(amount=0)

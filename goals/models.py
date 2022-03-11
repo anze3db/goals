@@ -1,3 +1,4 @@
+from datetime import datetime
 from django.db import models
 
 from users.models import User
@@ -70,6 +71,13 @@ class Result(models.Model):
 
     class Meta:
         ordering = ["goal", "index"]
+
+    def can_show_amount(self):
+        if self.amount:
+            # Always True if amount is truthy
+            return True
+        current_month = datetime.now().month
+        return current_month >= self.index
 
 
 class Event(models.Model):

@@ -52,8 +52,9 @@
                         style="color:orange"
                         {% endif %}
                         >
-                        
-                        {{ result.amount|floatformat:0|default_if_none:"" }}
+                        {% if result.can_show_amount %}
+                            {{ result.amount|floatformat:0|default_if_none:"" }}
+                        {% endif %}
                     </td>
                     {% endfor %}
                     <td class="font-bold font-mono text-right text-yellow-500"
