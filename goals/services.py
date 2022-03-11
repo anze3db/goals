@@ -91,10 +91,3 @@ def update_result(
         description=description,
         date_event=date_event,
     )
-
-
-@transaction.atomic
-def set_month_amounts():
-    Result.objects.filter(
-        amount=None, index=datetime.now().month, goal__group__board_id=2
-    ).update(amount=0)
