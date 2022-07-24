@@ -1,3 +1,4 @@
+import datetime
 from typing import ClassVar
 
 from django.test import TestCase
@@ -171,7 +172,7 @@ class ResultsViewTest(TestCase):
         assert self.result.events.first().new_amount == 8.0
         assert self.result.events.first().old_amount == old_amount
         assert self.result.events.first().date_event == timezone.datetime(
-            1987, 1, 1, 12, 12, tzinfo=timezone.utc
+            1987, 1, 1, 12, 12, tzinfo=datetime.timezone.utc
         )
 
 
