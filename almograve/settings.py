@@ -21,8 +21,8 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(str, ""),
     SENTRY_DNS=(str, ""),
-    HEROKU_RELEASE_VERSION=(str, "vXXX"),
-    HEROKU_APP_NAME=(str, "local"),
+    FLY_RELEASE_VERSION=(str, "vXXX"),
+    FLY_APP_NAME=(str, "local"),
 )
 
 
@@ -160,8 +160,8 @@ if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
-        release=env("HEROKU_RELEASE_VERSION"),
-        environment=env("HEROKU_APP_NAME"),
+        release=env("FLY_RELEASE_VERSION"),
+        environment=env("FLY_APP_NAME"),
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
