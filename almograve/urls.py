@@ -33,7 +33,8 @@ urlpatterns = [
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
     path("results/<int:pk>", goals.views.result_put),
     # User app
-    path("login", users.views.login),
+    path("login", users.views.login_view),
+    path("logout", users.views.logout_view),
     # Admin
     path("admin/", admin.site.urls),
 ]  # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
