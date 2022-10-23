@@ -34,7 +34,7 @@
                 </tr>
                 {% for goal in group.goals.all %}
                 <tr>
-                    <td>{{ goal.name }}</td>
+                    <td class="truncate">{{ goal.name }}</td>
                     {% for result in goal.results.all %}
                     <td onmouseover="this.classList.add('active')"
                         onmouseleave="this.classList.remove('active')"
