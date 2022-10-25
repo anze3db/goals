@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.11-dev"]
+        python-version: ["3.11"]
 
     services:
       # Label used to access the service container
