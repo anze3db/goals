@@ -48,6 +48,7 @@ jobs:
         run: pipenv run python manage.py collectstatic --no-input
       - name: Run Tests
         run: |
+          pipenv run pip install tomli
           pipenv run pytest
   # deploy:
   #   runs-on: ubuntu-latest
