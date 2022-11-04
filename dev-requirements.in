@@ -1,0 +1,12 @@
+-c requirements.txt
+black
+pylint
+pylint-django
+isort
+factory-boy
+mypy
+django-stubs
+pytest-watch
+pytest-django
+pytest-cov
+faker-optional
