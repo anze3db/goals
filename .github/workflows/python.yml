@@ -20,7 +20,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
       - name: Install dependencies
-        run: pip install pip-tools && pip-sync dev-requirements.txt
+        run: pip install pip-tools && pip-sync requirements.txt dev-requirements.txt
       - name: Install node_modules
         run: npm install
       - name: Collect static
