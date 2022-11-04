@@ -8,27 +8,8 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11"]
-
-    services:
-      # Label used to access the service container
-      postgres:
-        # Docker Hub image
-        image: postgres
-        # Provide the password for postgres
-        env:
-          POSTGRES_PASSWORD: postgres
-          POSTGRES_DB: postgres
-          POSTGRES_USER: postgres
-        ports:
-          - 5432:5432
-        # Set health checks to wait until postgres has started
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 10s
-          --health-retries 5
     env:
-      DATABASE_URL: postgres://postgres:postgres@localhost:5432/postgres
+      DATABASE_URL: sqlite://
       SECRET_KEY: something_very_secret
     steps:
       - uses: actions/checkout@v3
@@ -39,7 +20,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
       - name: Install dependencies
-        run: pip install pip-tools && pip-sync -r dev-requirements.txt
+        run: pip install pip-tools && pip-sync dev-requirements.txt
       - name: Install node_modules
         run: npm install
       - name: Collect static
