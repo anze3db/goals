@@ -28,4 +28,4 @@ jobs:
       - name: Run Tests
         run: |
           pip install tomli
-          run pytest
+          pytest
