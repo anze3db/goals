@@ -30,7 +30,14 @@ BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
 STATIC_ROOT = BASE_DIR / "static"
 
-STATICFILES_STORAGE = "whitenoise.storage.CompressedManifestStaticFilesStorage"
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
+    },
+}
 
 WHITENOISE_ROOT = BASE_DIR / "whitenoise_root"
 
