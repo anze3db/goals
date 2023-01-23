@@ -6,6 +6,7 @@
 <h1>Settings</h1>
 {{ message }}
 <form action="/settings/" method="post" class="grid grid-cols-2 gap-4">
+    {% csrf_token %}
     <input type="number" name="default_board_id" value="{{ user.default_board_id }}" />
     <input type="submit">
 </form>
