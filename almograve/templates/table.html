@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block header %}
-<div>Hi, {{ user.username }}! <a href="/logout">logout</a></div>
+<div>Hi, <a href="/settings/" {{ user.username }}</a>! <a href="/logout">logout</a></div>
 <div>
     {% for board in boards %}
         <a href="/boards/{{ board.pk }}">{{ board.name }}</a>

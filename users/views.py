@@ -1,6 +1,9 @@
 from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
+
+from goals.models import Board
 
 
 def login_view(request):
@@ -23,3 +26,23 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect("/")
+
+
+@login_required(login_url="/login")
+def settings(request):
+    if request.method == "POST":
+        default_board_id = int(request.POST.get("default_board_id"))
+        if request.user.default_board_id != default_board_id:
+            try:
+                request.user.boards.get(pk=default_board_id)
+            except Board.DoesNotExist:
+                return render(
+                    request,
+                    "settings.html",
+                    {"message": "Invalid board id"},
+                    status=400,
+                )
+            request.user.default_board_id = default_board_id
+            request.user.save()
+        return HttpResponseRedirect("/settings")
+    return render(request, "settings.html")
