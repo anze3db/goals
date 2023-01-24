@@ -5,14 +5,13 @@
 
 <h1>Settings</h1>
 {{ message }}
-<form action="/settings/" method="post" class="grid grid-cols-2 gap-4">
+<form action="/settings/" method="post">
     {% csrf_token %}
-    <input type="number" name="default_board_id" value="{{ user.default_board_id }}" list="boards" />
-    <datalist id="boards">
+    <select name="default_board_id">
         {% for board in boards %}
-        <option value="{{ board.id }}">{{ board.name }}</option>
+        <option value="{{ board.id }}" {% if board.id == user.default_board_id %}selected{% endif %}>{{ board.name }}</option>
         {% endfor %}
-    </datalist>
+    </select>
     <input type="submit">
     <a href="/">Cancel</a>
 </form>
