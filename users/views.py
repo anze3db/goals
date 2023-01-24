@@ -30,19 +30,21 @@ def logout_view(request):
 
 @login_required(login_url="/login")
 def settings(request):
+    boards = request.user.boards.all()
     if request.method == "POST":
         default_board_id = int(request.POST.get("default_board_id"))
         if request.user.default_board_id != default_board_id:
-            try:
-                request.user.boards.get(pk=default_board_id)
-            except Board.DoesNotExist:
+            for board in boards:
+                if board.id == default_board_id:
+                    break
+            else:
                 return render(
                     request,
                     "settings.html",
-                    {"message": "Invalid board id"},
+                    {"message": "Invalid board id", boards: boards},
                     status=400,
                 )
             request.user.default_board_id = default_board_id
             request.user.save()
         return HttpResponseRedirect("/settings")
-    return render(request, "settings.html")
+    return render(request, "settings.html", {"boards": boards})

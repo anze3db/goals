@@ -65,13 +65,26 @@ class SettingsTest(TestCase):
         assert response.status_code == 200
         response_text = response.content.decode()
         assert (
-            f'<input type="number" name="default_board_id" value="{board.id}" />'
+            f'<input type="number" name="default_board_id" value="{board.id}"'
             in response_text
         )
 
     def test_save_board(self):
         user = UserFactory(username="Setty")
+        BoardFactory.create_batch(3, user=user)
         board = BoardFactory(user=user)
+
+        self.client.force_login(user)
+        response = self.client.post("/settings/", data=dict(default_board_id=board.id))
+        assert response.status_code == 302
+        user.refresh_from_db()
+        assert user.default_board == board
+
+    def test_save_board_no_change(self):
+        user = UserFactory(username="Setty")
+        board = BoardFactory(user=user)
+        user.default_board = board
+        user.save()
 
         self.client.force_login(user)
         response = self.client.post("/settings/", data=dict(default_board_id=board.id))

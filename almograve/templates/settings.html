@@ -7,8 +7,14 @@
 {{ message }}
 <form action="/settings/" method="post" class="grid grid-cols-2 gap-4">
     {% csrf_token %}
-    <input type="number" name="default_board_id" value="{{ user.default_board_id }}" />
+    <input type="number" name="default_board_id" value="{{ user.default_board_id }}" list="boards" />
+    <datalist id="boards">
+        {% for board in boards %}
+        <option value="{{ board.id }}">{{ board.name }}</option>
+        {% endfor %}
+    </datalist>
     <input type="submit">
+    <a href="/">Cancel</a>
 </form>
 
 {% endblock %}
