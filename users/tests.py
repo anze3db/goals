@@ -58,16 +58,24 @@ class SettingsTest(TestCase):
         assert response.status_code == 200
 
     def test_default_board(self):
-        board = BoardFactory()
-        user = UserFactory(username="Setty", default_board=board)
+        user = UserFactory(username="Setty")
+        other_user_board = BoardFactory()
+        boards = BoardFactory.create_batch(3, user=user)
+        board = BoardFactory(user=user)
+        user.default_board = board
+        user.save()
         self.client.force_login(user)
         response = self.client.get("/settings/")
         assert response.status_code == 200
         response_text = response.content.decode()
-        assert (
-            f'<input type="number" name="default_board_id" value="{board.id}"'
-            in response_text
-        )
+        assert f'name="default_board_id"' in response_text
+        assert f'value="{board.id}"' in response_text
+        assert f"selected>{ board.name }" in response_text
+        for b in boards:
+            assert f'value="{b.id}"' in response_text
+            assert b.name in response_text
+        assert f'value="{other_user_board.id}"' not in response_text
+        assert other_user_board.name not in response_text
 
     def test_save_board(self):
         user = UserFactory(username="Setty")
