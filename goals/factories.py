@@ -11,7 +11,7 @@ factory.Faker.add_provider(OptionalProvider)
 
 
 class BoardFactory(factory.django.DjangoModelFactory):
-    name = factory.Sequence(lambda n: f"{n + 2020} Goals")
+    name = factory.Sequence(lambda n: f"{n + 2020}-Goals")
     user = factory.SubFactory(UserFactory)
     boards = factory.RelatedFactoryList(
         "goals.factories.GroupFactory",

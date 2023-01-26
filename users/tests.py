@@ -67,7 +67,7 @@ class SettingsTest(TestCase):
         self.client.force_login(user)
         response = self.client.get("/settings/")
         assert response.status_code == 200
-        response_text = response.content.decode()
+        response_text = response.content.decode().replace(" ", "").replace("\n", "")
         assert 'name="default_board_id"' in response_text
         assert f'value="{board.id}"' in response_text
         assert f"selected>{ board.name }" in response_text

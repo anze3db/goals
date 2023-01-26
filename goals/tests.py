@@ -144,10 +144,12 @@ class ResultsViewTest(TestCase):
         assert response.status_code, 200
         result = response.content.decode()
         assert "<form" in result
-        assert '<input name="amount" type="number"' in result
-        assert '<input name="amount" type="number"' in result
+        assert '<input name="amount"\n                   type="number"' in result
         assert 'value="5.0"' in result
-        assert '<input name="expected_amount" type="number"' in result
+        assert (
+            '<input name="expected_amount"\n                       type="number"'
+            in result
+        )
         assert 'value="10.0"'
         assert "</form>" in result
 
