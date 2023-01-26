@@ -11,3 +11,19 @@ ignore_missing_imports = "true"
 
 [tool.django-stubs]
 django_settings_module = "almograve.settings"
+
+[tool.djlint]
+ignore="H021"
+extend_exclude=".venv,.vscode,.git,.github,htmlcov"
+
+[tool.ruff]
+line-length = 140
+exclude = [
+    ".venv",
+    ".vscode",
+    ".git",
+    ".github",
+    "htmlcov",
+]
+target-version = "py311"
+fix = true
