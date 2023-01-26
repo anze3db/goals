@@ -68,7 +68,7 @@ class SettingsTest(TestCase):
         response = self.client.get("/settings/")
         assert response.status_code == 200
         response_text = response.content.decode()
-        assert f'name="default_board_id"' in response_text
+        assert 'name="default_board_id"' in response_text
         assert f'value="{board.id}"' in response_text
         assert f"selected>{ board.name }" in response_text
         for b in boards:
@@ -83,7 +83,7 @@ class SettingsTest(TestCase):
         board = BoardFactory(user=user)
 
         self.client.force_login(user)
-        response = self.client.post("/settings/", data=dict(default_board_id=board.id))
+        response = self.client.post("/settings/", data={"default_board_id": board.id})
         assert response.status_code == 302
         user.refresh_from_db()
         assert user.default_board == board
@@ -95,7 +95,7 @@ class SettingsTest(TestCase):
         user.save()
 
         self.client.force_login(user)
-        response = self.client.post("/settings/", data=dict(default_board_id=board.id))
+        response = self.client.post("/settings/", data={"default_board_id": board.id})
         assert response.status_code == 302
         user.refresh_from_db()
         assert user.default_board == board
@@ -105,7 +105,7 @@ class SettingsTest(TestCase):
         board = BoardFactory()
 
         self.client.force_login(user)
-        response = self.client.post("/settings/", data=dict(default_board_id=board.id))
+        response = self.client.post("/settings/", data={"default_board_id": board.id})
         assert response.status_code == 400
         user.refresh_from_db()
         assert user.default_board is None

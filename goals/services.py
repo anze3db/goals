@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import Generator
 
 from django.db import transaction
 from django.utils import timezone
@@ -9,7 +10,7 @@ from users.models import User
 
 @transaction.atomic
 def create_board(
-    user: User, name: str, goals: list[str], groups: list[str], amounts: list[float]
+    user: User, name: str, goals: list[str], groups: list[str], amounts: list[float],
 ):
     board = Board.objects.create(
         name=name,
@@ -33,7 +34,9 @@ def create_board(
     return board
 
 
-def create_groups(groups: list[str], board: Board, user: User) -> list[Group]:
+def create_groups(
+    groups: list[str], board: Board, user: User,
+) -> Generator[Group, None, None]:
     created_groups = set()
     for group in groups:
         if group in created_groups:

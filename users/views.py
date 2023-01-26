@@ -3,8 +3,6 @@ from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 
-from goals.models import Board
-
 
 def login_view(request):
     if request.method == "POST":
@@ -15,11 +13,13 @@ def login_view(request):
             login(request, user)
             # Redirect to a success page.
             return HttpResponseRedirect("/")
-        else:
-            # Return an 'invalid login' error message.
-            return render(
-                request, "login_form.html", {"message": "Invalid login"}, status=400
-            )
+        # Return an 'invalid login' error message.
+        return render(
+            request,
+            "login_form.html",
+            {"message": "Invalid login"},
+            status=400,
+        )
     return render(request, "login_form.html")
 
 

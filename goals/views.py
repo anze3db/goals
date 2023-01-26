@@ -12,7 +12,7 @@ from django.utils.html import escape
 from django.views import View
 
 from goals.forms import BoardForm, GoalForm
-from goals.models import Board, Event, Goal, Group, Result
+from goals.models import Board, Group, Result
 from goals.services import create_board, create_monthly_goal, update_result
 from users.models import User
 
@@ -127,12 +127,9 @@ def add_board_view(request):
                 if not goal or not group or not group:
                     continue
                     # TODO: Tell the user that the row will not be added
-                    # form.add_error(None, "Not all fields set.")
                     # return render(
                     #     request,
                     #     "board_form.html",
-                    #     {"form": form},
-                    # )
 
                 goals.append(forms.CharField().clean(goal))
                 groups.append(forms.CharField().clean(group))

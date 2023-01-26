@@ -51,7 +51,7 @@ class BoardsViewTest(TestCase):
     def test_no_default_board(self):
         with self.assertNumQueries(2):
             response = self.client.get("/boards")
-        self.assertRedirects(response, f"/boards/add")
+        self.assertRedirects(response, "/boards/add")
 
     def test_specific_board(self):
         with self.assertNumQueries(7):
@@ -146,9 +146,9 @@ class ResultsViewTest(TestCase):
         assert "<form" in result
         assert '<input name="amount" type="number"' in result
         assert '<input name="amount" type="number"' in result
-        assert f'value="5.0"' in result
+        assert 'value="5.0"' in result
         assert '<input name="expected_amount" type="number"' in result
-        assert f'value="10.0"'
+        assert 'value="10.0"'
         assert "</form>" in result
 
     def test_result_put(self):
@@ -193,6 +193,9 @@ class BoardWithResultViewTest(TestCase):
 
 
 class GoalViewTest(TestCase):
+
+    board: ClassVar[Board]
+
     @classmethod
     def setUpTestData(cls) -> None:
         cls.board = BoardFactory()
