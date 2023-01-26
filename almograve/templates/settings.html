@@ -1,19 +1,19 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
-{% load humanize %}
-
-<h1>Settings</h1>
-{{ message }}
-<form action="/settings/" method="post">
-    {% csrf_token %}
-    <select name="default_board_id">
-        {% for board in boards %}
-        <option value="{{ board.id }}" {% if board.id == user.default_board_id %}selected{% endif %}>{{ board.name }}</option>
-        {% endfor %}
-    </select>
-    <input type="submit">
-    <a href="/">Cancel</a>
-</form>
-
+    {% load humanize %}
+    <h1>Settings</h1>
+    {{ message }}
+    <form action="/settings/" method="post">
+        {% csrf_token %}
+        <select name="default_board_id">
+            {% for board in boards %}
+                <option value="{{ board.id }}"
+                        {% if board.id == user.default_board_id %}selected{% endif %}>
+                    {{ board.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <input type="submit" />
+        <a href="/">Cancel</a>
+    </form>
 {% endblock %}

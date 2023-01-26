@@ -1,23 +1,18 @@
-{% extends "base.html" %} {% block content %}
-
-{% if message %}
-<div>{{ message }}</div>
-{% endif %}
-
-<form method="POST" action="/login">
-    {% csrf_token %}
-    <label>
-        <div>Username</div>
-        <input type="text" name="username" class="dark:bg-gray-700">
-    
-    </label>
-    <label>
-        <div>Password</div>
-        <input type="password" name="password" class="dark:bg-gray-700">
-    </label>
-    <div>
-        <input type="submit" value="Log in" class="dark:bg-gray-700 mt-2 p-2 rounded">
-    </div>
-</form>
-
-{% endblock %}
+{% extends "base.html" %}
+{% block content %}
+    {% if message %}<div>{{ message }}</div>{% endif %}
+    <form method="post" action="/login">
+        {% csrf_token %}
+        <label>
+            <div>Username</div>
+            <input type="text" name="username"/>
+        </label>
+        <label>
+            <div>Password</div>
+            <input type="password" name="password"/>
+        </label>
+        <div>
+            <input type="submit" value="Log in" />
+        </div>
+    </form>
+{% endblock content %}

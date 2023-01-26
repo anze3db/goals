@@ -1,0 +1,20 @@
+.truncate {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+td {
+    text-align: right;
+    border-radius: 5px;
+}
+
+td:hover {
+    background: orange !important;
+    color: black !important;
+}
+
+td.selected {
+    background: orange;
+    color: black !important;
+}

@@ -2,5 +2,4 @@ django
 django-environ
 gunicorn
 whitenoise
-django-tailwind
 sentry-sdk

@@ -1,52 +1,38 @@
-{% extends 'base.html' %}
-
+{% extends "base.html" %}
 {% block content %}
-{% load humanize %}
-
-<h1>Add goal to {{board.name}}</h1>
-<form action="/boards/{{board.id}}/goals/add" method="post" class="grid grid-cols-2 gap-4">
-    <div style="color:orange">
-        {{ form.errors }}
-    </div>
-    {% csrf_token %}
-    <label class="block col-span-2">
-        <div>Name</div>
-        <div style="color:orange"></div>
-        <input name="name" type="text"
-        value="" 
-        placeholder="Daily walks"
-        class="dark:bg-gray-700 w-full"
-        autofocus
-        >
-    </label>
-    <label class="block">
-        <div>Group</div>
-        <div style="color:orange"></div>
-        <input name="group" type="text"
-        list="groups"
-        value="" 
-        placeholder="Personal"
-        class="dark:bg-gray-700 w-full"
-        >
-        <datalist id="groups">
-            {% for group in board.groups.all %}
-            <option>{{group.name}}</option>
-            {% endfor %}
-        </datalist>
-    </label>
-    <label class="block">
-        <div>Monthly Amount</div>
-        <div style="color:orange"></div>
-        <input name="amount" type="number"
-        step="any"
-        value="" 
-        placeholder="10"
-        class="dark:bg-gray-700 w-full"
-        >
-    </label>
-    <div class="block col-span-2">
-        <input type="submit" class="dark:bg-blue-700 p-2 rounded w-full" value="Add Goal">
-    </div>
-</form>
-
-{% endblock %}
+    {% load humanize %}
+    <h1>Add goal to {{ board.name }}</h1>
+    <div>{{ form.errors }}</div>
+    <form action="/boards/{{ board.id }}/goals/add" method="post">
+        {% csrf_token %}
+        <div class="grid">
+            <label class="block col-span-2">
+                <div>Name</div>
+                <input name="name" type="text" value="" placeholder="Daily walks" autofocus />
+            </label>
+            <label class="block">
+                <div>Group</div>
+                <input name="group"
+                       type="text"
+                       list="groups"
+                       value=""
+                       placeholder="Personal"/>
+                <datalist id="groups">
+                    {% for group in board.groups.all %}
+                        <option>
+                            {{ group.name }}
+                        </option>
+                    {% endfor %}
+                </datalist>
+            </label>
+            <label class="block">
+                <div>Monthly Amount</div>
+                <input name="amount" type="number" step="any" value="" placeholder="10"/>
+            </label>
+        </div>
+        <div>
+            <input type="submit" value="Add Goal" />
+        </div>
+    </form>
+    <a href="/">Cancel</a>
+{% endblock content %}
