@@ -9,12 +9,17 @@ td {
     border-radius: 5px;
 }
 
+th,
+td {
+    padding: calc(var(--spacing) / 4) calc(var(--spacing) / 4);
+}
+
 td:hover {
-    background: orange !important;
-    color: black !important;
+    background: var(--secondary) !important;
+    color: var(--secondary-inverse) !important;
 }
 
 td.selected {
-    background: orange;
-    color: black !important;
+    background: var(--primary) !important;
+    color: var(--primary-inverse) !important;
 }
