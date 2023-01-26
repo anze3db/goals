@@ -1,12 +1,14 @@
 -c requirements.txt
 black
+django-stubs
+djlint
+factory-boy
+faker-optional
+isort
+mypy
 pylint
 pylint-django
-isort
-factory-boy
-mypy
-django-stubs
-pytest-watch
-pytest-django
 pytest-cov
-faker-optional
+pytest-django
+pytest-watch
+ruff
