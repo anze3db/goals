@@ -21,8 +21,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(str, ""),
     SENTRY_DNS=(str, ""),
-    FLY_RELEASE_VERSION=(str, "vXXX"),
-    FLY_APP_NAME=(str, "local"),
+    APP_NAME=(str, "local"),
 )
 
 
@@ -160,11 +159,15 @@ if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
+    release = (BASE_DIR / "goals_update.log").read_text().count("\n")
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
-        release=env("FLY_RELEASE_VERSION"),
-        environment=env("FLY_APP_NAME"),
+        release=f"v1{release}",
+        environment=env("APP_NAME"),
+        _experiments={
+            "profiles_sample_rate": 1.0,
+        },
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.
