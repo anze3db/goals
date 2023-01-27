@@ -23,7 +23,7 @@ import users.views
 urlpatterns = [
     path("", index.views.index_view),
     # Goals app
-    path("settings/", users.views.settings),
+    path("settings/", users.views.settings, name="settings"),
     path("boards", goals.views.BoardsView.as_view()),
     path("boards/<int:pk>", goals.views.BoardsView.as_view()),
     path(

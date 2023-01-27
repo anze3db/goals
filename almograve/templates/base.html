@@ -23,12 +23,32 @@
             {% block content %}
             {% endblock content %}
         </main>
-        <script src="https://unpkg.com/htmx.org@1.5.0"
-                integrity="sha384-oGA+prIp5Vchu6we2YkI51UtVzN9Jpx2Z7PnR1I78PnZlN8LkrCT4lqqqmDkyrvI"
+        <dialog id="modal">
+            <article>
+                <a href="#close"
+                   aria-label="Close"
+                   class="close"
+                   data-target="modal"
+                   onClick="toggleModal(event)"></a>
+                <div id="dialog"></div>
+            </article>
+        </dialog>
+        <script src="/modal.js"></script>
+        <script src="https://unpkg.com/htmx.org@1.8.5"
+                integrity="sha384-7aHh9lqPYGYZ7sTHvzP1t3BAfLhYSTy9ArHdP3Xsr9/3TlGurYgcPBoFmXX2TX/w"
                 crossorigin="anonymous"></script>
         <script>
             document.body.addEventListener('htmx:configRequest', (event) => {
                 event.detail.headers['X-CSRFToken'] = '{{ csrf_token }}';
+            })
+        </script>
+        <script>
+            const modal = document.getElementById("modal")
+            htmx.on("htmx:afterSwap", (e) => {
+                // Response targeting #dialog => show the modal
+                if (e.detail.target.id == "dialog") {
+                    openModal(modal);
+                }
             })
         </script>
     </body>

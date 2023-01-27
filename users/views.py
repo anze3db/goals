@@ -46,5 +46,5 @@ def settings(request):
                 )
             request.user.default_board_id = default_board_id
             request.user.save()
-        return HttpResponseRedirect("/settings")
+        return HttpResponseRedirect("/")
     return render(request, "settings.html", {"boards": boards})

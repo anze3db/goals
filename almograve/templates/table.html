@@ -17,7 +17,9 @@
             </ul>
             <ul>
                 <li>
-                    <a href="/settings/">Settings</a>
+                    <a href="{% url 'settings' %}"
+                       hx-get="{% url 'settings' %}"
+                       hx-target="#dialog">Settings</a>
                 </li>
                 <li>
                     <a href="/logout">Logout</a>
