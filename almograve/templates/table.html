@@ -54,10 +54,10 @@
                                     {% if result.can_show_amount %}{{ result.amount|floatformat:0|default_if_none:" " }}{% endif %}
                                 </td>
                             {% endfor %}
-                            <th {% if goal.result_sum == 0 %} style="color:gray" {% elif goal.result_sum >= goal.expected_sum %} style="color:green" {% else %} style="color:orange" {% endif %}
+                            <td {% if goal.result_sum == 0 %} style="color:gray" {% elif goal.result_sum >= goal.expected_sum %} style="color:green" {% else %} style="color:orange" {% endif %}
                                 title="{{ goal.result_sum }} of {{ goal.expected_sum }}">
                                 {{ goal.result_sum|floatformat:0 }}
-                            </th>
+                            </td>
                             {% comment %}
                     <td>
                         <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
