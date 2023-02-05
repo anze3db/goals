@@ -7,7 +7,7 @@
         <meta name="keywords" content="Goals" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
         <meta name="apple-mobile-web-app-status-bar-style"
-              content="black-translucent">
+              content="black-translucent"/>
         <meta http-equiv="X-UA-Compatible" content="ie=edge" />
         <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
         <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
@@ -46,12 +46,21 @@
             })
         </script>
         <script>
-            const modal = document.getElementById("modal")
-            htmx.on("htmx:afterSwap", (e) => {
-                // Response targeting #dialog => show the modal
-                if (e.detail.target.id == "dialog") {
-                    openModal(modal);
+            const modal = document.getElementById("modal");
+            const dialog = document.getElementById("dialog");
+            htmx.on("htmx:beforeRequest", (e) => {
+                if (e.detail.target.id != "dialog") {
+                    return;
                 }
+                dialog.innerHTML = "";
+                dialog.setAttribute("aria-busy", "true");
+                openModal(modal);
+            })
+            htmx.on("htmx:afterRequest", (e) => {
+                if (e.detail.target.id != "dialog") {
+                    return;
+                }
+                dialog.setAttribute("aria-busy", "false");
             })
         </script>
     </body>

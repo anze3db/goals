@@ -12,7 +12,10 @@
                     {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
                 {% endfor %}
                 <li>
-                    <a href="/boards/add">+</a>
+                    <a href="/boards/add"
+                       hx-get="/boards/add"
+                       hx-target="#dialog"
+                       hx-target="form">+</a>
                 </li>
             </ul>
             <ul>
@@ -58,10 +61,13 @@
                         <tr>
                             <th class="truncate">{{ goal.name }}</th>
                             {% for result in goal.results.all %}
-                                <td onclick="location = '/boards/{{ group.board.pk }}/results/{{ result.pk }}'"
-                                    {% if result.pk == selected_result.pk %} class="cell selected" {% else %} class="cell" {% endif %}
-                                    {% if result.amount == 0 %} style="color:gray" {% elif result.amount >= result.expected_amount %} style="color:green" {% else %} style="color:orange" {% endif %}>
-                                    {% if result.can_show_amount %}{{ result.amount|floatformat:0|default_if_none:" " }}{% endif %}
+                                <td hx-get="/results/{{ result.pk }}"
+                                    hx-target="#dialog"
+                                    hx-target="form">
+                                    <span {% if result.pk == selected_result.pk %} class="cell selected" {% else %} class="cell" {% endif %}
+                                          {% if result.amount == 0 %} style="color:gray" {% elif result.amount >= result.expected_amount %} style="color:green" {% else %} style="color:orange" {% endif %}>
+                                        {% if result.can_show_amount %}{{ result.amount|floatformat:0|default_if_none:" " }}{% endif %}
+                                    </span>
                                 </td>
                             {% endfor %}
                             <td {% if goal.result_sum == 0 %} style="color:gray" {% elif goal.result_sum >= goal.expected_sum %} style="color:green" {% else %} style="color:orange" {% endif %}
@@ -89,35 +95,9 @@
             </table>
         </figure>
         <div>
-            <a href="/boards/{{ board.pk }}/goals/add">Add goal</a>
+            <a href="/boards/{{ board.pk }}/goals/add"
+               hx-get="/boards/{{ board.pk }}/goals/add"
+               hx-target="#dialog">Add goal</a>
         </div>
-        {% if selected_result %}
-            <div>
-                <h1>{{ selected_result.goal.name }} for {{ selected_month }}</h1>
-            </div>
-            <div>{% include "form.html" with result=selected_result selected_month=selected_month %}</div>
-            <div>
-                <h2>History</h2>
-                <ul>
-                    {% for event in selected_result.events.all %}
-                        <li>
-                            <div>
-                                {% if event.new_amount >= selected_result.expected_amount %}
-                                    <p title={{ event.amount }} style="color:green; display:inline;">{{ event.amount }}
-                                    </p>
-                                {% else %}
-                                    <p title={{ event.amount }} style="color:orange; display:inline;">{{ event.amount }}
-                                    </p>
-                                {% endif %}
-                            </div>
-                            <div>
-                                {{ event.description | default_if_none:"" }}
-                                <small>{{ event.date_event|naturaltime }}</small>
-                            </div>
-                        </li>
-                    {% endfor %}
-                </ul>
-            </div>
-        {% endif %}
     </div>
-{% endblock %}
+{% endblock content %}

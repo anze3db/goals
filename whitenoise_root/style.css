@@ -11,17 +11,17 @@ td {
 
 th,
 td {
-    padding: calc(var(--spacing) / 4) calc(var(--spacing) / 4);
+    padding: calc(var(--spacing) / 4) calc(var(--spacing) /16);
+}
+
+td {
+    cursor: pointer;
 }
 
 td:hover {
-    background: var(--secondary) !important;
-    color: var(--secondary-inverse) !important;
-}
+    border-color: var(--secondary);
+    border: 2px solid var(--primary);
 
-td.selected {
-    background: var(--primary) !important;
-    color: var(--primary-inverse) !important;
 }
 
 dialog>article {

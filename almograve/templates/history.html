@@ -1,0 +1,18 @@
+{% load humanize %}
+{% load tz %}
+{% get_current_timezone as TIME_ZONE %}
+<ul>
+    {% for event in result.events.all %}
+        <li>
+            {% if event.new_amount >= result.expected_amount %}
+                <b title={{ event.amount }} style="color:green; display:inline;">{{ event.amount }}
+                </b>
+            {% else %}
+                <b title={{ event.amount }} style="color:orange; display:inline;">{{ event.amount }}
+                </b>
+            {% endif %}
+            {{ event.description | default_if_none:"" }}
+            <small class="secondary">{{ event.date_event|naturaltime }}</small>
+        </li>
+    {% endfor %}
+</ul>

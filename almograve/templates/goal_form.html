@@ -5,34 +5,31 @@
     <div>{{ form.errors }}</div>
     <form action="/boards/{{ board.id }}/goals/add" method="post">
         {% csrf_token %}
-        <div class="grid">
-            <label class="block col-span-2">
-                <div>Name</div>
-                <input name="name" type="text" value="" placeholder="Daily walks" autofocus />
-            </label>
-            <label class="block">
-                <div>Group</div>
-                <input name="group"
-                       type="text"
-                       list="groups"
-                       value=""
-                       placeholder="Personal"/>
-                <datalist id="groups">
-                    {% for group in board.groups.all %}
-                        <option>
-                            {{ group.name }}
-                        </option>
-                    {% endfor %}
-                </datalist>
-            </label>
-            <label class="block">
-                <div>Monthly Amount</div>
-                <input name="amount" type="number" step="any" value="" placeholder="10"/>
-            </label>
-        </div>
+        <label class="block col-span-2">
+            <div>Name</div>
+            <input name="name" type="text" value="" placeholder="Daily walks" autofocus />
+        </label>
+        <label class="block">
+            <div>Group</div>
+            <input name="group"
+                   type="text"
+                   list="groups"
+                   value=""
+                   placeholder="Personal"/>
+            <datalist id="groups">
+                {% for group in board.groups.all %}
+                    <option>
+                        {{ group.name }}
+                    </option>
+                {% endfor %}
+            </datalist>
+        </label>
+        <label class="block">
+            <div>Monthly Amount</div>
+            <input name="amount" type="number" step="any" value="" placeholder="10"/>
+        </label>
         <div>
             <input type="submit" value="Add Goal" />
         </div>
     </form>
-    <a href="/">Cancel</a>
 {% endblock content %}

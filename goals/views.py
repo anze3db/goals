@@ -73,33 +73,6 @@ class BoardsView(View):
 
 
 @login_required(login_url="/login")
-def board_with_result_view(request, board_id, result_id):
-    user = request.user
-    board = get_object_or_404(user.boards, pk=board_id)
-    result = get_object_or_404(
-        Result.objects, goal__group__board_id=board.pk, pk=result_id
-    )
-    if data := request.POST:
-        amount = float(data.get("amount")) if data.get("amount") else None
-        expected_amount = (
-            float(data.get("expected_amount")) if data.get("expected_amount") else None
-        )
-        description = escape(data.get("description"))
-        date_event = parse_datetime(data.get("date_event")) or timezone.now()
-
-        update_result(
-            result, amount, expected_amount, date_event, request.user, description
-        )
-        return redirect(f"/boards/{board_id}/results/{result_id}")
-
-    return render(
-        request,
-        "table.html",
-        _get_table_data(user, board, result),
-    )
-
-
-@login_required(login_url="/login")
 def add_board_view(request):
 
     if request.method == "GET":
@@ -143,8 +116,8 @@ def add_board_view(request):
                 amounts=amounts,
             )
             return HttpResponseRedirect(f"/boards/{board.pk}")
-        else:
-            return render(request, "board_form.html", {"form": form})
+
+        return render(request, "board_form.html", {"form": form})
 
 
 @login_required(login_url="/login")
@@ -170,8 +143,8 @@ def add_goal_view(request, board_id):
             user=user,
         )
         return HttpResponseRedirect(f"/boards/{board.pk}")
-    else:
-        return render(request, "goal_form.html", {"form": form, "board": board})
+
+    return render(request, "goal_form.html", {"form": form, "board": board})
 
 
 @login_required(login_url="/login")

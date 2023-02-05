@@ -26,10 +26,6 @@ urlpatterns = [
     path("settings/", users.views.settings, name="settings"),
     path("boards", goals.views.BoardsView.as_view()),
     path("boards/<int:pk>", goals.views.BoardsView.as_view()),
-    path(
-        "boards/<int:board_id>/results/<int:result_id>",
-        goals.views.board_with_result_view,
-    ),
     path("boards/add", goals.views.add_board_view),
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
     path("results/<int:pk>", goals.views.result_put),

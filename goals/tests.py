@@ -139,24 +139,21 @@ class ResultsViewTest(TestCase):
         self.client.force_login(self.result.goal.user)
 
     def test_result_get(self):
-        with self.assertNumQueries(6):
+        with self.assertNumQueries(7):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
         assert "<form" in result
-        assert '<input name="amount"\n                   type="number"' in result
+        assert '<input name="amount"' in result
         assert 'value="5.0"' in result
-        assert (
-            '<input name="expected_amount"\n                       type="number"'
-            in result
-        )
+        assert '<input name="expected_amount"' in result
         assert 'value="10.0"'
         assert "</form>" in result
 
     def test_result_put(self):
         initial_event_count = self.result.events.count()
         old_amount = self.result.amount
-        with self.assertNumQueries(15):
+        with self.assertNumQueries(14):
             self.client.post(
                 f"/results/{self.result.pk}",
                 dict(
@@ -176,22 +173,6 @@ class ResultsViewTest(TestCase):
         assert self.result.events.first().date_event == timezone.datetime(
             1987, 1, 1, 12, 12, tzinfo=datetime.timezone.utc
         )
-
-
-class BoardWithResultViewTest(TestCase):
-    @classmethod
-    def setUpTestData(cls):
-        cls.result = ResultFactory(amount=5, expected_amount=10)
-
-    def setUp(self):
-        self.client.force_login(self.result.goal.user)
-
-    def test_result_get(self):
-        board = self.result.goal.group.board
-        # with self.assertNumQueries(7):
-        response = self.client.get(f"/boards/{board.pk}/results/{self.result.pk}")
-        assert response.status_code == 200
-        # TODO: Add post stuff
 
 
 class GoalViewTest(TestCase):
