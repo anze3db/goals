@@ -1,3 +1,4 @@
+from calendar import month_abbr
 from datetime import datetime
 
 from django.db import models
@@ -79,6 +80,9 @@ class Result(models.Model):
             return True
         current_month = datetime.now().month
         return current_month >= self.index
+
+    def month(self):
+        return month_abbr[self.index]
 
 
 class Event(models.Model):

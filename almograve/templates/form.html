@@ -3,7 +3,9 @@
     {% load humanize %}
     {% load tz %}
     {% get_current_timezone as TIME_ZONE %}
-    <h1>{{ result.goal.name }}</h1>
+    <h1>
+        {{ result.goal.name }} in <u>{{ result.month }}</u>
+    </h1>
     <div>
         <form method="post" style="margin: 0" action="/results/{{ result.pk }}">
             {% csrf_token %}
