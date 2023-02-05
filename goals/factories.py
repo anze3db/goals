@@ -55,7 +55,7 @@ class GoalFactory(factory.django.DjangoModelFactory):
 
 
 class ResultFactory(factory.django.DjangoModelFactory):
-    index = factory.Sequence(lambda n: n)
+    index = factory.Faker("random_int", min=1, max=12)
     amount = factory.Faker("optional_int", ratio=0.7, min_value=-5, max_value=10)
 
     expected_amount = factory.Faker("pyint", min_value=0, max_value=15)
