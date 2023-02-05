@@ -1,9 +1,3 @@
-[tool.pytest.ini_options]
-minversion = "6.0"
-addopts = "--cov=. --cov-report term-missing --verbose --reuse-db --durations=3"
-python_files = ["tests.py"]
-DJANGO_SETTINGS_MODULE = "almograve.settings"
-
 [tool.mypy]
 python_version = "3.11"
 plugins = ["mypy_django_plugin.main"]
