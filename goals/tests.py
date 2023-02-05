@@ -139,7 +139,7 @@ class ResultsViewTest(TestCase):
         self.client.force_login(self.result.goal.user)
 
     def test_result_get(self):
-        with self.assertNumQueries(7):
+        with self.assertNumQueries(5):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
