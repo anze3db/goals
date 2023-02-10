@@ -28,9 +28,9 @@ urlpatterns = [
     path("boards/<int:pk>", goals.views.BoardsView.as_view()),
     path("boards/add", goals.views.add_board_view),
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
-    path("results/<int:pk>", goals.views.result_put),
+    path("results/<int:pk>", goals.views.result_put, name="results"),
     path("events/", goals.views.events, name="events"),
-    path("event/<int:event_id>", goals.views.event, name="event"),
+    path("events/<int:event_id>", goals.views.event, name="event"),
     # User app
     path("login", users.views.login_view, name="login"),
     path("logout", users.views.logout_view, name="logout"),

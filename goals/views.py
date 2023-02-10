@@ -5,6 +5,7 @@ from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse, HttpResponseRedirect
 from django.shortcuts import get_object_or_404, redirect, render
+from django.urls import reverse
 from django.utils import timezone
 from django.utils.dateparse import parse_datetime
 from django.utils.decorators import method_decorator
@@ -191,6 +192,10 @@ def events(request):
 @login_required(login_url="/login")
 def event(request, event_id):
     event_obj = get_object_or_404(Event, pk=event_id, user=request.user)
+    if request.method == "POST":
+        event_obj.description = request.POST.get("description")
+        event_obj.save()
+        return redirect(reverse("results", args=[event_obj.result_id]))
     return render(
         request,
         "event.html",

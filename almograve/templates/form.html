@@ -49,7 +49,9 @@
                 <div>
                     <ul>
                         {% for event in result.events.all %}
-                            <li>
+                            <li hx-get="{% url 'event' event.id %}"
+                                hx-target="main"
+                                hx-push-url="true">
                                 {% if event.new_amount >= result.expected_amount %}
                                     <b title={{ event.amount }} style="color:green; display:inline;">{{ event.amount }}
                                     </b>
