@@ -149,12 +149,11 @@ def add_goal_view(request, board_id):
 
 @login_required(login_url="/login")
 def result_put(request, pk):
+    result = get_object_or_404(Result.objects, pk=pk)
     if request.method == "GET":
-        result = Result.objects.get(pk=pk)
         return render(request, "form.html", dict(result=result))
 
     data = request.POST
-    result = get_object_or_404(Result.objects, pk=pk)
     amount = float(data.get("amount")) if data.get("amount") else None
     expected_amount = (
         float(data.get("expected_amount")) if data.get("expected_amount") else None
@@ -162,7 +161,14 @@ def result_put(request, pk):
 
     date_event = parse_datetime(data.get("date_event")) or timezone.now()
 
-    update_result(result, amount, expected_amount, date_event, request.user)
+    update_result(
+        result=result,
+        amount=amount,
+        expected_amount=expected_amount,
+        date_event=date_event,
+        user=request.user,
+        description=data.get("description", ""),
+    )
 
     return render(
         request,
