@@ -161,6 +161,7 @@ class ResultsViewTest(TestCase):
                     expected_amount=12,
                     date_event="1987-01-01T12:12Z",
                     time_zone="UTC",
+                    description="Test",
                 ),
             )
 
@@ -173,6 +174,7 @@ class ResultsViewTest(TestCase):
         assert self.result.events.first().date_event == timezone.datetime(
             1987, 1, 1, 12, 12, tzinfo=datetime.timezone.utc
         )
+        assert self.result.events.first().description == "Test"
 
 
 class GoalViewTest(TestCase):
