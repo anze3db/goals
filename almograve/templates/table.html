@@ -12,10 +12,7 @@
                     {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
                 {% endfor %}
                 <li>
-                    <a href="/boards/add"
-                       hx-get="/boards/add"
-                       hx-target="#dialog"
-                       hx-target="form">+</a>
+                    <a href="/boards/add">+</a>
                 </li>
             </ul>
             <ul>
@@ -26,13 +23,13 @@
                         </summary>
                         <ul role="listbox">
                             <li>
-                                <a href="{% url 'settings' %}"
-                                   hx-get="{% url 'settings' %}"
-                                   hx-select="main"
-                                   hx-target="#dialog">Settings</a>
+                                <a href="{% url 'settings' %}">Settings</a>
                             </li>
                             <li>
-                                <a href="/logout">Logout</a>
+                                <a href="{% url 'events' %}">Events</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'logout' %}">Logout</a>
                             </li>
                         </ul>
                     </details>
@@ -61,9 +58,7 @@
                         <tr>
                             <th class="truncate">{{ goal.name }}</th>
                             {% for result in goal.results.all %}
-                                <td hx-get="/results/{{ result.pk }}"
-                                    hx-target="#dialog"
-                                    hx-target="form">
+                                <td hx-get="/results/{{ result.pk }}" hx-target="main" hx-push-url="true">
                                     <span {% if result.pk == selected_result.pk %} class="cell selected" {% else %} class="cell" {% endif %}
                                           {% if result.amount == 0 %} style="color:gray" {% elif result.amount >= result.expected_amount %} style="color:green" {% else %} style="color:orange" {% endif %}>
                                         {% if result.can_show_amount %}{{ result.amount|floatformat:0|default_if_none:" " }}{% endif %}
@@ -95,9 +90,7 @@
             </table>
         </figure>
         <div>
-            <a href="/boards/{{ board.pk }}/goals/add"
-               hx-get="/boards/{{ board.pk }}/goals/add"
-               hx-target="#dialog">Add goal</a>
+            <a href="/boards/{{ board.pk }}/goals/add">Add goal</a>
         </div>
     </div>
 {% endblock content %}

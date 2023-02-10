@@ -2,6 +2,7 @@ import datetime
 from typing import ClassVar
 
 from django.test import TestCase
+from django.urls import reverse
 from django.utils import timezone
 
 from goals.factories import BoardFactory, EventFactory, GroupFactory, ResultFactory
@@ -227,3 +228,41 @@ class GoalViewTest(TestCase):
         assert response.status_code == 200
         response_text = response.content.decode()
         assert "This field is required." in response_text
+
+
+class EventsViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.result = ResultFactory(amount=5, expected_amount=10)
+        cls.events = EventFactory.create_batch(10, result=cls.result, user=cls.user)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_get(self):
+        with self.assertNumQueries(3):
+            response = self.client.get(reverse("events"))
+        assert response.status_code == 200
+        for event in self.events:
+            assert event.description in response.content.decode()
+
+
+class EventViewTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.result = ResultFactory(amount=5, expected_amount=10)
+        cls.event = EventFactory(result=cls.result, user=cls.user)
+        cls.events = EventFactory.create_batch(10, result=cls.result, user=cls.user)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_get(self):
+        with self.assertNumQueries(3):
+            response = self.client.get(
+                reverse("event", kwargs={"event_id": self.event.pk})
+            )
+        assert response.status_code == 200
+        assert self.event.description in response.content.decode()

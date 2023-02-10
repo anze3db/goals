@@ -12,7 +12,7 @@ from django.utils.html import escape
 from django.views import View
 
 from goals.forms import BoardForm, GoalForm
-from goals.models import Board, Group, Result
+from goals.models import Board, Event, Group, Result
 from goals.services import create_board, create_monthly_goal, update_result
 from users.models import User
 
@@ -175,4 +175,24 @@ def result_put(request, pk):
         "table.html",
         _get_table_data(request.user, result.goal.group.board)
         | dict(selected_result=result),
+    )
+
+
+@login_required(login_url="/login")
+def events(request):
+    event_objs = Event.objects.filter(user=request.user)
+    return render(
+        request,
+        "events.html",
+        {"events": event_objs},
+    )
+
+
+@login_required(login_url="/login")
+def event(request, event_id):
+    event_obj = get_object_or_404(Event, pk=event_id, user=request.user)
+    return render(
+        request,
+        "event.html",
+        {"event": event_obj},
     )

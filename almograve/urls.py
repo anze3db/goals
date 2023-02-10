@@ -21,7 +21,7 @@ import index.views
 import users.views
 
 urlpatterns = [
-    path("", index.views.index_view),
+    path("", index.views.index_view, name="index"),
     # Goals app
     path("settings/", users.views.settings, name="settings"),
     path("boards", goals.views.BoardsView.as_view()),
@@ -29,9 +29,11 @@ urlpatterns = [
     path("boards/add", goals.views.add_board_view),
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
     path("results/<int:pk>", goals.views.result_put),
+    path("events/", goals.views.events, name="events"),
+    path("event/<int:event_id>", goals.views.event, name="event"),
     # User app
-    path("login", users.views.login_view),
-    path("logout", users.views.logout_view),
+    path("login", users.views.login_view, name="login"),
+    path("logout", users.views.logout_view, name="logout"),
     # Admin
     path("admin/", admin.site.urls),
 ]  # + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
