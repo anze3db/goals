@@ -75,7 +75,6 @@ class BoardsView(View):
 
 @login_required(login_url="/login")
 def add_board_view(request):
-
     if request.method == "GET":
         form = BoardForm()
         return render(

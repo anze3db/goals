@@ -27,7 +27,11 @@ env = environ.Env(
 
 BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 
-STATIC_ROOT = BASE_DIR / "static"
+STATIC_ROOT = BASE_DIR / "staticroot"
+
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 STORAGES = {
     "default": {
@@ -66,8 +70,10 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "whitenoise.runserver_nostatic",
     "django.contrib.staticfiles",
     "django.contrib.humanize",
+    "django_htmx",
     "users",
     "index",
     "goals",
@@ -85,6 +91,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "django_htmx.middleware.HtmxMiddleware",
 ]
 
 ROOT_URLCONF = "almograve.urls"

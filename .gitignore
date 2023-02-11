@@ -1,6 +1,6 @@
 .env
 **/dist/styles.css
-/static
+/staticroot
 .coverage
 .venv
 db.sqlite
