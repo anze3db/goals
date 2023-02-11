@@ -1,5 +1,6 @@
 django
 django-environ
+django-htmx
 gunicorn
 whitenoise
 sentry-sdk
