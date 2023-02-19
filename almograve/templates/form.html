@@ -48,7 +48,7 @@
                 </summary>
                 <div>
                     <ul>
-                        {% for event in result.events.all %}
+                        {% for event in result.events.all|dictsortreversed:"date_event" %}
                             <li hx-get="{% url 'event' event.id %}"
                                 hx-target="main"
                                 hx-push-url="true">
