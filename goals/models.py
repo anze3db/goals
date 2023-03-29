@@ -1,4 +1,5 @@
 from calendar import month_abbr
+from dataclasses import dataclass
 from datetime import datetime
 
 from django.db import models
@@ -84,6 +85,12 @@ class Result(models.Model):
     def month(self):
         return month_abbr[self.index]
 
+    @property
+    def expected_amount(self) -> float | None:
+        if self.amount is None:
+            return None
+        return self.amount + 1
+
 
 class Event(models.Model):
     description = models.TextField()
@@ -111,3 +118,26 @@ class Event(models.Model):
         if change > 0:
             return f"+{change}"
         return f"{change}"
+
+
+@dataclass
+class Month:
+    index: int
+    name: str
+    abbreviation: str
+
+
+MONTHS = [
+    Month(1, "January", "Jan"),
+    Month(2, "February", "Feb"),
+    Month(3, "March", "Mar"),
+    Month(4, "April", "Apr"),
+    Month(5, "May", "May"),
+    Month(6, "June", "Jun"),
+    Month(7, "July", "Jul"),
+    Month(8, "August", "Aug"),
+    Month(9, "September", "Sep"),
+    Month(10, "October", "Oct"),
+    Month(11, "November", "Nov"),
+    Month(12, "December", "Dec"),
+]

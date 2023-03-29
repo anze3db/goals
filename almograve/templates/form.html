@@ -11,10 +11,11 @@
             {% csrf_token %}
             <label class="block">
                 <div>New Amount</div>
+                <small>Current amount {{ result.amount | default_if_none:"None" }}</small>
                 <input name="amount"
                        type="number"
                        step="any"
-                       value="{{ result.amount |default_if_none:"" }}"
+                       value="{{ result.expected_amount |default_if_none:"" }}"
                        onfocus="this.select();"
                        autofocus/>
             </label>

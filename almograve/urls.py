@@ -28,6 +28,11 @@ urlpatterns = [
     path("boards/<int:pk>", goals.views.BoardsView.as_view()),
     path("boards/add", goals.views.add_board_view),
     path("boards/<int:board_id>/goals/add", goals.views.add_goal_view),
+    path(
+        "boards/<int:board_id>/month/<int:month>",
+        goals.views.board_month_view,
+        name="board_month",
+    ),
     path("results/<int:pk>", goals.views.result_put, name="results"),
     path("events/", goals.views.events, name="events"),
     path("events/<int:event_id>", goals.views.event, name="event"),

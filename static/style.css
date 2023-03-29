@@ -15,6 +15,20 @@ td {
     cursor: pointer;
 }
 
+.boards_and_months {
+    padding: var(--nav-element-spacing-vertical) 0;
+    margin-left: -9;
+}
+
+.boards_and_months li {
+    padding: 0 0;
+    padding: 0 var(--nav-element-spacing-horizontal);
+}
+
+.boards_and_months ul:first-of-type {
+    margin-left: 0;
+}
+
 td:hover {
     border-color: var(--secondary);
     border: 2px solid var(--primary);

@@ -41,7 +41,12 @@
         <figure>
             <table>
                 <tr>
-                    {% for month in months %}<th>{{ month }}</th>{% endfor %}
+                    <th></th>
+                    {% for month in months %}
+                        <th>
+                            <a href="{% url 'board_month' board.pk month.index %}">{{ month.abbreviation }}</a>
+                        </th>
+                    {% endfor %}
                     <th>Total</th>
                 </tr>
                 {% for group in groups.all %}

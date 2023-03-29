@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block content %}
+    {% load humanize %}
+    <header>
+        <h1>🎯 Goals for {{ month.abbreviation }} {{ board.name }}</h1>
+        <nav>
+            <div class="boards_and_months">
+                <ul>
+                    {% for board in boards %}
+                        <li>
+                            <a href="/boards/{{ board.pk }}">{{ board.name }}</a>
+                        </li>
+                        {% comment %} <span hx-delete="/boards/{{board.pk}}" style="cursor: pointer; color:red;">x</span> {% endcomment %}
+                    {% endfor %}
+                    <li>
+                        <a href="/boards/add">+</a>
+                    </li>
+                </ul>
+                <ul style="flex-wrap: wrap;">
+                    {% for month in months %}
+                        <li>
+                            <a href="/boards/{{ board.pk }}/month/{{ month.index }}">{{ month.abbreviation }}</a>
+                        </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            <ul>
+                <li>
+                    <details role="list" class="secondary">
+                        <summary aria-haspopup="listbox">
+                            {{ user.first_name }}
+                        </summary>
+                        <ul role="listbox">
+                            <li>
+                                <a href="{% url 'settings' %}">Settings</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'events' %}">Events</a>
+                            </li>
+                            <li>
+                                <a href="{% url 'logout' %}">Logout</a>
+                            </li>
+                        </ul>
+                    </details>
+                </li>
+            </ul>
+        </nav>
+        <nav>
+        </nav>
+    </header>
+    <div style="display: flex; flex-wrap: wrap; gap: 20px; cursor: pointer;">
+        {% for result in results %}
+            <article style="width: 200px;
+                            padding: 10px;
+                            margin: 0px"
+                     hx-get="/results/{{ result.pk }}"
+                     hx-target="main"
+                     hx-push-url="true">
+                <div style=" font-weight: 200; font-size: 0.8rem;">{{ result.goal.group.name }}</div>
+                {{ result.goal.name }}
+                <div style="text-align: center;
+                            font-size: 2rem;
+                            font-weight: 700;
+                            {% if result.amount == 0 %} color:gray {% elif result.amount >= result.expected_amount %} color:green {% else %} color:orange {% endif %}">
+                    {{ result.amount }}
+                </div>
+            </article>
+        {% endfor %}
+    </div>
+{% endblock content %}

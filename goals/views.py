@@ -1,5 +1,4 @@
-import calendar
-from calendar import month_abbr
+from datetime import datetime
 
 from django import forms
 from django.contrib.auth.decorators import login_required
@@ -13,24 +12,22 @@ from django.utils.html import escape
 from django.views import View
 
 from goals.forms import BoardForm, GoalForm
-from goals.models import Board, Event, Group, Result
+from goals.models import MONTHS, Board, Event, Group, Result
 from goals.services import create_board, create_monthly_goal, update_result
 from users.models import User
 
 
 def _get_table_data(user: User, board: Board, result: Result | None = None):
     boards = user.boards.all()
-    months = month_abbr
     groups = board.groups.prefetch_related("goals", "goals__results").all()
 
     return dict(
         user=user,
         boards=boards,
-        months=months,
+        months=MONTHS,
         groups=groups,
         board=board,
         selected_result=result,
-        selected_month="" if not result else calendar.month_name[result.index % 12],
     )
 
 
@@ -68,7 +65,9 @@ class BoardsView(View):
 
         # If pk is not set then redirect to the default one
         if user.default_board:
-            return redirect(f"/boards/{user.default_board.pk}")
+            return redirect(
+                f"/boards/{user.default_board.pk}/month/{timezone.now().month}"
+            )
 
         return redirect("/boards/add")
 
@@ -118,6 +117,27 @@ def add_board_view(request):
             return HttpResponseRedirect(f"/boards/{board.pk}")
 
         return render(request, "board_form.html", {"form": form})
+
+
+@login_required(login_url="/login")
+def board_month_view(request, board_id, month):
+    user = request.user
+    board = get_object_or_404(user.boards, pk=board_id)
+    results = Result.objects.filter(index=month, goal__group__board=board)
+    boards = user.boards.all()
+
+    return render(
+        request,
+        "month.html",
+        {
+            "results": results,
+            "boards": boards,
+            "user": user,
+            "board": board,
+            "months": MONTHS,
+            "month": [m for m in MONTHS if m.index == month][0],
+        },
+    )
 
 
 @login_required(login_url="/login")
