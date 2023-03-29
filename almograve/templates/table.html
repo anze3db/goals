@@ -51,7 +51,7 @@
                 </tr>
                 {% for group in groups.all %}
                     <tr>
-                        <td class="truncate">
+                        <td>
                             <strong>{{ group.name }}</strong>
                             {% comment %}
                             <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
@@ -62,7 +62,7 @@
                     </tr>
                     {% for goal in group.goals.all %}
                         <tr>
-                            <td class="truncate">{{ goal.name }}</td>
+                            <td>{{ goal.name }}</td>
                             {% for result in goal.results.all %}
                                 <td hx-get="/results/{{ result.pk }}" hx-target="main" hx-push-url="true">
                                     <span {% if result.pk == selected_result.pk %} class="cell selected" {% else %} class="cell" {% endif %}

@@ -1,9 +1,3 @@
-.truncate {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 table {
     table-layout: fixed;
     border-collapse: collapse;
@@ -11,6 +5,9 @@ table {
 
 td {
     width: 25%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 td+td {
