@@ -41,27 +41,28 @@
         <figure>
             <table>
                 <tr>
-                    <th></th>
+                    <td></td>
                     {% for month in months %}
-                        <th>
-                            <a href="{% url 'board_month' board.pk month.index %}">{{ month.abbreviation }}</a>
-                        </th>
+                        <td>
+                            <a href="{% url 'board_month' board.pk month.index %}">{{ month.initial }}</a>
+                        </td>
                     {% endfor %}
-                    <th>Total</th>
+                    <td style="overflow: hidden; text-overflow: ellipsis;">Σ</td>
                 </tr>
                 {% for group in groups.all %}
                     <tr>
-                        <th>
+                        <td class="truncate">
                             <strong>{{ group.name }}</strong>
                             {% comment %}
                             <span hx-delete="/groups/{{group.pk}}" style="cursor: pointer; color:red;">x</span>             
                             {% endcomment %}
-                        </th>
+                        </td>
                         {% for month in months %}<th></th>{% endfor %}
+                        <td></td>
                     </tr>
                     {% for goal in group.goals.all %}
                         <tr>
-                            <th class="truncate">{{ goal.name }}</th>
+                            <td class="truncate">{{ goal.name }}</td>
                             {% for result in goal.results.all %}
                                 <td hx-get="/results/{{ result.pk }}" hx-target="main" hx-push-url="true">
                                     <span {% if result.pk == selected_result.pk %} class="cell selected" {% else %} class="cell" {% endif %}

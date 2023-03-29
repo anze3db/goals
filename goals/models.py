@@ -124,20 +124,27 @@ class Event(models.Model):
 class Month:
     index: int
     name: str
-    abbreviation: str
+
+    @property
+    def abbreviation(self):
+        return self.name[:3]
+
+    @property
+    def initial(self):
+        return self.name[0]
 
 
 MONTHS = [
-    Month(1, "January", "Jan"),
-    Month(2, "February", "Feb"),
-    Month(3, "March", "Mar"),
-    Month(4, "April", "Apr"),
-    Month(5, "May", "May"),
-    Month(6, "June", "Jun"),
-    Month(7, "July", "Jul"),
-    Month(8, "August", "Aug"),
-    Month(9, "September", "Sep"),
-    Month(10, "October", "Oct"),
-    Month(11, "November", "Nov"),
-    Month(12, "December", "Dec"),
+    Month(1, "January"),
+    Month(2, "February"),
+    Month(3, "March"),
+    Month(4, "April"),
+    Month(5, "May"),
+    Month(6, "June"),
+    Month(7, "July"),
+    Month(8, "August"),
+    Month(9, "September"),
+    Month(10, "October"),
+    Month(11, "November"),
+    Month(12, "December"),
 ]

@@ -4,14 +4,27 @@
     white-space: nowrap;
 }
 
+table {
+    table-layout: fixed;
+    border-collapse: collapse;
+}
+
+td {
+    width: 25%;
+}
+
+td+td {
+    width: auto;
+}
+
 th,
 td {
-    text-align: right;
     border-radius: 5px;
     padding: calc(var(--spacing) / 4) calc(var(--spacing) /16);
 }
 
 td {
+    text-align: right;
     cursor: pointer;
 }
 
@@ -30,9 +43,7 @@ td {
 }
 
 td:hover {
-    border-color: var(--secondary);
-    border: 2px solid var(--primary);
-
+    text-decoration: underline;
 }
 
 dialog>article {
