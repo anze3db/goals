@@ -62,7 +62,7 @@
                             font-size: 2rem;
                             font-weight: 700;
                             {% if result.amount == 0 %} color:gray {% elif result.amount >= result.expected_amount %} color:green {% else %} color:orange {% endif %}">
-                    {{ result.amount }}
+                    {{ result.amount|floatformat:0|default_if_none:"/" }}
                 </div>
             </article>
         {% endfor %}
