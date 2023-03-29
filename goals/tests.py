@@ -47,7 +47,9 @@ class BoardsViewTest(TestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get("/boards")
-        self.assertRedirects(response, f"/boards/{self.board.pk}")
+        self.assertRedirects(
+            response, f"/boards/{self.board.pk}/month/{timezone.now().month}"
+        )
 
     def test_no_default_board(self):
         with self.assertNumQueries(2):
@@ -87,6 +89,25 @@ class BoardsViewTest(TestCase):
             self.client.delete(f"/boards/{self.another_users_board.pk}")
         self.another_users_board.refresh_from_db()
         assert self.another_users_board.date_deleted is None
+
+
+class BoardMonthView(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = UserFactory()
+        cls.board = BoardFactory(user=cls.user)
+
+    def setUp(self):
+        self.client.force_login(self.user)
+
+    def test_get(self):
+        with self.assertNumQueries(8):
+            response = self.client.get(
+                reverse("board_month", kwargs={"board_id": self.board.pk, "month": 1})
+            )
+        assert response.status_code == 200
+        content = response.content.decode()
+        assert self.board.name in content
 
 
 class AddBoardViewTest(TestCase):
@@ -146,7 +167,9 @@ class ResultsViewTest(TestCase):
         result = response.content.decode()
         assert "<form" in result
         assert '<input name="amount"' in result
-        assert 'value="5.0"' in result
+        assert (
+            'value="6.0"' in result
+        )  # for convenience we bump the amount by 1 since it's the most common case
         assert '<input name="expected_amount"' in result
         assert 'value="10.0"'
         assert "</form>" in result
@@ -179,7 +202,6 @@ class ResultsViewTest(TestCase):
 
 
 class GoalViewTest(TestCase):
-
     board: ClassVar[Board]
 
     @classmethod

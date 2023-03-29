@@ -86,7 +86,7 @@ class Result(models.Model):
         return month_abbr[self.index]
 
     @property
-    def expected_amount(self) -> float | None:
+    def next_amount(self) -> float | None:
         if self.amount is None:
             return None
         return self.amount + 1

@@ -15,7 +15,7 @@
                 <input name="amount"
                        type="number"
                        step="any"
-                       value="{{ result.expected_amount |default_if_none:"" }}"
+                       value="{{ result.next_amount |default_if_none:"" }}"
                        onfocus="this.select();"
                        autofocus/>
             </label>

@@ -1,5 +1,3 @@
-from datetime import datetime
-
 from django import forms
 from django.contrib.auth.decorators import login_required
 from django.http.response import HttpResponse, HttpResponseRedirect
@@ -123,7 +121,11 @@ def add_board_view(request):
 def board_month_view(request, board_id, month):
     user = request.user
     board = get_object_or_404(user.boards, pk=board_id)
-    results = Result.objects.filter(index=month, goal__group__board=board)
+    results = (
+        Result.objects.filter(index=month, goal__group__board=board)
+        .prefetch_related("goal", "goal__group", "goal__group__board")
+        .order_by("goal__group__name", "goal__name")
+    )
     boards = user.boards.all()
 
     return render(
