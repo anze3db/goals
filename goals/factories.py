@@ -1,5 +1,3 @@
-from random import randint
-
 import factory
 from django.utils import timezone
 from faker_optional import OptionalProvider
@@ -32,7 +30,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
     goals = factory.RelatedFactoryList(
         "goals.factories.GoalFactory",
         factory_related_name="group",
-        size=lambda: randint(1, 7),
+        size=7,
         user=factory.SelfAttribute("..user"),
     )
 
