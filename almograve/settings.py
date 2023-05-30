@@ -14,6 +14,9 @@ from pathlib import Path
 
 import environ
 
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+
+# Set up environment variables
 env = environ.Env(
     # set casting, default value
     CSRF_COOKIE_DOMAIN=(str, None),
@@ -24,8 +27,7 @@ env = environ.Env(
     APP_NAME=(str, "local"),
 )
 
-
-BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
+environ.Env.read_env(BASE_DIR / ".env")
 
 STATIC_ROOT = BASE_DIR / "staticroot"
 
@@ -43,8 +45,6 @@ STORAGES = {
 }
 
 WHITENOISE_ROOT = BASE_DIR / "whitenoise_root"
-
-environ.Env.read_env(BASE_DIR / ".env")
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/3.2/howto/deployment/checklist/
@@ -182,4 +182,5 @@ if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
         # If you wish to associate users to errors (assuming you are using
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
+    )
     )
