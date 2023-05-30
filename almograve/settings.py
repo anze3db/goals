@@ -183,4 +183,3 @@ if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
         # django.contrib.auth) you may enable sending PII data.
         send_default_pii=True,
     )
-    )
