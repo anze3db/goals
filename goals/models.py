@@ -65,16 +65,9 @@ class Goal(models.Model):
         results = self.results.all()
         index_to_amount = {res.index: res.amount for res in results if res.amount}
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
-        if not amounts:
-            return {
-                "min_amount": 0,
-                "max_amount": 0,
-                "amounts": [],
-                "points": " ".join([]),
-            }
+        print(amounts)
         normalize = [
-            (x - min(amounts)) / ((max(amounts) - min(amounts)) or max(amounts)) * 0.8
-            + 0.1
+            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.8 + 0.1
             for x in amounts
         ]
         inverted = [1 - x for x in normalize]
