@@ -18,9 +18,7 @@
             <ul>
                 <li>
                     <details role="list" class="secondary">
-                        <summary aria-haspopup="listbox">
-                            {{ user.first_name }}
-                        </summary>
+                        <summary aria-haspopup="listbox">{{ user.first_name }}</summary>
                         <ul role="listbox">
                             <li>
                                 <a href="{% url 'settings' %}">Settings</a>
@@ -80,6 +78,19 @@
                         <span hx-delete="/goals/{{ goal.pk }}" hx-target="#table" style="cursor: pointer; color:red;">x</span>
                     </td>
                             {% endcomment %}
+                        </tr>
+                        <tr>
+                            <td></td>
+                            <td colspan="12">
+                                {% with chart_data=goal.chart_data %}
+                                    <svg viewBox="0 0 1210 100">
+                                        <polyline fill="#D1FFBD" stroke="green" stroke-width="1" points="{{ chart_data.points }} 1200,150 0,150" />
+                                        {% for amount in chart_data.amounts %}
+                                            <circle onmouseover="" cx="{{ amount.x }}" cy="{{ amount.y }}" r="5" fill="green" />
+                                        {% endfor %}
+                                    </svg>
+                                {% endwith %}
+                            </td>
                         </tr>
                     {% endfor %}
                     {% comment %} <tr>

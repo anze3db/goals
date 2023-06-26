@@ -61,6 +61,34 @@ class Goal(models.Model):
     def expected_sum(self):
         return sum([r.expected_amount for r in self.results.all() if r.expected_amount])
 
+    def chart_data(self):
+        results = self.results.all()
+        amounts = [res.amount if res.amount else 0 for res in results if res.amount]
+        if not amounts:
+            return {
+                "min_amount": 0,
+                "max_amount": 0,
+                "amounts": [],
+                "points": " ".join([]),
+            }
+        normalize = [
+            (x - min(amounts)) / ((max(amounts) - min(amounts)) or max(amounts)) * 0.8
+            + 0.1
+            for x in amounts
+        ]
+        inverted = [1 - x for x in normalize]
+        multipled_by_100 = [x * 100 for x in inverted]
+        return {
+            "min_amount": min(amounts),
+            "max_amount": max(amounts),
+            "amounts": [
+                {"x": (i + 1) * 100, "y": res} for i, res in enumerate(multipled_by_100)
+            ],
+            "points": " ".join(
+                [f"{(i+1) * 100},{res}" for i, res in enumerate(multipled_by_100)]
+            ),
+        }
+
     class Meta:
         ordering = ["date_created"]
         indexes = [models.Index(fields=["date_deleted", "group", "date_created"])]
