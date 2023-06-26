@@ -63,7 +63,8 @@ class Goal(models.Model):
 
     def chart_data(self):
         results = self.results.all()
-        amounts = [res.amount if res.amount else 0 for res in results if res.amount]
+        index_to_amount = {res.index: res.amount for res in results if res.amount}
+        amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
         if not amounts:
             return {
                 "min_amount": 0,
