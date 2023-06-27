@@ -64,10 +64,24 @@ class Goal(models.Model):
     def chart_data(self):
         results = self.results.all()
         index_to_amount = {res.index: res.amount for res in results if res.amount}
+        index_to_expected = {
+            res.index: res.expected_amount for res in results if res.expected_amount
+        }
+
+        def get_color(amount, expected_amount):
+            if not amount:
+                return "gray"
+            if amount >= expected_amount:
+                return "green"
+            return "orange"
+
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
-        print(amounts)
+        colors = [
+            get_color(index_to_amount.get(index), index_to_expected.get(index, 0))
+            for index in range(12)
+        ]
         normalize = [
-            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.8 + 0.1
+            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.4 + 0.2
             for x in amounts
         ]
         inverted = [1 - x for x in normalize]
@@ -75,8 +89,16 @@ class Goal(models.Model):
         return {
             "min_amount": min(amounts),
             "max_amount": max(amounts),
+            "goal_complete": sum(amounts) >= sum(index_to_expected.values()),
             "amounts": [
-                {"x": (i + 1) * 100, "y": res} for i, res in enumerate(multipled_by_100)
+                {
+                    "x": (i + 1) * 100,
+                    "y": res,
+                    "text_y": res - 20,
+                    "amount": amounts[i],
+                    "color": colors[i],
+                }
+                for i, res in enumerate(multipled_by_100)
             ],
             "points": " ".join(
                 [f"{(i+1) * 100},{res}" for i, res in enumerate(multipled_by_100)]

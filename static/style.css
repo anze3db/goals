@@ -22,7 +22,6 @@ td {
 
 td {
     text-align: right;
-    cursor: pointer;
 }
 
 .boards_and_months {
@@ -37,10 +36,6 @@ td {
 
 .boards_and_months ul:first-of-type {
     margin-left: 0;
-}
-
-td:hover {
-    text-decoration: underline;
 }
 
 dialog>article {
