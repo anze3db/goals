@@ -89,7 +89,14 @@ class Goal(models.Model):
         return {
             "min_amount": min(amounts),
             "max_amount": max(amounts),
-            "goal_complete": sum(amounts) >= sum(index_to_expected.values()),
+            "goal_complete": sum(amounts)
+            >= sum(
+                [
+                    v
+                    for i, v in enumerate(index_to_expected.values())
+                    if colors[i] != "gray"
+                ]
+            ),
             "amounts": [
                 {
                     "x": (i + 1) * 100,
@@ -97,11 +104,15 @@ class Goal(models.Model):
                     "text_y": res - 20,
                     "amount": amounts[i],
                     "color": colors[i],
+                    "active": colors[i] != "gray",
                 }
                 for i, res in enumerate(multipled_by_100)
             ],
             "points": " ".join(
-                [f"{(i+1) * 100},{res}" for i, res in enumerate(multipled_by_100)]
+                [
+                    f"{(i+1) * 100},{res if colors[i] != 'gray' else 100}"
+                    for i, res in enumerate(multipled_by_100)
+                ]
             ),
         }
 

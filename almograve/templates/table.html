@@ -79,9 +79,11 @@
                                         {% endif %}
                                         " stroke-width="1" points="100,100 {{ chart_data.points }} 1200,100" />
                                         {% for amount in chart_data.amounts %}
-                                            <circle cx="{{ amount.x }}" cy="{{ amount.y }}" r="10" fill="{{ amount.color }}" stroke="#fff" stroke-width="6">
-                                            </circle>
-                                            <text style="color:{{ amount.color }}; font-size: 20px;" x="{{ amount.x }}" y="{{ amount.text_y }}" text-anchor="middle">{{ amount.amount|floatformat:0|default_if_none:" " }}</text>
+                                            {% if amount.active %}
+                                                <circle cx="{{ amount.x }}" cy="{{ amount.y }}" r="10" fill="{{ amount.color }}" stroke="#fff" stroke-width="6">
+                                                </circle>
+                                                <text style="color:{{ amount.color }}; font-size: 20px;" x="{{ amount.x }}" y="{{ amount.text_y }}" text-anchor="middle">{{ amount.amount|floatformat:0|default_if_none:" " }}</text>
+                                            {% endif %}
                                         {% endfor %}
                                     </svg>
                                 {% endwith %}
