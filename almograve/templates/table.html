@@ -82,10 +82,27 @@
                                             {% if amount.active %}
                                                 <circle cx="{{ amount.x }}" cy="{{ amount.y }}" r="10" fill="{{ amount.color }}" stroke="#fff" stroke-width="6">
                                                 </circle>
-                                                <text style="color:{{ amount.color }}; font-size: 20px;" x="{{ amount.x }}" y="{{ amount.text_y }}" text-anchor="middle">{{ amount.amount|floatformat:0|default_if_none:" " }}</text>
+                                                <text class='chart-text' style="color:{{ amount.color }};" x="{{ amount.x }}" y="{{ amount.text_y }}" text-anchor="middle">{{ amount.amount|floatformat:0|default_if_none:" " }}</text>
                                             {% endif %}
                                         {% endfor %}
                                     </svg>
+                                    <style>
+                                        .chart-text {
+                                            font-size: 1em;
+                                            background-color:red;
+                                        }
+                                        @media only screen and (max-width: 992px) {
+                                            .chart-text {
+                                                font-size: 1.5em;
+                                            }
+                                        }
+                                        @media only screen and (max-width: 768px) {
+                                            .chart-text {
+                                                font-size: 2em;
+                                            }
+                                        }
+                                        
+                                    </style>
                                 {% endwith %}
                             </td>
                             {% comment %}
