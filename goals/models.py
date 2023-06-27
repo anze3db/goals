@@ -69,7 +69,9 @@ class Goal(models.Model):
             res.index: res.expected_amount for res in results if res.expected_amount
         }
 
-        def get_color(res: Result):
+        def get_color(res: Result | None):
+            if not res:
+                return "gray"
             if not res.expected_amount:
                 return "gray"  # No goal set
 
