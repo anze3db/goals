@@ -71,7 +71,7 @@ class Goal(models.Model):
 
         def get_color(res: Result):
             if not res.expected_amount:
-                return "red"  # No goal set
+                return "gray"  # No goal set
 
             current_month = datetime.now().month
             if not res.amount and current_month > res.index:
