@@ -87,7 +87,7 @@ class Goal(models.Model):
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
         colors = [get_color(index_to_res.get(index + 1)) for index in range(12)]
         normalize = [
-            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.4 + 0.2
+            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.3 + 0.2
             for x in amounts
         ]
         inverted = [1 - x for x in normalize]
