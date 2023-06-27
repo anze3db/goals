@@ -63,25 +63,27 @@ class Goal(models.Model):
 
     def chart_data(self):
         results = self.results.all()
+        index_to_res = {res.index: res for res in results}
         index_to_amount = {res.index: res.amount for res in results if res.amount}
         index_to_expected = {
             res.index: res.expected_amount for res in results if res.expected_amount
         }
 
-        def get_color(amount, expected_amount):
-            if not amount:
+        def get_color(res: Result):
+            if not res.expected_amount:
+                return "red"  # No goal set
+
+            current_month = datetime.now().month
+            if not res.amount and current_month > res.index:
+                return "#999"
+            if not res.amount:
                 return "gray"
-            if amount >= expected_amount:
+            if res.amount >= res.expected_amount:
                 return "green"
             return "orange"
 
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
-        colors = [
-            get_color(
-                index_to_amount.get(index + 1), index_to_expected.get(index + 1, 0)
-            )
-            for index in range(12)
-        ]
+        colors = [get_color(index_to_res.get(index + 1)) for index in range(12)]
         normalize = [
             (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.4 + 0.2
             for x in amounts
