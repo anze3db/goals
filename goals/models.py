@@ -77,7 +77,9 @@ class Goal(models.Model):
 
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
         colors = [
-            get_color(index_to_amount.get(index), index_to_expected.get(index, 0))
+            get_color(
+                index_to_amount.get(index + 1), index_to_expected.get(index + 1, 0)
+            )
             for index in range(12)
         ]
         normalize = [
