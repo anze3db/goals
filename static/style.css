@@ -66,3 +66,38 @@ media (min-width: 576px) {
         max-width: 100%;
     }
 }
+
+/* Chart */
+html {
+    --chart-color-orange: #FFECC9;
+    --chart-color-green: #d3ffd8;
+}
+
+@media screen and (prefers-color-scheme: dark) {
+    html {
+        --chart-color-orange: #cc6b2c;
+        --chart-color-green: #1b4621;
+    }
+}
+
+.chart-text {
+    font-size: 1.5em;
+}
+
+@media only screen and (max-width: 992px) {
+    .chart-text {
+        font-size: 2em;
+    }
+}
+
+@media only screen and (max-width: 768px) {
+    .chart-text {
+        font-size: 2.5em;
+    }
+}
+
+@media only screen and (max-width: 576px) {
+    .chart-text {
+        font-size: 3em;
+    }
+}
