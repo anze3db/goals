@@ -76,7 +76,7 @@ class Goal(models.Model):
                 return "gray"  # No goal set
 
             current_month = datetime.now().month
-            if not res.amount and current_month > res.index:
+            if not res.amount and current_month >= res.index:
                 return "#999"
             if not res.amount:
                 return "gray"
