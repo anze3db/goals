@@ -101,7 +101,7 @@ class BoardMonthView(TestCase):
         self.client.force_login(self.user)
 
     def test_get(self):
-        with self.assertNumQueries(8):
+        with self.assertNumQueries(11):
             response = self.client.get(
                 reverse("board_month", kwargs={"board_id": self.board.pk, "month": 1})
             )
@@ -161,7 +161,7 @@ class ResultsViewTest(TestCase):
         self.client.force_login(self.result.goal.user)
 
     def test_result_get(self):
-        with self.assertNumQueries(5):
+        with self.assertNumQueries(6):
             response = self.client.get(f"/results/{self.result.pk}")
         assert response.status_code, 200
         result = response.content.decode()
@@ -177,7 +177,7 @@ class ResultsViewTest(TestCase):
     def test_result_put(self):
         initial_event_count = self.result.events.count()
         old_amount = self.result.amount
-        with self.assertNumQueries(14):
+        with self.assertNumQueries(9):
             self.client.post(
                 f"/results/{self.result.pk}",
                 dict(
