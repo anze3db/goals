@@ -27,9 +27,7 @@
             <ul>
                 <li>
                     <details role="list" class="secondary">
-                        <summary aria-haspopup="listbox">
-                            {{ user.first_name }}
-                        </summary>
+                        <summary aria-haspopup="listbox">{{ user.first_name }}</summary>
                         <ul role="listbox">
                             <li>
                                 <a href="{% url 'settings' %}">Settings</a>
@@ -67,4 +65,5 @@
             </article>
         {% endfor %}
     </div>
+    <div style="padding-top:60px;">{% include 'table.html' %}</div>
 {% endblock content %}

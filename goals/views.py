@@ -57,7 +57,7 @@ class BoardsView(View):
             board = get_object_or_404(user.boards, pk=pk)
             return render(
                 request,
-                "table.html",
+                "month.html",
                 _get_table_data(user, board),
             )
 
@@ -131,7 +131,8 @@ def board_month_view(request, board_id, month):
     return render(
         request,
         "month.html",
-        {
+        _get_table_data(request.user, board)
+        | {
             "results": results,
             "boards": boards,
             "user": user,
@@ -192,11 +193,8 @@ def result_put(request, pk):
         description=data.get("description", ""),
     )
 
-    return render(
-        request,
-        "table.html",
-        _get_table_data(request.user, result.goal.group.board)
-        | dict(selected_result=result),
+    return redirect(
+        reverse("board_month", args=[result.goal.group.board_id, result.index])
     )
 
 

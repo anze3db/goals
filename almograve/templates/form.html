@@ -17,21 +17,19 @@
                        step="any"
                        value="{{ result.next_amount |default_if_none:"" }}"
                        onfocus="this.select();"
-                       autofocus/>
+                       autofocus />
             </label>
             <label class="block">
                 <div>Description</div>
                 <textarea name="description"></textarea>
             </label>
             <details>
-                <summary class="cursor-pointer">
-                    Configuration
-                </summary>
+                <summary class="cursor-pointer">Configuration</summary>
                 <label class="block">
                     <div>Date</div>
                     <input name="date_event"
                            type="datetime-local"
-                           value="{% now "Y-m-d\TH:i" %}"/>
+                           value="{% now "Y-m-d\TH:i" %}" />
                     <input type="hidden" id="timezone" name="timezone" value="{{ TIME_ZONE }}" />
                 </label>
                 <label class="block">
@@ -40,13 +38,11 @@
                            type="number"
                            step="any"
                            value="{{ result.expected_amount |default_if_none:"" }}"
-                           onfocus="this.select();"/>
+                           onfocus="this.select();" />
                 </label>
             </details>
             <details>
-                <summary class="cursor-pointer">
-                    History
-                </summary>
+                <summary class="cursor-pointer">History</summary>
                 <div>
                     <ul>
                         {% for event in result.events.all|dictsortreversed:"date_event" %}
@@ -68,7 +64,9 @@
                 </div>
             </details>
             <input type="submit" />
-            <a href="{% url 'index' %}" role="button" class="secondary outline">Cancel</a>
+            <a href="{% url 'board_month' result.goal.group.board_id result.index %}"
+               role="button"
+               class="secondary outline">Cancel</a>
         </form>
     </div>
 {% endblock content %}
