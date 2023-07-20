@@ -46,24 +46,33 @@
         <nav>
         </nav>
     </header>
-    <div style="display: flex; flex-wrap: wrap; gap: 20px; cursor: pointer;">
-        {% for result in results %}
-            <article style="width: 160px;
-                            padding: 10px;
-                            margin: 0px"
-                     hx-get="/results/{{ result.pk }}"
-                     hx-target="main"
-                     hx-push-url="true">
-                <div style=" font-weight: 200; font-size: 0.8rem;">{{ result.goal.group.name }}</div>
-                {{ result.goal.name }}
-                <div style="text-align: center;
-                            font-size: 2rem;
-                            font-weight: 700;
-                            {% if result.amount == 0 %} color:gray {% elif result.amount >= result.expected_amount %} color:green {% else %} color:orange {% endif %}">
-                    {{ result.amount|floatformat:0|default_if_none:"/" }}
+    {% if month_index %}
+        {% for group in groups.all %}
+            <details open>
+                <summary>{{ group.name }}</summary>
+                <div style="display: flex; flex-wrap: wrap; gap: 20px; cursor: pointer;">
+                    {% for goal in group.goals.all %}
+                        {% for result in goal.results.all %}
+                            {% if result.index == month_index %}
+                                <article style="width: 160px;
+                                                padding: 10px;
+                                                margin: 0px"
+                                         hx-get="/results/{{ result.pk }}"
+                                         hx-target="main"
+                                         hx-push-url="true">{{ goal.name }}
+                                    <div style="text-align: center;
+                                                font-size: 2rem;
+                                                font-weight: 700;
+                                                {% if result.amount == 0 %} color:gray {% elif result.amount >= result.expected_amount %} color:green {% else %} color:orange {% endif %}">
+                                        {{ result.amount|floatformat:0|default_if_none:"/" }}
+                                    </div>
+                                </article>
+                            {% endif %}
+                        {% endfor %}
+                    {% endfor %}
                 </div>
-            </article>
+            </details>
         {% endfor %}
-    </div>
+    {% endif %}
     <div style="padding-top:60px;">{% include 'table.html' %}</div>
 {% endblock content %}

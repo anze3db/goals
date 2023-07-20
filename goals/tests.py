@@ -101,7 +101,7 @@ class BoardMonthView(TestCase):
         self.client.force_login(self.user)
 
     def test_get(self):
-        with self.assertNumQueries(11):
+        with self.assertNumQueries(10):
             response = self.client.get(
                 reverse("board_month", kwargs={"board_id": self.board.pk, "month": 1})
             )
