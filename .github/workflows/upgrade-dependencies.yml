@@ -22,7 +22,7 @@ jobs:
         pip install pip-tools
     - name: Run pip-compile
       run: |
-        pip-compile --pre --upgrade requirements.in
+        pip-compile --upgrade requirements.in
         pip-compile --upgrade dev-requirements.in
     - name: Create Pull Request
       uses: peter-evans/create-pull-request@v3
