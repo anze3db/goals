@@ -8,9 +8,9 @@ asgiref==3.7.2
     # via
     #   -c requirements.txt
     #   django
-astroid==2.15.8
+astroid==3.0.1
     # via pylint
-black==23.9.1
+black==23.10.1
     # via -r dev-requirements.in
 click==8.1.7
     # via
@@ -21,7 +21,9 @@ colorama==0.4.6
     #   djlint
     #   pytest-watch
 coverage[toml]==7.3.2
-    # via pytest-cov
+    # via
+    #   coverage
+    #   pytest-cov
 cssbeautifier==1.14.9
     # via djlint
 dill==0.3.7
@@ -31,9 +33,9 @@ django==4.2.6
     #   -c requirements.txt
     #   django-stubs
     #   django-stubs-ext
-django-stubs==4.2.4
+django-stubs==4.2.6
     # via -r dev-requirements.in
-django-stubs-ext==4.2.2
+django-stubs-ext==4.2.5
     # via django-stubs
 djlint==1.34.0
     # via -r dev-requirements.in
@@ -45,7 +47,7 @@ editorconfig==0.12.3
     #   jsbeautifier
 factory-boy==3.3.0
     # via -r dev-requirements.in
-faker==19.6.2
+faker==19.12.1
     # via
     #   factory-boy
     #   faker-optional
@@ -67,14 +69,10 @@ jsbeautifier==1.14.9
     #   djlint
 json5==0.9.14
     # via djlint
-lazy-object-proxy==1.9.0
-    # via astroid
 mccabe==0.7.0
     # via pylint
-mypy==1.5.1
-    # via
-    #   -r dev-requirements.in
-    #   django-stubs
+mypy==1.6.1
+    # via -r dev-requirements.in
 mypy-extensions==1.0.0
     # via
     #   black
@@ -94,23 +92,23 @@ platformdirs==3.11.0
     #   pylint
 pluggy==1.3.0
     # via pytest
-pylint==2.17.7
+pylint==3.0.2
     # via
     #   -r dev-requirements.in
     #   pylint-django
     #   pylint-plugin-utils
-pylint-django==2.5.3
+pylint-django==2.5.5
     # via -r dev-requirements.in
 pylint-plugin-utils==0.8.2
     # via pylint-django
-pytest==7.4.2
+pytest==7.4.3
     # via
     #   pytest-cov
     #   pytest-django
     #   pytest-watch
 pytest-cov==4.1.0
     # via -r dev-requirements.in
-pytest-django==4.5.2
+pytest-django==4.6.0
     # via -r dev-requirements.in
 pytest-watch==4.2.0
     # via -r dev-requirements.in
@@ -120,7 +118,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.10.3
     # via djlint
-ruff==0.0.292
+ruff==0.1.3
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -146,5 +144,3 @@ typing-extensions==4.8.0
     #   mypy
 watchdog==3.0.0
     # via pytest-watch
-wrapt==1.15.0
-    # via astroid
