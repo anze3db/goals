@@ -24,6 +24,7 @@ env = environ.Env(
     DEBUG=(bool, False),
     ALLOWED_HOSTS=(str, ""),
     SENTRY_DNS=(str, ""),
+    CLIENT_DNS=(str, ""),
     APP_NAME=(str, "local"),
 )
 
@@ -107,6 +108,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "almograve.context_processors.template_settings",
             ],
         },
     },
@@ -162,15 +164,20 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+try:
+    RELEASE = "v1" + str((BASE_DIR / "goals_update.log").read_text().count("\n"))
+except FileNotFoundError:
+    RELEASE = "v1dev"
+
+CLIENT_DNS = env("CLIENT_DNS")
 if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
     import sentry_sdk
     from sentry_sdk.integrations.django import DjangoIntegration
 
-    release = (BASE_DIR / "goals_update.log").read_text().count("\n")
     sentry_sdk.init(
         dsn=SENTRY_DNS,
         integrations=[DjangoIntegration()],
-        release=f"v1{release}",
+        release=RELEASE,
         environment=env("APP_NAME"),
         _experiments={
             "profiles_sample_rate": 1.0,
