@@ -10,7 +10,7 @@ asgiref==3.7.2
     #   django
 astroid==3.0.1
     # via pylint
-black==23.10.1
+black==23.11.0
     # via -r dev-requirements.in
 click==8.1.7
     # via
@@ -21,14 +21,12 @@ colorama==0.4.6
     #   djlint
     #   pytest-watch
 coverage[toml]==7.3.2
-    # via
-    #   coverage
-    #   pytest-cov
-cssbeautifier==1.14.9
+    # via pytest-cov
+cssbeautifier==1.14.11
     # via djlint
 dill==0.3.7
     # via pylint
-django==4.2.6
+django==4.2.7
     # via
     #   -c requirements.txt
     #   django-stubs
@@ -47,7 +45,7 @@ editorconfig==0.12.3
     #   jsbeautifier
 factory-boy==3.3.0
     # via -r dev-requirements.in
-faker==19.12.1
+faker==20.0.3
     # via
     #   factory-boy
     #   faker-optional
@@ -63,7 +61,7 @@ isort==5.12.0
     # via
     #   -r dev-requirements.in
     #   pylint
-jsbeautifier==1.14.9
+jsbeautifier==1.14.11
     # via
     #   cssbeautifier
     #   djlint
@@ -71,7 +69,7 @@ json5==0.9.14
     # via djlint
 mccabe==0.7.0
     # via pylint
-mypy==1.6.1
+mypy==1.7.0
     # via -r dev-requirements.in
 mypy-extensions==1.0.0
     # via
@@ -86,7 +84,7 @@ pathspec==0.11.2
     # via
     #   black
     #   djlint
-platformdirs==3.11.0
+platformdirs==4.0.0
     # via
     #   black
     #   pylint
@@ -108,7 +106,7 @@ pytest==7.4.3
     #   pytest-watch
 pytest-cov==4.1.0
     # via -r dev-requirements.in
-pytest-django==4.6.0
+pytest-django==4.7.0
     # via -r dev-requirements.in
 pytest-watch==4.2.0
     # via -r dev-requirements.in
@@ -118,7 +116,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.10.3
     # via djlint
-ruff==0.1.3
+ruff==0.1.5
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -129,7 +127,7 @@ sqlparse==0.4.4
     # via
     #   -c requirements.txt
     #   django
-tomlkit==0.12.1
+tomlkit==0.12.2
     # via pylint
 tqdm==4.66.1
     # via djlint

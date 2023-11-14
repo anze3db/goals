@@ -2,5 +2,6 @@ django
 django-environ
 django-htmx
 gunicorn
-whitenoise
+psycopg2-binary
 sentry-sdk
+whitenoise
