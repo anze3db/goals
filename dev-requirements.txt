@@ -21,7 +21,9 @@ colorama==0.4.6
     #   djlint
     #   pytest-watch
 coverage[toml]==7.3.2
-    # via pytest-cov
+    # via
+    #   coverage
+    #   pytest-cov
 cssbeautifier==1.14.11
     # via djlint
 dill==0.3.7
@@ -45,7 +47,7 @@ editorconfig==0.12.3
     #   jsbeautifier
 factory-boy==3.3.0
     # via -r dev-requirements.in
-faker==20.0.3
+faker==20.1.0
     # via
     #   factory-boy
     #   faker-optional
@@ -69,7 +71,7 @@ json5==0.9.14
     # via djlint
 mccabe==0.7.0
     # via pylint
-mypy==1.7.0
+mypy==1.7.1
     # via -r dev-requirements.in
 mypy-extensions==1.0.0
     # via
@@ -116,7 +118,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.10.3
     # via djlint
-ruff==0.1.5
+ruff==0.1.6
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -127,7 +129,7 @@ sqlparse==0.4.4
     # via
     #   -c requirements.txt
     #   django
-tomlkit==0.12.2
+tomlkit==0.12.3
     # via pylint
 tqdm==4.66.1
     # via djlint
