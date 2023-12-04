@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-22.04
     strategy:
       matrix:
-        python-version: ["3.11"]
+        python-version: ["3.12"]
     env:
       DATABASE_URL: sqlite://
       SECRET_KEY: something_very_secret
