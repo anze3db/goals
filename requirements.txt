@@ -10,7 +10,7 @@ asgiref==3.7.2
     #   django-htmx
 certifi==2023.11.17
     # via sentry-sdk
-django==4.2.7
+django==4.2.8
     # via
     #   -r requirements.in
     #   django-htmx

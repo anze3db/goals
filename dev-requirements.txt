@@ -21,14 +21,12 @@ colorama==0.4.6
     #   djlint
     #   pytest-watch
 coverage[toml]==7.3.2
-    # via
-    #   coverage
-    #   pytest-cov
+    # via pytest-cov
 cssbeautifier==1.14.11
     # via djlint
 dill==0.3.7
     # via pylint
-django==4.2.7
+django==4.2.8
     # via
     #   -c requirements.txt
     #   django-stubs
