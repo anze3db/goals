@@ -1,6 +1,7 @@
 django
 django-environ
 django-htmx
+django-tui
 gunicorn
 psycopg2-binary
 sentry-sdk

@@ -10,25 +10,59 @@ asgiref==3.7.2
     #   django-htmx
 certifi==2023.11.17
     # via sentry-sdk
+click==8.1.7
+    # via trogon
 django==4.2.8
     # via
     #   -r requirements.in
     #   django-htmx
+    #   django-tui
 django-environ==0.11.2
     # via -r requirements.in
 django-htmx==1.17.2
     # via -r requirements.in
+django-tui==23.6
+    # via -r requirements.in
 gunicorn==21.2.0
     # via -r requirements.in
+importlib-metadata==7.0.0
+    # via textual
+linkify-it-py==2.0.2
+    # via markdown-it-py
+markdown-it-py[linkify,plugins]==3.0.0
+    # via
+    #   mdit-py-plugins
+    #   rich
+    #   textual
+mdit-py-plugins==0.4.0
+    # via markdown-it-py
+mdurl==0.1.2
+    # via markdown-it-py
 packaging==23.2
     # via gunicorn
 psycopg2-binary==2.9.9
     # via -r requirements.in
+pygments==2.17.2
+    # via rich
+rich==13.7.0
+    # via textual
 sentry-sdk==1.38.0
     # via -r requirements.in
 sqlparse==0.4.4
     # via django
+textual==0.44.0
+    # via
+    #   django-tui
+    #   trogon
+trogon==0.5.0
+    # via django-tui
+typing-extensions==4.8.0
+    # via textual
+uc-micro-py==1.0.2
+    # via linkify-it-py
 urllib3==2.1.0
     # via sentry-sdk
 whitenoise==6.6.0
     # via -r requirements.in
+zipp==3.17.0
+    # via importlib-metadata
