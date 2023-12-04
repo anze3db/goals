@@ -30,6 +30,8 @@ jobs:
         run: python manage.py collectstatic --no-input
       - name: Run Tests
         run: pytest
+        env:
+          FLAKYTEST_SECRET_TOKEN: ${{ secrets.FLAKYTEST_SECRET_TOKEN }}
   deploy:
     runs-on: ubuntu-22.04
     needs: test

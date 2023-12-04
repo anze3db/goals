@@ -4,6 +4,7 @@ django-tui
 djlint
 factory-boy
 faker-optional
+flakytest
 mypy
 pylint
 pylint-django
