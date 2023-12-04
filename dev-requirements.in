@@ -1,5 +1,6 @@
 -c requirements.txt
 django-stubs
+django-tui
 djlint
 factory-boy
 faker-optional
