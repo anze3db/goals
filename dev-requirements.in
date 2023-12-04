@@ -1,10 +1,8 @@
 -c requirements.txt
-black
 django-stubs
 djlint
 factory-boy
 faker-optional
-isort
 mypy
 pylint
 pylint-django
