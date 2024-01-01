@@ -8,7 +8,7 @@ asgiref==3.7.2
     # via
     #   -c requirements.txt
     #   django
-astroid==3.0.1
+astroid==3.0.2
     # via pylint
 click==8.1.7
     # via
@@ -18,8 +18,10 @@ colorama==0.4.6
     # via
     #   djlint
     #   pytest-watch
-coverage[toml]==7.3.2
-    # via pytest-cov
+coverage[toml]==7.4.0
+    # via
+    #   coverage
+    #   pytest-cov
 cssbeautifier==1.14.11
     # via djlint
 dill==0.3.7
@@ -29,11 +31,11 @@ django==5.0
     #   -c requirements.txt
     #   django-stubs
     #   django-stubs-ext
-django-stubs==4.2.6
+django-stubs==4.2.7
     # via -r dev-requirements.in
-django-stubs-ext==4.2.5
+django-stubs-ext==4.2.7
     # via django-stubs
-djlint==1.34.0
+djlint==1.34.1
     # via -r dev-requirements.in
 docopt==0.6.2
     # via pytest-watch
@@ -43,13 +45,13 @@ editorconfig==0.12.3
     #   jsbeautifier
 factory-boy==3.3.0
     # via -r dev-requirements.in
-faker==20.1.0
+faker==22.0.0
     # via
     #   factory-boy
     #   faker-optional
 faker-optional==0.1.1
     # via -r dev-requirements.in
-flakytest==2023.0b9
+flakytest==2023.0b11
     # via -r dev-requirements.in
 html-tag-names==0.1.2
     # via djlint
@@ -57,7 +59,7 @@ html-void-elements==0.1.0
     # via djlint
 iniconfig==2.0.0
     # via pytest
-isort==5.12.0
+isort==5.13.2
     # via pylint
 jsbeautifier==1.14.11
     # via
@@ -67,7 +69,7 @@ json5==0.9.14
     # via djlint
 mccabe==0.7.0
     # via pylint
-mypy==1.7.1
+mypy==1.8.0
     # via -r dev-requirements.in
 mypy-extensions==1.0.0
     # via mypy
@@ -75,13 +77,13 @@ packaging==23.2
     # via
     #   -c requirements.txt
     #   pytest
-pathspec==0.11.2
+pathspec==0.12.1
     # via djlint
 platformdirs==4.1.0
     # via pylint
 pluggy==1.3.0
     # via pytest
-pylint==3.0.2
+pylint==3.0.3
     # via
     #   -r dev-requirements.in
     #   pylint-django
@@ -90,7 +92,7 @@ pylint-django==2.5.5
     # via -r dev-requirements.in
 pylint-plugin-utils==0.8.2
     # via pylint-django
-pytest==7.4.3
+pytest==7.4.4
     # via
     #   pytest-cov
     #   pytest-django
@@ -103,11 +105,13 @@ pytest-watch==4.2.0
     # via -r dev-requirements.in
 python-dateutil==2.8.2
     # via faker
+python-dotenv==1.0.0
+    # via flakytest
 pyyaml==6.0.1
     # via djlint
-regex==2023.10.3
+regex==2023.12.25
     # via djlint
-ruff==0.1.6
+ruff==0.1.9
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -126,7 +130,7 @@ types-pytz==2023.3.1.1
     # via django-stubs
 types-pyyaml==6.0.12.12
     # via django-stubs
-typing-extensions==4.8.0
+typing-extensions==4.9.0
     # via
     #   -c requirements.txt
     #   django-stubs
