@@ -162,7 +162,7 @@ def add_goal_view(request, board_id):
 def result_put(request, pk):
     result = get_object_or_404(Result.objects, pk=pk)
     if request.method == "GET":
-        events = Event.objects.filter(result__goal=result.goal).order_by("date_event")
+        events = Event.objects.filter(result__goal=result.goal).exclude(description="Created").order_by("date_event")
         return render(request, "form.html", dict(result=result, events=events))
 
     data = request.POST
