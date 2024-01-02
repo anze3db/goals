@@ -35,9 +35,7 @@ class BoardsView(View):
         name = request.POST.get("name")
         safe_name = escape(name)
         board = Board.objects.create(name=safe_name, user=request.user)
-        Group.objects.create(
-            board=board, user=request.user, name="Default", color="#323"
-        )
+        Group.objects.create(board=board, user=request.user, name="Default", color="#323")
         r = HttpResponse("ok")
         r.headers["HX-Redirect"] = f"/boards/{board.pk}"
         return r
@@ -63,9 +61,7 @@ class BoardsView(View):
 
         # If pk is not set then redirect to the default one
         if user.default_board:
-            return redirect(
-                f"/boards/{user.default_board.pk}/month/{timezone.now().month}"
-            )
+            return redirect(f"/boards/{user.default_board.pk}/month/{timezone.now().month}")
 
         return redirect("/boards/add")
 
@@ -74,9 +70,7 @@ class BoardsView(View):
 def add_board_view(request):
     if request.method == "GET":
         form = BoardForm()
-        return render(
-            request, "board_form.html", {"form": form, "fields_loop": range(15)}
-        )
+        return render(request, "board_form.html", {"form": form, "fields_loop": range(15)})
 
     if request.method == "POST":
         # create a form instance and populate it with data from the request:
@@ -152,9 +146,7 @@ def add_goal_view(request, board_id):
     form = GoalForm(request.POST)
     # check whether it's valid:
     if form.is_valid():
-        group, _ = Group.objects.get_or_create(
-            name=form.data.get("group"), board=board, defaults=dict(user=user)
-        )
+        group, _ = Group.objects.get_or_create(name=form.data.get("group"), board=board, defaults=dict(user=user))
         create_monthly_goal(
             name=form.data.get("name"),
             expected_amount=form.data.get("amount"),
@@ -170,13 +162,12 @@ def add_goal_view(request, board_id):
 def result_put(request, pk):
     result = get_object_or_404(Result.objects, pk=pk)
     if request.method == "GET":
-        return render(request, "form.html", dict(result=result))
+        events = Event.objects.filter(result__goal=result.goal).order_by("date_event")
+        return render(request, "form.html", dict(result=result, events=events))
 
     data = request.POST
     amount = float(data.get("amount")) if data.get("amount") else None
-    expected_amount = (
-        float(data.get("expected_amount")) if data.get("expected_amount") else None
-    )
+    expected_amount = float(data.get("expected_amount")) if data.get("expected_amount") else None
 
     date_event = parse_datetime(data.get("date_event")) or timezone.now()
 
@@ -189,9 +180,7 @@ def result_put(request, pk):
         description=data.get("description", ""),
     )
 
-    return redirect(
-        reverse("board_month", args=[result.goal.group.board_id, result.index])
-    )
+    return redirect(reverse("board_month", args=[result.goal.group.board_id, result.index]))
 
 
 @login_required(login_url="/login")

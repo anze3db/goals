@@ -45,7 +45,7 @@
                 <summary class="cursor-pointer">History</summary>
                 <div>
                     <ul>
-                        {% for event in result.events.all|dictsortreversed:"date_event" %}
+                        {% for event in events.all %}
                             <li hx-get="{% url 'event' event.id %}"
                                 hx-target="main"
                                 hx-push-url="true">
