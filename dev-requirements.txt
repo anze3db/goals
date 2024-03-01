@@ -8,7 +8,7 @@ asgiref==3.7.2
     # via
     #   -c requirements.txt
     #   django
-astroid==3.0.2
+astroid==3.1.0
     # via pylint
 click==8.1.7
     # via
@@ -18,15 +18,13 @@ colorama==0.4.6
     # via
     #   djlint
     #   pytest-watch
-coverage[toml]==7.4.1
-    # via
-    #   coverage
-    #   pytest-cov
-cssbeautifier==1.14.11
+coverage[toml]==7.4.3
+    # via pytest-cov
+cssbeautifier==1.15.1
     # via djlint
 dill==0.3.8
     # via pylint
-django==5.0.1
+django==5.0.2
     # via
     #   -c requirements.txt
     #   django-stubs
@@ -39,13 +37,13 @@ djlint==1.34.1
     # via -r dev-requirements.in
 docopt==0.6.2
     # via pytest-watch
-editorconfig==0.12.3
+editorconfig==0.12.4
     # via
     #   cssbeautifier
     #   jsbeautifier
 factory-boy==3.3.0
     # via -r dev-requirements.in
-faker==22.6.0
+faker==23.3.0
     # via
     #   factory-boy
     #   faker-optional
@@ -61,11 +59,11 @@ iniconfig==2.0.0
     # via pytest
 isort==5.13.2
     # via pylint
-jsbeautifier==1.14.11
+jsbeautifier==1.15.1
     # via
     #   cssbeautifier
     #   djlint
-json5==0.9.14
+json5==0.9.17
     # via djlint
 mccabe==0.7.0
     # via pylint
@@ -83,7 +81,7 @@ platformdirs==4.2.0
     # via pylint
 pluggy==1.4.0
     # via pytest
-pylint==3.0.3
+pylint==3.1.0
     # via
     #   -r dev-requirements.in
     #   pylint-django
@@ -92,7 +90,7 @@ pylint-django==2.5.5
     # via -r dev-requirements.in
 pylint-plugin-utils==0.8.2
     # via pylint-django
-pytest==8.0.0
+pytest==8.0.2
     # via
     #   pytest-cov
     #   pytest-django
@@ -103,7 +101,7 @@ pytest-django==4.8.0
     # via -r dev-requirements.in
 pytest-watch==4.2.0
     # via -r dev-requirements.in
-python-dateutil==2.8.2
+python-dateutil==2.9.0
     # via faker
 python-dotenv==1.0.1
     # via flakytest
@@ -111,7 +109,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.12.25
     # via djlint
-ruff==0.1.15
+ruff==0.3.0
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -122,25 +120,25 @@ sqlparse==0.4.4
     # via
     #   -c requirements.txt
     #   django
-tomlkit==0.12.3
+tomlkit==0.12.4
     # via pylint
-tqdm==4.66.1
+tqdm==4.66.2
     # via djlint
-types-pytz==2023.4.0.20240130
+types-pytz==2024.1.0.20240203
     # via django-stubs
 types-pyyaml==6.0.12.12
     # via django-stubs
-typing-extensions==4.9.0
+typing-extensions==4.10.0
     # via
     #   -c requirements.txt
     #   django-stubs
     #   django-stubs-ext
     #   mypy
-urllib3==2.2.0
+urllib3==2.2.1
     # via
     #   -c requirements.txt
     #   flakytest
-watchdog==3.0.0
+watchdog==4.0.0
     # via pytest-watch
 
 # The following packages are considered to be unsafe in a requirements file:
