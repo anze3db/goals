@@ -58,7 +58,7 @@ typing-extensions==4.12.0
     # via textual
 uc-micro-py==1.0.3
     # via linkify-it-py
-urllib3==2.2.1
+urllib3==2.2.2
     # via sentry-sdk
 whitenoise==6.6.0
     # via -r requirements.in
