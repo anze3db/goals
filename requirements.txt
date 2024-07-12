@@ -12,7 +12,7 @@ certifi==2024.7.4
     # via sentry-sdk
 click==8.1.7
     # via trogon
-django==5.0.6
+django==5.0.7
     # via
     #   -r requirements.in
     #   django-htmx
@@ -21,7 +21,7 @@ django-environ==0.11.2
     # via -r requirements.in
 django-htmx==1.18.0
     # via -r requirements.in
-django-tui==24.2
+django-tui==24.3
     # via -r requirements.in
 gunicorn==22.0.0
     # via -r requirements.in
@@ -44,14 +44,20 @@ pygments==2.18.0
     # via rich
 rich==13.7.1
     # via textual
-sentry-sdk==2.7.1
+sentry-sdk==2.9.0
     # via -r requirements.in
 sqlparse==0.5.0
     # via django
-textual==0.71.0
+textual[syntax]==0.72.0
     # via
     #   django-tui
     #   trogon
+tree-sitter==0.20.4
+    # via
+    #   textual
+    #   tree-sitter-languages
+tree-sitter-languages==1.10.2
+    # via textual
 trogon==0.5.0
     # via django-tui
 typing-extensions==4.12.2
@@ -62,3 +68,6 @@ urllib3==2.2.2
     # via sentry-sdk
 whitenoise==6.7.0
     # via -r requirements.in
+
+# The following packages are considered to be unsafe in a requirements file:
+# setuptools

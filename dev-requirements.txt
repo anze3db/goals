@@ -9,7 +9,7 @@ asgiref==3.8.1
     #   -c requirements.txt
     #   django
     #   django-stubs
-astroid==3.2.2
+astroid==3.2.3
     # via pylint
 click==8.1.7
     # via
@@ -19,7 +19,7 @@ colorama==0.4.6
     # via
     #   djlint
     #   pytest-watch
-coverage[toml]==7.5.4
+coverage[toml]==7.6.0
     # via pytest-cov
 cssbeautifier==1.15.1
     # via djlint
@@ -110,7 +110,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.12.25
     # via djlint
-ruff==0.5.0
+ruff==0.5.1
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -121,7 +121,7 @@ sqlparse==0.5.0
     # via
     #   -c requirements.txt
     #   django
-tomlkit==0.12.5
+tomlkit==0.13.0
     # via pylint
 tqdm==4.66.4
     # via djlint
