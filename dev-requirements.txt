@@ -25,7 +25,7 @@ cssbeautifier==1.15.1
     # via djlint
 dill==0.3.8
     # via pylint
-django==5.0.6
+django==5.0.7
     # via
     #   -c requirements.txt
     #   django-stubs
@@ -110,14 +110,14 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.12.25
     # via djlint
-ruff==0.5.1
+ruff==0.5.2
     # via -r dev-requirements.in
 six==1.16.0
     # via
     #   cssbeautifier
     #   jsbeautifier
     #   python-dateutil
-sqlparse==0.5.0
+sqlparse==0.5.1
     # via
     #   -c requirements.txt
     #   django
