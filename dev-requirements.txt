@@ -9,7 +9,7 @@ asgiref==3.8.1
     #   -c requirements.txt
     #   django
     #   django-stubs
-astroid==3.2.3
+astroid==3.2.4
     # via pylint
 click==8.1.7
     # via
@@ -30,9 +30,9 @@ django==5.0.7
     #   -c requirements.txt
     #   django-stubs
     #   django-stubs-ext
-django-stubs==5.0.2
+django-stubs==5.0.4
     # via -r dev-requirements.in
-django-stubs-ext==5.0.2
+django-stubs-ext==5.0.4
     # via django-stubs
 djlint==1.34.1
     # via -r dev-requirements.in
@@ -68,7 +68,7 @@ json5==0.9.25
     # via djlint
 mccabe==0.7.0
     # via pylint
-mypy==1.10.1
+mypy==1.11.1
     # via -r dev-requirements.in
 mypy-extensions==1.0.0
     # via mypy
@@ -82,7 +82,7 @@ platformdirs==4.2.2
     # via pylint
 pluggy==1.5.0
     # via pytest
-pylint==3.2.5
+pylint==3.2.6
     # via
     #   -r dev-requirements.in
     #   pylint-django
@@ -91,7 +91,7 @@ pylint-django==2.5.5
     # via -r dev-requirements.in
 pylint-plugin-utils==0.8.2
     # via pylint-django
-pytest==8.2.2
+pytest==8.3.2
     # via
     #   pytest-cov
     #   pytest-django
@@ -110,7 +110,7 @@ pyyaml==6.0.1
     # via djlint
 regex==2023.12.25
     # via djlint
-ruff==0.5.2
+ruff==0.5.5
     # via -r dev-requirements.in
 six==1.16.0
     # via
@@ -125,7 +125,7 @@ tomlkit==0.13.0
     # via pylint
 tqdm==4.66.4
     # via djlint
-types-pyyaml==6.0.12.20240311
+types-pyyaml==6.0.12.20240724
     # via django-stubs
 typing-extensions==4.12.2
     # via
