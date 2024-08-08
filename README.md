@@ -20,7 +20,7 @@ ptw
 Run all tests and checks:
 
 ```
-isort . && ruff . && black . && mypy . && djlint . && pylint almograve goals index users && pytest
+ruff . && mypy . && djlint . && pylint almograve goals index users && pytest
 ```
 
 
