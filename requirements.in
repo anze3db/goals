@@ -6,3 +6,17 @@ gunicorn
 psycopg2-binary
 sentry-sdk
 whitenoise
+
+# Dev
+django-stubs
+djlint
+factory-boy
+faker-optional
+flakytest
+mypy
+pylint
+pylint-django
+pytest-cov
+pytest-django
+pytest-watch
+ruff
