@@ -25,7 +25,7 @@ jobs:
       - name: Set up node
         uses: actions/setup-node@v3
       - name: Install dependencies
-        run: pip install pip-tools && pip-sync requirements.txt dev-requirements.txt
+        run: pip install pip-tools && pip-sync requirements.txt
       - name: Collect static
         run: python manage.py collectstatic --no-input
       - name: Run Tests

@@ -7,7 +7,7 @@ A site for tracking yearly goals
 ```
 cp .env.example .env
 python -m venv .venv
-pip install -r requirements.txt -r dev-requirements.txt
+pip install -r requirements.txt
 ```
 
 ```
