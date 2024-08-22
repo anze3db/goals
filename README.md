@@ -4,23 +4,18 @@ A site for tracking yearly goals
 
 ## Dev set up
 
+Install [uv](https://docs.astral.sh/uv/getting-started/installation/)
+
 ```
 cp .env.example .env
-python -m venv .venv
-pip install -r requirements.txt
+
 ```
 
 ```
-python manage.py createsuperuser
-python manage.py collectstatic
-python manage.py runserver
-ptw
-```
-
-Run all tests and checks:
-
-```
-ruff . && mypy . && djlint . && pylint almograve goals index users && pytest
+uv run python manage.py createsuperuser
+uv run python manage.py collectstatic
+uv run python manage.py runserver
+uv run ptw
 ```
 
 
