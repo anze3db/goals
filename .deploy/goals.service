@@ -1,0 +1,14 @@
+[Unit]
+Description=Goals
+After=postgresql.service
+After=nginx.service
+After=redis.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+ExecStart=/bin/bash /home/anze/projects/goals/.deploy/run.sh
+
+[Install]
+WantedBy=multi-user.target
