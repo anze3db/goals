@@ -1,5 +1,5 @@
 [project]
-name = "goals"
+name = "goals.pecar.me"
 version = "2024"
 requires-python = ">=3.13"
 dependencies = [

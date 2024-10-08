@@ -248,7 +248,21 @@ wheels = [
 ]
 
 [[package]]
-name = "fedidevs"
+name = "flakytest"
+version = "2023.0b11"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "python-dotenv" },
+    { name = "setuptools" },
+    { name = "urllib3" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/2e/4a/22bd4fbf050c50fa18a6096463bef707ae03b0c8db8515107d4a94d4f3a6/flakytest-2023.0b11.tar.gz", hash = "sha256:e2f08ce0db3043fca7523d9d6bcbe2942c31e423338276356f1fcc070774ccb8", size = 9243 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/1f/7f/d6c05ecb5685a1a56b8d55d7a817eaee96b24b980d67a8ce6a2137171fb0/flakytest-2023.0b11-py3-none-any.whl", hash = "sha256:b66fd6146363191c108466cb41567c338e371a4e692baf038a790e50803e94e0", size = 8143 },
+]
+
+[[package]]
+name = "goals-pecar-me"
 version = "2024"
 source = { editable = "." }
 dependencies = [
@@ -304,20 +318,6 @@ dev = [
     { name = "pytest-django" },
     { name = "pytest-watch" },
     { name = "ruff" },
-]
-
-[[package]]
-name = "flakytest"
-version = "2023.0b11"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "python-dotenv" },
-    { name = "setuptools" },
-    { name = "urllib3" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/2e/4a/22bd4fbf050c50fa18a6096463bef707ae03b0c8db8515107d4a94d4f3a6/flakytest-2023.0b11.tar.gz", hash = "sha256:e2f08ce0db3043fca7523d9d6bcbe2942c31e423338276356f1fcc070774ccb8", size = 9243 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/1f/7f/d6c05ecb5685a1a56b8d55d7a817eaee96b24b980d67a8ce6a2137171fb0/flakytest-2023.0b11-py3-none-any.whl", hash = "sha256:b66fd6146363191c108466cb41567c338e371a4e692baf038a790e50803e94e0", size = 8143 },
 ]
 
 [[package]]
