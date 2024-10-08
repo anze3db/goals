@@ -12,10 +12,10 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-    - name: Set up Python 3.12
+    - name: Set up Python 3.13
       uses: actions/setup-python@v4
       with:
-        python-version: "3.12"
+        python-version: "3.13"
     - name: Set up uv
       # Install latest uv version using the installer
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
