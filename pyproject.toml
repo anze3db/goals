@@ -1,5 +1,5 @@
 [project]
-name = "fedidevs"
+name = "goals"
 version = "2024"
 requires-python = ">=3.13"
 dependencies = [
