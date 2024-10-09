@@ -4,9 +4,6 @@ on:
   push:
     branches: [ main ]
   pull_request:
-    branches: "*"
-  workflow_dispatch:
-
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -14,16 +11,12 @@ jobs:
       DATABASE_URL: sqlite://
       SECRET_KEY: something_very_secret
     steps:
-      - uses: actions/checkout@v3
-      - name: Set up Python
-        uses: actions/setup-python@v4
+      - uses: actions/checkout@v4
+      - name: Install the latest version of uv
+        uses: astral-sh/setup-uv@v3
         with:
-          python-version: '3.13'
-      - name: Set up node
-        uses: actions/setup-node@v3
-      - name: Set up uv
-        # Install latest uv version using the installer
-        run: curl -LsSf https://astral.sh/uv/install.sh | sh
+          enable-cache: true
+          version: "latest"
       - name: Collect static
         run: uv run --frozen python manage.py collectstatic --no-input
       - name: Run Tests
