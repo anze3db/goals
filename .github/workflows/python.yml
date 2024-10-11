@@ -17,10 +17,12 @@ jobs:
         with:
           enable-cache: true
           version: "latest"
+      - name: Install dependencies
+        run: uv sync --locked
       - name: Collect static
-        run: uv run --frozen python manage.py collectstatic --no-input
+        run: uv run python manage.py collectstatic --no-input
       - name: Run Tests
-        run: uv run --frozen pytest
+        run: uv run pytest
         env:
           FLAKYTEST_SECRET_TOKEN: ${{ secrets.FLAKYTEST_SECRET_TOKEN }}
   deploy:
