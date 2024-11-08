@@ -5,5 +5,4 @@ __pycache__/
 .coverage
 .venv
 db.sqlite
-gunicorn.pid
 update.log
