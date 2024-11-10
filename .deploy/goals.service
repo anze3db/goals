@@ -8,7 +8,10 @@ After=redis.service
 Type=simple
 Restart=always
 RestartSec=1
-ExecStart=/bin/bash /home/anze/projects/goals/.deploy/run.sh
+WorkingDirectory=/var/apps/goals
+ExecStart=/var/apps/goals/.venv/bin/gunicorn goals.wsgi
+ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -s TERM $MANPID
 User=anze
 
 [Install]
