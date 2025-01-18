@@ -20,6 +20,7 @@ class BoardFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Board
+        skip_postgeneration_save = True
 
 
 class GroupFactory(factory.django.DjangoModelFactory):
@@ -36,6 +37,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Group
+        skip_postgeneration_save = True
 
 
 class GoalFactory(factory.django.DjangoModelFactory):
@@ -50,6 +52,7 @@ class GoalFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Goal
+        skip_postgeneration_save = True
 
 
 class ResultFactory(factory.django.DjangoModelFactory):
@@ -67,16 +70,16 @@ class ResultFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = Result
+        skip_postgeneration_save = True
 
 
 class EventFactory(factory.django.DjangoModelFactory):
     description = factory.Faker("text")
 
-    result = factory.SubFactory(
-        ResultFactory, goal__user=factory.SelfAttribute("...user")
-    )
+    result = factory.SubFactory(ResultFactory, goal__user=factory.SelfAttribute("...user"))
     user = factory.SubFactory(UserFactory)
     date_event = factory.LazyFunction(timezone.now)
 
     class Meta:
         model = Event
+        skip_postgeneration_save = True
