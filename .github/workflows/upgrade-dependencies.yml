@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+    - uses: actions/checkout@v4
     - name: Install the latest version of uv
       uses: astral-sh/setup-uv@v6
       with:
@@ -19,14 +19,15 @@ jobs:
         version: "latest"
     - name: Upgrade dependencies 
       run: |
-        uv sync --upgrade
+        printf "### Upgraded dependencies\n\n\`\`\`\n" > update.log
+        uv lock --upgrade 2>&1 | tee -a update.log
+        printf "\`\`\`" >> update.log
     - name: Create Pull Request
-      uses: peter-evans/create-pull-request@v3
+      uses: peter-evans/create-pull-request@v7
       with:
-        commit-message: Update dependencies
-        branch: bot/update_dependencies
+        token: ${{ secrets.PAT }}
+        commit-message: Upgrade dependencies
+        branch: bot/upgrade-dependencies
         delete-branch: true
-        title: 'Update dependencies'
-        body: |
-          Updating project dependencies.
-        reviewers: anze3db
+        title: 'Upgrade dependencies'
+        body-path: update.log
