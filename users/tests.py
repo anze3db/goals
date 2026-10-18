@@ -70,7 +70,7 @@ class SettingsTest(TestCase):
         response_text = response.content.decode().replace(" ", "").replace("\n", "")
         assert 'name="default_board_id"' in response_text
         assert f'value="{board.id}"' in response_text
-        assert f"selected>{ board.name }" in response_text
+        assert f"selected>{board.name}" in response_text
         for b in boards:
             assert f'value="{b.id}"' in response_text
             assert b.name in response_text

@@ -65,9 +65,7 @@ class Goal(models.Model):
         results = self.results.all()
         index_to_res = {res.index: res for res in results}
         index_to_amount = {res.index: res.amount for res in results if res.amount}
-        index_to_expected = {
-            res.index: res.expected_amount for res in results if res.expected_amount
-        }
+        index_to_expected = {res.index: res.expected_amount for res in results if res.expected_amount}
 
         def get_color(res: Result | None):
             if not res:
@@ -86,23 +84,13 @@ class Goal(models.Model):
 
         amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
         colors = [get_color(index_to_res.get(index + 1)) for index in range(12)]
-        normalize = [
-            (x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.3 + 0.2
-            for x in amounts
-        ]
+        normalize = [(x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.3 + 0.2 for x in amounts]
         inverted = [1 - x for x in normalize]
         multipled_by_100 = [x * 100 for x in inverted]
         return {
             "min_amount": min(amounts),
             "max_amount": max(amounts),
-            "goal_complete": sum(amounts)
-            >= sum(
-                [
-                    v
-                    for i, v in enumerate(index_to_expected.values())
-                    if colors[i] != "gray"
-                ]
-            ),
+            "goal_complete": sum(amounts) >= sum([v for i, v in enumerate(index_to_expected.values()) if colors[i] != "gray"]),
             "amounts": [
                 {
                     "x": (i + 1) * 100,
@@ -114,12 +102,7 @@ class Goal(models.Model):
                 }
                 for i, res in enumerate(multipled_by_100)
             ],
-            "points": " ".join(
-                [
-                    f"{(i+1) * 100},{res if colors[i] != 'gray' else 100}"
-                    for i, res in enumerate(multipled_by_100)
-                ]
-            ),
+            "points": " ".join([f"{(i + 1) * 100},{res if colors[i] != 'gray' else 100}" for i, res in enumerate(multipled_by_100)]),
         }
 
     class Meta:

@@ -180,9 +180,7 @@ if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover
         integrations=[DjangoIntegration()],
         release=RELEASE,
         environment=env("APP_NAME"),
-        _experiments={
-            "profiles_sample_rate": 1.0,
-        },
+        profiles_sample_rate=1.0,
         # Set traces_sample_rate to 1.0 to capture 100%
         # of transactions for performance monitoring.
         # We recommend adjusting this value in production.

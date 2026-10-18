@@ -19,14 +19,14 @@ def _get_table_data(user: User, board: Board, result: Result | None = None):
     boards = user.boards.all()
     groups = board.groups.prefetch_related("goals", "goals__results").all()
 
-    return dict(
-        user=user,
-        boards=boards,
-        months=MONTHS,
-        groups=groups,
-        board=board,
-        selected_result=result,
-    )
+    return {
+        "user": user,
+        "boards": boards,
+        "months": MONTHS,
+        "groups": groups,
+        "board": board,
+        "selected_result": result,
+    }
 
 
 @method_decorator(login_required(login_url="/login"), name="dispatch")
@@ -128,7 +128,7 @@ def board_month_view(request, board_id, month):
             "board": board,
             "months": MONTHS,
             "month_index": month,
-            "month": [m for m in MONTHS if m.index == month][0],
+            "month": next(m for m in MONTHS if m.index == month),
         },
     )
 
@@ -146,7 +146,7 @@ def add_goal_view(request, board_id):
     form = GoalForm(request.POST)
     # check whether it's valid:
     if form.is_valid():
-        group, _ = Group.objects.get_or_create(name=form.data.get("group"), board=board, defaults=dict(user=user))
+        group, _ = Group.objects.get_or_create(name=form.data.get("group"), board=board, defaults={"user": user})
         create_monthly_goal(
             name=form.data.get("name"),
             expected_amount=form.data.get("amount"),
@@ -163,7 +163,7 @@ def result_put(request, pk):
     result = get_object_or_404(Result.objects, pk=pk)
     if request.method == "GET":
         events = Event.objects.filter(result__goal=result.goal).exclude(description="Created").order_by("date_event")
-        return render(request, "form.html", dict(result=result, events=events))
+        return render(request, "form.html", {"result": result, "events": events})
 
     data = request.POST
     amount = float(data.get("amount")) if data.get("amount") else None

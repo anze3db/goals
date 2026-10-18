@@ -5,7 +5,7 @@ import factory
 from .models import User
 
 
-class UserFactory(factory.django.DjangoModelFactory):
+class UserFactory(factory.django.DjangoModelFactory[User]):
     username = factory.LazyFunction(lambda: f"test+{uuid.uuid4().hex}@example.com")
     email = factory.LazyAttribute(lambda u: u.username)
     first_name = factory.Faker("first_name")

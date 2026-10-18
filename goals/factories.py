@@ -8,7 +8,7 @@ from users.factories import UserFactory
 factory.Faker.add_provider(OptionalProvider)
 
 
-class BoardFactory(factory.django.DjangoModelFactory):
+class BoardFactory(factory.django.DjangoModelFactory[Board]):
     name = factory.Sequence(lambda n: f"{n + 2020}-Goals")
     user = factory.SubFactory(UserFactory)
     boards = factory.RelatedFactoryList(
@@ -23,7 +23,7 @@ class BoardFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
 
-class GroupFactory(factory.django.DjangoModelFactory):
+class GroupFactory(factory.django.DjangoModelFactory[Group]):
     name = factory.Faker("sentence", nb_words=1)
     board = factory.SubFactory(BoardFactory, user=factory.SelfAttribute("..user"))
     color = "#000"
@@ -40,7 +40,7 @@ class GroupFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
 
-class GoalFactory(factory.django.DjangoModelFactory):
+class GoalFactory(factory.django.DjangoModelFactory[Goal]):
     name = factory.Faker("sentence", nb_words=3)
     group = factory.SubFactory(GroupFactory, user=factory.SelfAttribute("..user"))
     user = factory.SubFactory(UserFactory)
@@ -55,7 +55,7 @@ class GoalFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
 
-class ResultFactory(factory.django.DjangoModelFactory):
+class ResultFactory(factory.django.DjangoModelFactory[Result]):
     index = factory.Faker("random_int", min=1, max=12)
     amount = factory.Faker("optional_int", ratio=0.7, min_value=-5, max_value=10)
 
@@ -73,7 +73,7 @@ class ResultFactory(factory.django.DjangoModelFactory):
         skip_postgeneration_save = True
 
 
-class EventFactory(factory.django.DjangoModelFactory):
+class EventFactory(factory.django.DjangoModelFactory[Event]):
     description = factory.Faker("text")
 
     result = factory.SubFactory(ResultFactory, goal__user=factory.SelfAttribute("...user"))

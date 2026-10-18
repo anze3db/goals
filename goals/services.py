@@ -1,5 +1,5 @@
+from collections.abc import Generator
 from datetime import datetime
-from typing import Generator
 
 from django.db import transaction
 from django.utils import timezone
@@ -42,7 +42,7 @@ def create_groups(
     groups: list[str],
     board: Board,
     user: User,
-) -> Generator[Group, None, None]:
+) -> Generator[Group]:
     created_groups = set()
     for group in groups:
         if group in created_groups:

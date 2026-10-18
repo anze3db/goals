@@ -20,9 +20,7 @@ class GoalTest(TestCase):
 
     def test_monthly_goal_creation(self):
         with self.assertNumQueries(5):
-            goal = create_monthly_goal(
-                "My Monthly Goal", 10, self.group, self.group.user
-            )
+            goal = create_monthly_goal("My Monthly Goal", 10, self.group, self.group.user)
         assert goal
         assert goal.results.count() == 12
         for i, result in enumerate(goal.results.all()):
@@ -47,9 +45,7 @@ class BoardsViewTest(TestCase):
 
         with self.assertNumQueries(3):
             response = self.client.get("/boards")
-        self.assertRedirects(
-            response, f"/boards/{self.board.pk}/month/{timezone.now().month}"
-        )
+        self.assertRedirects(response, f"/boards/{self.board.pk}/month/{timezone.now().month}")
 
     def test_no_default_board(self):
         with self.assertNumQueries(2):
@@ -102,9 +98,7 @@ class BoardMonthView(TestCase):
 
     def test_get(self):
         with self.assertNumQueries(10):
-            response = self.client.get(
-                reverse("board_month", kwargs={"board_id": self.board.pk, "month": 1})
-            )
+            response = self.client.get(reverse("board_month", kwargs={"board_id": self.board.pk, "month": 1}))
         assert response.status_code == 200
         content = response.content.decode()
         assert self.board.name in content
@@ -126,12 +120,12 @@ class AddBoardViewTest(TestCase):
     def test_post(self):
         response = self.client.post(
             "/boards/add",
-            dict(
-                name="2021",
-                goals=["First Goal", "Second Goal", "Second Personal Goal"],
-                groups=["Personal", "Business", "Personal"],
-                amounts=["10", "20", "30"],
-            ),
+            {
+                "name": "2021",
+                "goals": ["First Goal", "Second Goal", "Second Personal Goal"],
+                "groups": ["Personal", "Business", "Personal"],
+                "amounts": ["10", "20", "30"],
+            },
         )
         assert response.status_code == 302
         self.user.refresh_from_db()
@@ -143,9 +137,7 @@ class AddBoardViewTest(TestCase):
             "Business",
             "Personal",
         ]
-        assert [
-            ", ".join(group.goals.values_list("name", flat=True)) for group in groups
-        ] == [
+        assert [", ".join(group.goals.values_list("name", flat=True)) for group in groups] == [
             "Second Goal",
             "First Goal, Second Personal Goal",
         ]
@@ -163,15 +155,13 @@ class ResultsViewTest(TestCase):
     def test_result_get(self):
         with self.assertNumQueries(6):
             response = self.client.get(f"/results/{self.result.pk}")
-        assert response.status_code, 200
+        assert response.status_code == 200
         result = response.content.decode()
         assert "<form" in result
         assert '<input name="amount"' in result
-        assert (
-            'value="6.0"' in result
-        )  # for convenience we bump the amount by 1 since it's the most common case
+        assert 'value="6.0"' in result  # for convenience we bump the amount by 1 since it's the most common case
         assert '<input name="expected_amount"' in result
-        assert 'value="10.0"'
+        assert 'value="10.0"' in result
         assert "</form>" in result
 
     def test_result_put(self):
@@ -180,13 +170,13 @@ class ResultsViewTest(TestCase):
         with self.assertNumQueries(9):
             self.client.post(
                 f"/results/{self.result.pk}",
-                dict(
-                    amount=8,
-                    expected_amount=12,
-                    date_event="1987-01-01T12:12Z",
-                    time_zone="UTC",
-                    description="Test",
-                ),
+                {
+                    "amount": 8,
+                    "expected_amount": 12,
+                    "date_event": "1987-01-01T12:12Z",
+                    "time_zone": "UTC",
+                    "description": "Test",
+                },
             )
 
         self.result.refresh_from_db()
@@ -195,9 +185,7 @@ class ResultsViewTest(TestCase):
         assert self.result.events.count() == initial_event_count + 1
         assert self.result.events.first().new_amount == 8.0
         assert self.result.events.first().old_amount == old_amount
-        assert self.result.events.first().date_event == timezone.datetime(
-            1987, 1, 1, 12, 12, tzinfo=datetime.timezone.utc
-        )
+        assert self.result.events.first().date_event == timezone.datetime(1987, 1, 1, 12, 12, tzinfo=datetime.UTC)
         assert self.result.events.first().description == "Test"
 
 
@@ -206,7 +194,7 @@ class GoalViewTest(TestCase):
 
     @classmethod
     def setUpTestData(cls) -> None:
-        cls.board = BoardFactory()
+        cls.board = BoardFactory.create()
 
     def setUp(self):
         self.client.force_login(self.board.user)
@@ -223,29 +211,25 @@ class GoalViewTest(TestCase):
     def test_form_post(self):
         response = self.client.post(
             f"/boards/{self.board.pk}/goals/add",
-            dict(name="my new goal", group="my new group", amount=123),
+            {"name": "my new goal", "group": "my new group", "amount": 123},
         )
         assert response.status_code == 302
-        Goal.objects.get(
-            name="my new goal", group__name="my new group", group__board=self.board
-        )
+        Goal.objects.get(name="my new goal", group__name="my new group", group__board=self.board)
 
     def test_form_post_existing_group(self):
         group = GroupFactory(board=self.board, name="my new group")
         response = self.client.post(
             f"/boards/{self.board.pk}/goals/add",
-            dict(name="my new goal", group="my new group", amount=123),
+            {"name": "my new goal", "group": "my new group", "amount": 123},
         )
         assert response.status_code == 302
-        goal = Goal.objects.get(
-            name="my new goal", group__name="my new group", group__board=self.board
-        )
+        goal = Goal.objects.get(name="my new goal", group__name="my new group", group__board=self.board)
         assert goal.group == group
 
     def test_invalid_form_post(self):
         response = self.client.post(
             f"/boards/{self.board.pk}/goals/add",
-            dict(group="my new group", amount=123),
+            {"group": "my new group", "amount": 123},
         )
         assert response.status_code == 200
         response_text = response.content.decode()
@@ -283,8 +267,6 @@ class EventViewTest(TestCase):
 
     def test_get(self):
         with self.assertNumQueries(3):
-            response = self.client.get(
-                reverse("event", kwargs={"event_id": self.event.pk})
-            )
+            response = self.client.get(reverse("event", kwargs={"event_id": self.event.pk}))
         assert response.status_code == 200
         assert self.event.description in response.content.decode()
