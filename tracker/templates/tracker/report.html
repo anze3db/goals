@@ -1,0 +1,107 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{{ owner.first_name|default:owner.username }} · {{ year }} in goals</title>
+        <meta name="description"
+              content="{{ owner.first_name|default:owner.username }}'s goals for {{ year }}" />
+        <meta name="theme-color" content="#FFFFFF" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,600;12..96,800&family=Geist+Mono:wght@400;500&display=swap" />
+        <link rel="stylesheet" href="{% static 'report.css' %}" />
+    </head>
+    <body>
+        <main class="report">
+            <header>
+                <div class="masthead">
+                    <span>{{ request.get_host }}{{ request.path }}</span>
+                    <span>
+                        {% if live %}
+                            <span class="live-dot"></span>Live · updated {% now "j M" %}
+                        {% else %}
+                            Final
+                        {% endif %}
+                    </span>
+                </div>
+                <div class="hero">
+                    <h1>{{ year }}</h1>
+                    <p>
+                        {{ owner.first_name|default:owner.username }}'s year{% if live %} so far{% endif %}, in {{ progress|length }} goal{{ progress|length|pluralize }}.
+                        {% if sources %}Every number here was collected automatically.{% endif %}
+                    </p>
+                </div>
+            </header>
+            {% if progress %}
+                <section class="stats">
+                    {% for p in progress %}
+                        <article class="stat">
+                            <span class="kicker">{{ p.goal.name }}</span>
+                            <div class="value">
+                                <strong {% if p.current_label|length > 6 %}class="long"{% endif %}>{{ p.current_label }}</strong>
+                                <span>{{ p.goal.unit }}</span>
+                            </div>
+                            <div class="bar">
+                                <div class="{% if p.done %}done{% endif %}"
+                                     style="width: {{ p.percent|floatformat:1 }}%"></div>
+                            </div>
+                            <span class="note">
+                                of {{ p.target_label }}
+                                {% if p.done %}
+                                    · reached {{ p.completed_on|date:"j F" }}
+                                {% elif live %}
+                                    · on track for {{ p.projected_label }}
+                                {% endif %}
+                            </span>
+                        </article>
+                    {% endfor %}
+                </section>
+            {% else %}
+                <p class="empty">No goals for {{ year }}.</p>
+            {% endif %}
+            {% if featured or highlights %}
+                <section class="split">
+                    {% if featured %}
+                        <div class="months-chart">
+                            <h2>{{ featured.goal.name }}, month by month</h2>
+                            <div class="bars">
+                                {% for bar in bars %}
+                                    <div class="col">
+                                        <span>{{ bar.label }}</span>
+                                        <div class="{% if bar.best %}best{% elif bar.future %}future{% endif %}"
+                                             style="height: {% if bar.future %}220{% else %}{{ bar.height }}{% endif %}px">
+                                        </div>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                            <div class="names" aria-hidden="true">
+                                {% for bar in bars %}<span>{{ bar.name|slice:":1" }}</span>{% endfor %}
+                            </div>
+                        </div>
+                    {% endif %}
+                    {% if highlights %}
+                        <div class="highlights">
+                            <h2>Highlights</h2>
+                            {% for h in highlights %}
+                                <div>
+                                    <strong>{{ h.title }}</strong>
+                                    <span>{{ h.meta }}</span>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                </section>
+            {% endif %}
+            <footer>
+                <span>{% if sources %}Sources: {{ sources|join:", " }}{% endif %}</span>
+                {% if is_owner %}
+                    <a href="{% url 'index' %}?year={{ year }}">Back to the app</a>
+                {% endif %}
+            </footer>
+        </main>
+    </body>
+</html>

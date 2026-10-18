@@ -12,5 +12,6 @@ if [ "$old_python" != "$(.venv/bin/python -V 2>&1)" ]; then
 else
     sudo systemctl reload goals
 fi
+sudo systemctl restart goals-worker
 echo `date "+%Y-%m-%d %H:%M:%S.%3N"` ' Updated' >> update.log
 popd

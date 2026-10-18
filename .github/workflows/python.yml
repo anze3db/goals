@@ -21,6 +21,8 @@ jobs:
         run: uv sync --locked
       - name: Collect static
         run: uv run python manage.py collectstatic --no-input
+      - name: Check that workers can run every task
+        run: uv run python manage.py check --deploy --tag potatoq
       - name: Run Tests
         run: uv run pytest
         env:

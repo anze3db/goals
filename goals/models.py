@@ -1,6 +1,4 @@
-from calendar import month_abbr
 from dataclasses import dataclass
-from datetime import datetime
 
 from django.db import models
 
@@ -61,50 +59,6 @@ class Goal(models.Model):
     def expected_sum(self):
         return sum([r.expected_amount for r in self.results.all() if r.expected_amount])
 
-    def chart_data(self):
-        results = self.results.all()
-        index_to_res = {res.index: res for res in results}
-        index_to_amount = {res.index: res.amount for res in results if res.amount}
-        index_to_expected = {res.index: res.expected_amount for res in results if res.expected_amount}
-
-        def get_color(res: Result | None):
-            if not res:
-                return "gray"
-            if not res.expected_amount:
-                return "gray"  # No goal set
-
-            current_month = datetime.now().month
-            if not res.amount and current_month >= res.index:
-                return "#999"
-            if not res.amount:
-                return "gray"
-            if res.amount >= res.expected_amount:
-                return "green"
-            return "orange"
-
-        amounts = [index_to_amount.get(index + 1, 0) for index in range(12)]
-        colors = [get_color(index_to_res.get(index + 1)) for index in range(12)]
-        normalize = [(x - min(amounts)) / ((max(amounts) - min(amounts)) or 1) * 0.3 + 0.2 for x in amounts]
-        inverted = [1 - x for x in normalize]
-        multipled_by_100 = [x * 100 for x in inverted]
-        return {
-            "min_amount": min(amounts),
-            "max_amount": max(amounts),
-            "goal_complete": sum(amounts) >= sum([v for i, v in enumerate(index_to_expected.values()) if colors[i] != "gray"]),
-            "amounts": [
-                {
-                    "x": (i + 1) * 100,
-                    "y": res,
-                    "text_y": res - 20,
-                    "amount": amounts[i],
-                    "color": colors[i],
-                    "active": colors[i] != "gray",
-                }
-                for i, res in enumerate(multipled_by_100)
-            ],
-            "points": " ".join([f"{(i + 1) * 100},{res if colors[i] != 'gray' else 100}" for i, res in enumerate(multipled_by_100)]),
-        }
-
     class Meta:
         ordering = ["date_created"]
         indexes = [models.Index(fields=["date_deleted", "group", "date_created"])]
@@ -118,22 +72,6 @@ class Result(models.Model):
 
     class Meta:
         ordering = ["goal", "index"]
-
-    def can_show_amount(self):
-        if self.amount:
-            # Always True if amount is truthy
-            return True
-        current_month = datetime.now().month
-        return current_month >= self.index
-
-    def month(self):
-        return month_abbr[self.index]
-
-    @property
-    def next_amount(self) -> float | None:
-        if self.amount is None:
-            return None
-        return self.amount + 1
 
 
 class Event(models.Model):

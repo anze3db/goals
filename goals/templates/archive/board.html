@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block title %}{{ board.name }} · Archive · Goals{% endblock title %}
+{% block content %}
+    <section class="intro">
+        <span class="eyebrow"><a href="{% url 'archive' %}">Archive</a></span>
+        <h1 class="display">{{ board.name }}</h1>
+        <nav class="year-tabs" aria-label="Archived boards">
+            {% for b in boards %}
+                <a href="{% url 'archive_board' b.pk %}"
+                   {% if b.pk == board.pk %}class="active" aria-current="page"{% endif %}>{{ b.name }}</a>
+            {% endfor %}
+        </nav>
+    </section>
+    <div class="table-scroll">
+        <table class="archive-table">
+            <thead>
+                <tr>
+                    <th scope="col">Goal</th>
+                    {% for month in months %}<th scope="col">{{ month.abbreviation }}</th>{% endfor %}
+                    <th scope="col">Total</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for group_name, rows in groups %}
+                    <tr class="group">
+                        <td colspan="14">{{ group_name }}</td>
+                    </tr>
+                    {% for row in rows %}
+                        <tr>
+                            <th scope="row">{{ row.name }}</th>
+                            {% for cell in row.cells %}
+                                <td class="{{ cell.status }}"
+                                    {% if cell.expected %}title="{{ cell.amount|default_if_none:0|floatformat:"-1" }} of {{ cell.expected|floatformat:"-1" }}"{% endif %}>
+                                    {% if cell.status == "empty" %}
+                                        ·
+                                    {% else %}
+                                        {{ cell.amount|default_if_none:0|floatformat:"-1" }}
+                                    {% endif %}
+                                </td>
+                            {% endfor %}
+                            <td class="{% if row.met %}met{% elif row.expected_total %}missed{% endif %}">
+                                {{ row.total|floatformat:"-1" }}
+                                {% if row.expected_total %}<small>/ {{ row.expected_total|floatformat:"-1" }}</small>{% endif %}
+                            </td>
+                        </tr>
+                    {% endfor %}
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <p class="sub"
+       style="margin-top: 16px">Blue met the month's target, orange missed it. Hover a number for the target.</p>
+{% endblock content %}

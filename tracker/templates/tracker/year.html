@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block title %}{{ year }} in squares · Goals{% endblock title %}
+{% block content %}
+    <section class="intro">
+        <div class="actions" style="justify-content: space-between">
+            <span class="eyebrow">{{ year }} · one square per day</span>
+            <nav class="year-tabs" aria-label="Year">
+                {% for y in years %}
+                    <a href="?year={{ y }}"
+                       {% if y == year %}class="active" aria-current="page"{% endif %}>{{ y }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+        <h1 class="display">Every square fills itself in.</h1>
+        <div class="legend" aria-hidden="true">
+            <span>less</span>
+            <span class="c l0"></span><span class="c l1"></span><span class="c l2"></span><span class="c l3"></span><span class="c l4"></span>
+            <span>more</span>
+            <span style="margin-left: 16px">outlined = still ahead · ringed = today</span>
+        </div>
+    </section>
+    <div style="display: flex; flex-direction: column; gap: 32px">
+        {% for row in rows %}
+            <section class="sq-row">
+                <div class="sq-meta">
+                    <h2>{{ row.progress.goal.name }}</h2>
+                    <span class="sub">
+                        {% if row.progress.goal.source %}
+                            {{ row.progress.goal.source.name }}
+                        {% else %}
+                            Logged by hand
+                        {% endif %}
+                        · {{ row.progress.current_label }} / {{ row.progress.target_label }} {{ row.progress.goal.unit }}
+                    </span>
+                    <div class="sq-stats">
+                        <div>
+                            <strong>{{ row.streak }}</strong><span>day streak</span>
+                        </div>
+                        <div>
+                            <strong class="muted">{{ row.best_streak }}</strong><span>best</span>
+                        </div>
+                        <div>
+                            <strong class="muted">{{ row.active_days }}</strong><span>active days</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="sq-scroll">
+                    <div class="sq-grid">
+                        <div class="sq-months" aria-hidden="true">
+                            {% for label in row.month_slots %}<span>{{ label }}</span>{% endfor %}
+                        </div>
+                        <div class="sq-weeks"
+                             role="img"
+                             aria-label="{{ row.progress.goal.name }}: active on {{ row.active_days }} days, current streak {{ row.streak }}, best {{ row.best_streak }}">
+                            {% for week in row.weeks %}
+                                <div class="sq-week">
+                                    {% for cell in week %}<span class="c {{ cell }}"></span>{% endfor %}
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </section>
+        {% empty %}
+            <div class="empty-state">
+                <h2 class="goal-name">No goals for {{ year }}</h2>
+                <a class="btn primary" href="{% url 'goal_new' %}">Add a goal</a>
+            </div>
+        {% endfor %}
+    </div>
+{% endblock content %}

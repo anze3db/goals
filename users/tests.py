@@ -1,111 +1,64 @@
 from django.contrib import auth
 from django.test import TestCase
+from django.urls import reverse
+from model_bakery import baker
 
-from goals.factories import BoardFactory
-
-from .factories import UserFactory
+from users.models import User
 
 
 class LoginTest(TestCase):
-    def test_login_index(self):
+    def test_login_page(self):
         response = self.client.get("/login")
-        assert response.status_code == 200
-        response_text = response.content.decode()
-        assert "Username" in response_text
-        assert "Password" in response_text
-        assert "Log in" in response_text
+        self.assertContains(response, "Username")
+        self.assertContains(response, "Password")
+        self.assertContains(response, "Log in")
 
     def test_invalid_login(self):
         response = self.client.post("/login", {})
-        assert response.status_code != 200
-        response_text = response.content.decode()
-        assert "Invalid login" in response_text
+        self.assertContains(response, "Invalid login", status_code=400)
 
     def test_valid_login(self):
-        user = UserFactory(username="Oliver")
+        user = baker.make(User, username="Oliver")
         user.set_password("tart")
         user.save()
-        self.client.post("/login", {"username": "Oliver", "password": "tart"})
-        user = auth.get_user(self.client)
-        assert user.is_authenticated
+        response = self.client.post("/login", {"username": "Oliver", "password": "tart"})
+        self.assertRedirects(response, "/")
+        self.assertTrue(auth.get_user(self.client).is_authenticated)
 
 
 class LogoutTest(TestCase):
     def test_logout_not_logged_in(self):
         self.client.get("/logout")
-        user = auth.get_user(self.client)
-        assert not user.is_authenticated
+        self.assertFalse(auth.get_user(self.client).is_authenticated)
 
     def test_logout(self):
-        user = UserFactory()
-        self.client.force_login(user)
+        self.client.force_login(baker.make(User))
         response = self.client.get("/logout")
-        assert response.status_code == 302
-        user = auth.get_user(self.client)
-        assert not user.is_authenticated
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(auth.get_user(self.client).is_authenticated)
 
 
 class SettingsTest(TestCase):
-    def test_settings_page_no_auth(self):
+    @classmethod
+    def setUpTestData(cls):
+        cls.user = baker.make(User, username="setty")
+
+    def test_requires_login(self):
         response = self.client.get("/settings/")
-        assert response.status_code == 302
-        assert response.url == "/login?next=/settings/"
+        self.assertRedirects(response, "/login?next=/settings/", fetch_redirect_response=False)
 
     def test_settings_page(self):
-        user = UserFactory(username="Setty")
-        self.client.force_login(user)
+        self.client.force_login(self.user)
         response = self.client.get("/settings/")
-        assert response.status_code == 200
+        self.assertContains(response, "Public year report")
+        self.assertContains(response, "/u/setty/")
 
-    def test_default_board(self):
-        user = UserFactory(username="Setty")
-        other_user_board = BoardFactory()
-        boards = BoardFactory.create_batch(3, user=user)
-        board = BoardFactory(user=user)
-        user.default_board = board
-        user.save()
-        self.client.force_login(user)
-        response = self.client.get("/settings/")
-        assert response.status_code == 200
-        response_text = response.content.decode().replace(" ", "").replace("\n", "")
-        assert 'name="default_board_id"' in response_text
-        assert f'value="{board.id}"' in response_text
-        assert f"selected>{board.name}" in response_text
-        for b in boards:
-            assert f'value="{b.id}"' in response_text
-            assert b.name in response_text
-        assert f'value="{other_user_board.id}"' not in response_text
-        assert other_user_board.name not in response_text
+    def test_toggle_public_report(self):
+        self.client.force_login(self.user)
+        self.assertRedirects(self.client.post("/settings/", {"public_report": "on"}), reverse("settings"))
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.public_report)
 
-    def test_save_board(self):
-        user = UserFactory(username="Setty")
-        BoardFactory.create_batch(3, user=user)
-        board = BoardFactory(user=user)
-
-        self.client.force_login(user)
-        response = self.client.post("/settings/", data={"default_board_id": board.id})
-        assert response.status_code == 302
-        user.refresh_from_db()
-        assert user.default_board == board
-
-    def test_save_board_no_change(self):
-        user = UserFactory(username="Setty")
-        board = BoardFactory(user=user)
-        user.default_board = board
-        user.save()
-
-        self.client.force_login(user)
-        response = self.client.post("/settings/", data={"default_board_id": board.id})
-        assert response.status_code == 302
-        user.refresh_from_db()
-        assert user.default_board == board
-
-    def test_save_board_from_other_user(self):
-        user = UserFactory(username="Setty")
-        board = BoardFactory()
-
-        self.client.force_login(user)
-        response = self.client.post("/settings/", data={"default_board_id": board.id})
-        assert response.status_code == 400
-        user.refresh_from_db()
-        assert user.default_board is None
+        self.client.post("/settings/", {})
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.public_report)

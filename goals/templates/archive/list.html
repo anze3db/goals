@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block title %}Archive · Goals{% endblock title %}
+{% block page_class %}narrow{% endblock page_class %}
+{% block content %}
+    <section class="intro">
+        <h1 class="display">Archive</h1>
+        <p class="lede">The boards you used to fill in by hand, month by month. Read-only.</p>
+    </section>
+    <div style="display: flex; flex-direction: column; gap: 12px">
+        {% for board in boards %}
+            <a class="source-row" href="{% url 'archive_board' board.pk %}">
+                <div class="info">
+                    <strong>{{ board.name }}</strong>
+                    <span class="sub">Started {{ board.date_created|date:"F Y" }}</span>
+                </div>
+            </a>
+        {% empty %}
+            <p class="muted">No archived boards.</p>
+        {% endfor %}
+    </div>
+{% endblock content %}

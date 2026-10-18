@@ -26,6 +26,9 @@ env = environ.Env(
     SENTRY_DNS=(str, ""),
     CLIENT_DNS=(str, ""),
     APP_NAME=(str, "local"),
+    TIME_ZONE=(str, "UTC"),
+    STRAVA_CLIENT_ID=(str, ""),
+    STRAVA_CLIENT_SECRET=(str, ""),
 )
 
 environ.Env.read_env(BASE_DIR / ".env")
@@ -56,11 +59,11 @@ SECRET_KEY = env("SECRET_KEY")
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS: list[str] = env("ALLOWED_HOSTS").split(",")
+ALLOWED_HOSTS: list[str] = [host for host in env("ALLOWED_HOSTS").split(",") if host]
 
 CSRF_COOKIE_DOMAIN: str = env("CSRF_COOKIE_DOMAIN")
 
-CSRF_TRUSTED_ORIGINS = env("CSRF_TRUSTED_ORIGINS").split(",")
+CSRF_TRUSTED_ORIGINS = [origin for origin in env("CSRF_TRUSTED_ORIGINS").split(",") if origin]
 
 
 # Application definition
@@ -76,8 +79,9 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_htmx",
     "django_tui",
+    "potatoq.contrib.django",
     "users",
-    "index",
+    "tracker",
     "goals",
 ]
 INTERNAL_IPS = [
@@ -101,7 +105,7 @@ ROOT_URLCONF = "goals.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": ["goals/templates"],
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -122,6 +126,9 @@ WSGI_APPLICATION = "goals.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {"default": env.db()}
+if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+    # The potatoq worker writes to the same file; take the write lock up front and wait for it
+    DATABASES["default"].setdefault("OPTIONS", {}).update({"transaction_mode": "IMMEDIATE", "timeout": 20})
 
 # Password validation
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
@@ -141,6 +148,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 AUTH_USER_MODEL = "users.User"
+LOGIN_URL = "/login"
 
 
 # Internationalization
@@ -148,7 +156,8 @@ AUTH_USER_MODEL = "users.User"
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+# Decides which day an activity belongs to, and when crontabs fire
+TIME_ZONE = env("TIME_ZONE")
 
 USE_I18N = True
 
@@ -169,6 +178,16 @@ try:
     RELEASE = "v1" + str((BASE_DIR / "goals_update.log").read_text().count("\n"))
 except FileNotFoundError:
     RELEASE = "v1dev"
+
+POTATOQ = {
+    "beat_schedule": {
+        "sync-sources": {"task": "tracker.tasks.sync_all_sources", "schedule": "*/15 * * * *"},
+    },
+}
+
+# https://www.strava.com/settings/api, callback domain = the site's domain
+STRAVA_CLIENT_ID = env("STRAVA_CLIENT_ID")
+STRAVA_CLIENT_SECRET = env("STRAVA_CLIENT_SECRET")
 
 CLIENT_DNS = env("CLIENT_DNS")
 if SENTRY_DNS := env("SENTRY_DNS"):  # pragma: no cover

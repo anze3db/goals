@@ -1,0 +1,89 @@
+{% extends "base.html" %}
+{% block title %}{{ provider.label }} · Goals{% endblock title %}
+{% block page_class %}narrow{% endblock page_class %}
+{% block content %}
+    <section class="intro">
+        <span class="eyebrow"><a href="{% url 'sources' %}">Sources</a> / {{ provider.label }}</span>
+        <h1 class="display">
+            {% if source %}
+                {{ source.name }}
+            {% else %}
+                Connect {{ provider.label }}
+            {% endif %}
+        </h1>
+        <p class="lede">{{ provider.description }}</p>
+    </section>
+    <form method="post" class="form card">
+        {% csrf_token %}
+        {% if source %}
+            <div class="field">
+                <label for="name">Name</label>
+                <input id="name"
+                       type="text"
+                       name="name"
+                       value="{{ source.name }}"
+                       maxlength="255" />
+            </div>
+        {% endif %}
+        {% if form %}
+            {{ form.non_field_errors }}
+            {% for field in form %}
+                <div class="field">
+                    {{ field.label_tag }}
+                    {{ field }}
+                    {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
+                    {{ field.errors }}
+                </div>
+            {% endfor %}
+        {% elif not source %}
+            <p class="muted">Nothing to configure. You'll get a private URL to post to.</p>
+        {% endif %}
+        {% if source %}
+            <div class="field check">
+                <input id="enabled"
+                       type="checkbox"
+                       name="enabled"
+                       {% if source.enabled %}checked{% endif %} />
+                <label for="enabled">Enabled</label>
+            </div>
+        {% endif %}
+        <div class="actions">
+            <button type="submit" class="btn primary">
+                {% if source %}
+                    Save
+                {% else %}
+                    Connect
+                {% endif %}
+            </button>
+            <a class="btn" href="{% url 'sources' %}">Cancel</a>
+        </div>
+    </form>
+    {% if source and source.kind == "webhook" %}
+        <section class="card note" style="margin-top: 24px">
+            <h2>Push to this URL</h2>
+            <p class="muted">
+                POST form fields or JSON. <code>type</code> picks the goal metric, <code>value</code> defaults to 1.
+                Sending a <code>date</code> makes it a daily total that replaces earlier posts for that day, which is what you want for steps.
+                JSON can also be a list of these objects.
+            </p>
+            <pre class="code">curl -X POST {{ webhook_url }} \
+  -H "Content-Type: application/json" \
+  -d '{"type": "steps", "value": 9214, "date": "{% now "Y-m-d" %}"}'</pre>
+            <h2>Apple Health steps with iOS Shortcuts</h2>
+            <p class="muted">
+                Personal Automation → Time of Day, 23:55 daily → Find Health Samples (Steps, today) →
+                Calculate Statistics (Sum) → Get Contents of URL: this URL, method POST, JSON body
+                <code>type</code> = steps, <code>value</code> = the sum, <code>date</code> = Current Date formatted yyyy-MM-dd.
+                Surf sessions work the same way with a Workout trigger and <code>type</code> = surf.
+            </p>
+        </section>
+    {% endif %}
+    {% if source %}
+        <form method="post"
+              action="{% url 'source_delete' source.pk %}"
+              style="margin-top: 24px">
+            {% csrf_token %}
+            <button type="submit" class="btn danger">Remove source and its activities</button>
+        </form>
+    {% endif %}
+{% endblock content %}

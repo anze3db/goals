@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+    <div class="auth">
+        <span class="eyebrow">goals</span>
+        <h1 class="display">Goals that track themselves.</h1>
+        <p class="lede">Runs, releases, books, posts and steps flow in from the services you already use.</p>
+        <div class="actions">
+            <a class="btn primary" href="{% url 'login' %}">Log in</a>
+        </div>
+    </div>
+{% endblock content %}

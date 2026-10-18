@@ -1,0 +1,16 @@
+[Unit]
+Description=Goals background worker (potatoq: syncs sources every 15 minutes)
+After=postgresql.service
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=1
+WorkingDirectory=/var/apps/goals
+ExecStart=/var/apps/goals/.venv/bin/python manage.py potatoq worker
+# potatoq requeues unfinished tasks within 25s of SIGTERM
+TimeoutStopSec=30
+User=anze
+
+[Install]
+WantedBy=multi-user.target

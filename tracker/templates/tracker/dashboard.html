@@ -1,0 +1,154 @@
+{% extends "base.html" %}
+{% load humanize tracker %}
+{% block title %}Today · Goals{% endblock title %}
+{% block topbar_meta %}
+    {% if failing_sources %}
+        <a href="{% url 'sources' %}"><span class="dot warn"></span>{{ failing_sources|length }} source{{ failing_sources|length|pluralize }} failing</a>
+    {% elif last_synced %}
+        <span><span class="dot"></span>Synced {{ last_synced|naturaltime }}</span>
+    {% endif %}
+{% endblock topbar_meta %}
+{% block content %}
+    <section class="intro">
+        <div class="actions" style="justify-content: space-between">
+            <span class="eyebrow">{{ day_label }}</span>
+            <nav class="year-tabs" aria-label="Year">
+                {% for y in years %}
+                    <a href="?year={{ y }}"
+                       {% if y == year %}class="active" aria-current="page"{% endif %}>{{ y }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+        <h1 class="display">{{ headline }}</h1>
+        <div class="year-progress"
+             role="img"
+             aria-label="{{ year_percent }}% of {{ year }} has passed">
+            <div class="track">
+                <div class="fill" style="width: {{ year_percent }}%"></div>
+            </div>
+            <div class="months">
+                {% for initial in month_initials %}<span>{{ initial }}</span>{% endfor %}
+            </div>
+        </div>
+    </section>
+    <div class="layout">
+        <div class="main-col">
+            {% if progress %}
+                <div class="goal-grid">
+                    {% for p in progress %}
+                        <article class="card">
+                            <div class="card-head">
+                                <div>
+                                    <h2 class="goal-name">
+                                        <a href="{% url 'goal_edit' p.goal.pk %}">{{ p.goal.name }}</a>
+                                    </h2>
+                                    <span class="sub">
+                                        {% if p.goal.source %}
+                                            {{ p.goal.source.name }} · auto
+                                        {% else %}
+                                            Logged by hand
+                                        {% endif %}
+                                    </span>
+                                </div>
+                                <span class="chip {{ p.status }}">{{ p.chip }}</span>
+                            </div>
+                            <div class="big-number">
+                                <strong>{{ p.current_label }}</strong>
+                                <span>/ {{ p.target_label }} {{ p.goal.unit }}</span>
+                            </div>
+                            <svg class="chart {{ p.status }}"
+                                 viewBox="0 0 320 110"
+                                 preserveAspectRatio="none"
+                                 role="img"
+                                 aria-label="{{ p.chart.label }}">
+                                <line class="td" x1="{{ p.chart.today_x }}" y1="0" x2="{{ p.chart.today_x }}" y2="110"></line>
+                                <path class="pc" d="{{ p.chart.pace }}"></path>
+                                <path class="ar" d="{{ p.chart.area }}"></path>
+                                <path class="ln" d="{{ p.chart.actual }}"></path>
+                                {% if p.chart.projection %}<path class="pj" d="{{ p.chart.projection }}"></path>{% endif %}
+                            </svg>
+                            <div class="card-foot">
+                                <span>
+                                    {% if p.done %}
+                                        Reached {{ p.completed_on|date:"j M" }}
+                                    {% else %}
+                                        Dec 31 → {{ p.projected_label }} {{ p.goal.unit }}
+                                    {% endif %}
+                                </span>
+                                <span>{{ p.activity_count }} entr{{ p.activity_count|pluralize:"y,ies" }}</span>
+                            </div>
+                        </article>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <div class="empty-state">
+                    <h2 class="goal-name">No goals for {{ year }} yet</h2>
+                    <p class="muted">
+                        {% if has_sources %}
+                            Pick what counts from one of your sources, or track something by hand.
+                        {% else %}
+                            Connect Strava, GitHub, your blog or anything else first, so goals fill themselves in.
+                        {% endif %}
+                    </p>
+                    <div class="actions">
+                        {% if not has_sources %}
+                            <a class="btn primary" href="{% url 'sources' %}">Connect a source</a>
+                        {% endif %}
+                        <a class="btn {% if has_sources %}primary{% endif %}"
+                           href="{% url 'goal_new' %}">Add a goal</a>
+                    </div>
+                </div>
+            {% endif %}
+            {% if progress %}
+                <div class="actions">
+                    <a class="btn" href="{% url 'goal_new' %}">Add a goal</a>
+                </div>
+            {% endif %}
+        </div>
+        <aside class="rail">
+            {% if manual %}
+                <section class="card nudge">
+                    <h2>Logged by hand</h2>
+                    {% for p in manual %}
+                        <form method="post"
+                              action="{% url 'goal_log' p.goal.pk %}"
+                              class="inline-form">
+                            {% csrf_token %}
+                            <label for="amount-{{ p.goal.pk }}" style="flex-basis: 100%">{{ p.goal.name }} <span class="sub">{{ p.current_label }} / {{ p.target_label }}</span></label>
+                            <input id="amount-{{ p.goal.pk }}"
+                                   type="number"
+                                   name="amount"
+                                   value="1"
+                                   step="any"
+                                   required />
+                            <input type="text" name="note" placeholder="Note" aria-label="Note" />
+                            <button type="submit" class="btn warm">Log</button>
+                        </form>
+                    {% endfor %}
+                </section>
+            {% endif %}
+            <section class="card tight">
+                <h2 style="margin-bottom: 12px">Recently captured</h2>
+                {% for item in feed %}
+                    <div class="feed-item">
+                        <span class="badge" aria-hidden="true">{{ item.monogram }}</span>
+                        <div>
+                            <span class="title">{{ item.activity.title|default:item.activity.type|capfirst }}</span>
+                            <span class="sub">
+                                {% if item.goal_name %}
+                                    {{ item.goal_name }}
+                                {% elif item.activity.source %}
+                                    {{ item.activity.source.name }}
+                                {% endif %}
+                                · {{ item.activity.occurred_at|ago }}
+                            </span>
+                        </div>
+                        <span class="delta">{{ item.delta }}</span>
+                    </div>
+                {% empty %}
+                    <p class="muted">Nothing yet. Activities from your sources show up here as they arrive.</p>
+                {% endfor %}
+            </section>
+        </aside>
+    </div>
+{% endblock content %}

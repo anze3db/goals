@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% load humanize tracker %}
+{% block title %}Sources · Goals{% endblock title %}
+{% block content %}
+    <section class="intro">
+        <h1 class="display">Data comes in on its own.</h1>
+        <p class="lede">
+            Sources are checked every 15 minutes, and webhooks are recorded the moment they arrive. Goals pick what counts from them.
+            You only step in when something can't be measured.
+        </p>
+    </section>
+    <div class="layout">
+        <div class="main-col">
+            <section style="display: flex; flex-direction: column; gap: 12px">
+                <h2 class="section-title">Connected · {{ sources|length }}</h2>
+                {% for source in sources %}
+                    <article class="source-row">
+                        <span class="badge large" aria-hidden="true">{{ source.provider.label|slice:":2" }}</span>
+                        <div class="info">
+                            <strong>{{ source.name }}</strong>
+                            <span class="sub">
+                                {{ source.provider.label }}
+                                {% if not source.enabled %}· paused{% endif %}
+                                {% if source.last_synced_at %}
+                                    · {% if source.provider.pulls %}synced{% else %}last push{% endif %} {{ source.last_synced_at|naturaltime }}
+                                {% elif source.provider.pulls %}
+                                    · first import pending
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="goals">
+                            {% for goal in source.goals.all %}
+                                {{ goal.name }}{% if not forloop.last %}, {% endif %}
+                            {% empty %}
+                                <span class="muted">Not used by a goal yet</span>
+                            {% endfor %}
+                        </div>
+                        <div class="actions">
+                            {% if source.provider.pulls %}
+                                <form method="post" action="{% url 'source_sync' source.pk %}">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn small">Sync now</button>
+                                </form>
+                            {% endif %}
+                            <a class="btn small" href="{% url 'source_edit' source.pk %}">Edit</a>
+                        </div>
+                        {% if source.last_error %}<p class="error">{{ source.last_error|truncatechars:240 }}</p>{% endif %}
+                    </article>
+                {% empty %}
+                    <p class="muted">Nothing connected yet. Pick a source below.</p>
+                {% endfor %}
+            </section>
+            <section style="display: flex; flex-direction: column; gap: 12px">
+                <h2 class="section-title">Add a source</h2>
+                <div class="provider-grid">
+                    {% for provider in providers %}
+                        {% if provider.connect_url_name and not strava_configured %}
+                            <div class="provider" aria-disabled="true">
+                                <strong>{{ provider.label }}</strong>
+                                <span>{{ provider.description }} Needs STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET.</span>
+                            </div>
+                        {% else %}
+                            <a class="provider" href="{% url 'source_new' provider.kind %}">
+                                <strong>{{ provider.label }}</strong>
+                                <span>{{ provider.description }}</span>
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+                </div>
+            </section>
+        </div>
+        <aside class="rail">
+            <section class="card tight">
+                <h2 style="margin-bottom: 8px">Latest arrivals</h2>
+                {% for activity in recent %}
+                    <div class="log-line">
+                        <span>{{ activity.source.name }} · {{ activity.title|default:activity.type }}</span>
+                        <span>{{ activity.occurred_at|ago }}</span>
+                    </div>
+                {% empty %}
+                    <p class="muted">No activities yet.</p>
+                {% endfor %}
+            </section>
+            <section class="card dashed">
+                <h2>Can't be measured?</h2>
+                <p class="muted">
+                    Add a goal that's logged by hand. It gets a Log button on the Today page. For anything with a phone automation behind it, use a webhook instead.
+                </p>
+            </section>
+        </aside>
+    </div>
+{% endblock content %}

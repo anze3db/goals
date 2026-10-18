@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block title %}Settings · Goals{% endblock title %}
+{% block page_class %}narrow{% endblock page_class %}
+{% block content %}
+    <section class="intro">
+        <h1 class="display">Settings</h1>
+    </section>
+    <form method="post" action="{% url 'settings' %}" class="form card">
+        {% csrf_token %}
+        <h2>Public year report</h2>
+        <div class="field check">
+            <input id="public_report"
+                   type="checkbox"
+                   name="public_report"
+                   {% if user.public_report %}checked{% endif %} />
+            <label for="public_report">Anyone with the link can see my year report</label>
+        </div>
+        <p class="sub">{{ report_url }}</p>
+        <div class="actions">
+            <button type="submit" class="btn primary">Save</button>
+        </div>
+    </form>
+{% endblock content %}

@@ -11,7 +11,7 @@ RestartSec=1
 WorkingDirectory=/var/apps/goals
 ExecStart=/var/apps/goals/.venv/bin/gunicorn goals.wsgi
 ExecReload=/bin/kill -s HUP $MAINPID
-ExecStop=/bin/kill -s TERM $MANPID
+ExecStop=/bin/kill -s TERM $MAINPID
 User=anze
 
 [Install]

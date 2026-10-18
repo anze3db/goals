@@ -1,0 +1,74 @@
+{% load django_htmx static %}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}Goals{% endblock title %}</title>
+        <meta name="description" content="Goals that track themselves" />
+        <meta name="theme-color" content="#0F1012" />
+        <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+        <link rel="manifest" href="/site.webmanifest" />
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link rel="stylesheet"
+              href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" />
+        <link rel="stylesheet" href="{% static 'app.css' %}" />
+        {% if CLIENT_DNS %}
+            <script>window.SENTRY_RELEASE = { id: "{{ RELEASE }}" };</script>
+            <script src="{{ CLIENT_DNS }}" crossorigin="anonymous"></script>
+        {% endif %}
+        <script src="{% static 'htmx.min.js' %}" defer></script>
+        {% django_htmx_script %}
+    </head>
+    <body hx-boost="true">
+        {% if user.is_authenticated %}
+            <header class="topbar">
+                <a href="{% url 'index' %}" class="brand">
+                    <svg width="22"
+                         height="22"
+                         viewBox="0 0 24 24"
+                         fill="none"
+                         stroke="#8CC4FF"
+                         stroke-width="2"
+                         aria-hidden="true">
+                        <circle cx="12" cy="12" r="9"></circle>
+                        <circle cx="12" cy="12" r="4"></circle>
+                        <path d="M12 3v3M21 12h-3"></path>
+                    </svg>
+                    goals
+                </a>
+                <nav class="nav" aria-label="Main">
+                    <a href="{% url 'index' %}{% if year %}?year={{ year }}{% endif %}"
+                       {% if nav == "today" %}class="active" aria-current="page"{% endif %}>Today</a>
+                    <a href="{% url 'year' %}{% if year %}?year={{ year }}{% endif %}"
+                       {% if nav == "year" %}class="active" aria-current="page"{% endif %}>Year</a>
+                    <a href="{% url 'my_report' %}{% if year %}?year={{ year }}{% endif %}">Report</a>
+                    <a href="{% url 'sources' %}"
+                       {% if nav == "sources" %}class="active" aria-current="page"{% endif %}>Sources</a>
+                    <a href="{% url 'archive' %}"
+                       {% if nav == "archive" %}class="active" aria-current="page"{% endif %}>Archive</a>
+                </nav>
+                <div class="topbar-meta">
+                    {% block topbar_meta %}
+                    {% endblock topbar_meta %}
+                    <a href="{% url 'settings' %}">Settings</a>
+                    <a href="{% url 'logout' %}">Log out</a>
+                </div>
+            </header>
+        {% endif %}
+        <main class="page {% block page_class %}{% endblock page_class %}">
+            {% if messages %}
+                <div class="messages" role="status">
+                    {% for message in messages %}
+                        <div class="message {% if message.level_tag == 'error' %}error{% endif %}">{{ message }}</div>
+                    {% endfor %}
+                </div>
+            {% endif %}
+            {% block content %}
+            {% endblock content %}
+        </main>
+    </body>
+</html>
