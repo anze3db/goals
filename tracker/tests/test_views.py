@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from model_bakery import baker
 
-from tracker.models import Activity, Goal, Source
+from tracker.models import Activity, Goal, Source, WebhookDelivery
 from tracker.providers import SyncError
 from users.models import User
 
@@ -369,6 +369,48 @@ class WebhookTest(TrackerViewTestCase):
     def test_unknown_token_and_get(self):
         self.assertEqual(self.client.post(reverse("webhook", args=["nope"]), {}).status_code, 404)
         self.assertEqual(self.client.get(self.url()).status_code, 405)
+
+    def test_deliveries_are_recorded(self):
+        self.client.post(
+            self.url(),
+            {"type": "steps", "value": 9214, "date": "2026-10-18"},
+            content_type="application/json",
+            headers={"user-agent": "Shortcuts/1"},
+        )
+        self.client.post(self.url(), {"value": "many"}, content_type="application/json")
+        error, ok = self.hook.deliveries.all()
+        self.assertEqual((ok.status_code, ok.response), (200, {"ok": True, "created": 1, "received": 1}))
+        self.assertEqual((ok.content_type, ok.user_agent), ("application/json", "Shortcuts/1"))
+        self.assertIn('"value": 9214', ok.pretty_body)
+        self.assertEqual((error.status_code, error.response), (400, {"error": "value must be a number"}))
+
+    def test_multipart_form_body_is_kept(self):
+        response = self.client.post(self.url(), {"type": "surf"})
+        self.assertEqual(response.status_code, 200)
+        delivery = self.hook.deliveries.get()
+        self.assertTrue(delivery.content_type.startswith("multipart/form-data"))
+        self.assertIn('name="type"', delivery.body)
+
+    def test_disabled_webhook_is_recorded_but_rejected(self):
+        Source.objects.filter(pk=self.hook.pk).update(enabled=False)
+        response = self.client.post(self.url(), {"type": "steps"}, content_type="application/json")
+        self.assertEqual(response.status_code, 403)
+        self.assertEqual(self.hook.deliveries.get().response, {"error": "This webhook is disabled"})
+        self.assertFalse(self.hook.activities.exists())
+
+    def test_only_the_latest_deliveries_are_kept(self):
+        with mock.patch.object(WebhookDelivery, "KEEP_PER_SOURCE", 2):
+            for steps in (1, 2, 3):
+                self.client.post(self.url(), {"type": "steps", "value": steps}, content_type="application/json")
+        self.assertEqual([json.loads(d.body)["value"] for d in self.hook.deliveries.all()], [3, 2])
+
+    def test_deliveries_show_on_the_source_page(self):
+        self.assertContains(self.client.get(reverse("source_edit", args=[self.hook.pk])), "Nothing has arrived yet")
+        self.client.post(self.url(), "not json", content_type="application/json")
+        response = self.client.get(reverse("source_edit", args=[self.hook.pk]))
+        self.assertContains(response, "Recent deliveries")
+        self.assertContains(response, "Invalid JSON")
+        self.assertContains(response, "not json")
 
     def test_only_webhook_sources_accept_pushes(self):
         self.assertEqual(self.client.post(reverse("webhook", args=[self.feed.webhook_token]), {}).status_code, 404)

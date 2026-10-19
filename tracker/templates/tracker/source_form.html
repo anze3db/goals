@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load tracker %}
 {% block title %}{{ provider.label }} · Goals{% endblock title %}
 {% block page_class %}narrow{% endblock page_class %}
 {% block content %}
@@ -76,6 +77,32 @@
                 <code>type</code> = steps, <code>value</code> = the sum, <code>date</code> = Current Date formatted yyyy-MM-dd.
                 Surf sessions work the same way with a Workout trigger and <code>type</code> = surf.
             </p>
+        </section>
+        <section class="card tight" style="margin-top: 24px">
+            <h2 style="margin-bottom: 8px">Recent deliveries</h2>
+            <p class="sub" style="margin-bottom: 8px">The last {{ deliveries|length }} requests to this URL, newest first. Older ones are dropped after 50.</p>
+            {% for delivery in deliveries %}
+                <details class="delivery">
+                    <summary>
+                        <span class="status {% if delivery.ok %}ok{% else %}bad{% endif %}">{{ delivery.status_code }}</span>
+                        <span>
+                            {% if delivery.ok %}
+                                {{ delivery.response.received }} received, {{ delivery.response.created }} new
+                            {% else %}
+                                {{ delivery.response.error }}
+                            {% endif %}
+                        </span>
+                        <time datetime="{{ delivery.received_at|date:'c' }}"
+                              title="{{ delivery.received_at }}">{{ delivery.received_at|ago }}</time>
+                    </summary>
+                    <p class="sub">{{ delivery.content_type|default:"no content type" }} · {{ delivery.user_agent|default:"no user agent" }}</p>
+                    <pre class="code">{{ delivery.pretty_body|default:"(empty body)" }}</pre>
+                    <p class="sub">Response</p>
+                    <pre class="code">{{ delivery.pretty_response }}</pre>
+                </details>
+            {% empty %}
+                <p class="muted">Nothing has arrived yet. Requests show up here the moment they hit the URL above.</p>
+            {% endfor %}
         </section>
     {% endif %}
     {% if source %}

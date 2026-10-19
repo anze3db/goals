@@ -15,7 +15,7 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from tracker.forms import GoalForm, LogForm, apply_source_form, source_form
-from tracker.models import Activity, Goal, Source
+from tracker.models import Activity, Goal, Source, WebhookDelivery
 from tracker.progress import (
     MONTH_NAMES,
     day_of_year,
@@ -314,6 +314,7 @@ def source_edit(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
             "provider": source.provider,
             "source": source,
             "webhook_url": request.build_absolute_uri(reverse("webhook", args=[source.webhook_token])),
+            "deliveries": source.deliveries.all()[:20],
             "nav": "sources",
         },
     )
@@ -414,27 +415,37 @@ def _webhook_activity(item: object) -> FetchedActivity:
     )
 
 
-@csrf_exempt
-@require_POST
-def webhook(request: HttpRequest, token: str) -> JsonResponse:
-    source = get_object_or_404(Source, webhook_token=token, kind="webhook", enabled=True)
+def _handle_webhook(request: HttpRequest, source: Source, body: bytes) -> tuple[int, dict]:
+    if not source.enabled:
+        return 403, {"error": "This webhook is disabled"}
     if request.content_type == "application/json":
         try:
-            payload = json.loads(request.body)
+            payload = json.loads(body)
         except ValueError:
-            return JsonResponse({"error": "Invalid JSON"}, status=400)
+            return 400, {"error": "Invalid JSON"}
     else:
         payload = request.POST.dict()
 
     items = payload if isinstance(payload, list) else [payload]
     if len(items) > WEBHOOK_BATCH_LIMIT:
-        return JsonResponse({"error": f"At most {WEBHOOK_BATCH_LIMIT} items per request"}, status=400)
+        return 400, {"error": f"At most {WEBHOOK_BATCH_LIMIT} items per request"}
     try:
         fetched = [_webhook_activity(item) for item in items]
     except WebhookError as e:
-        return JsonResponse({"error": str(e)}, status=400)
+        return 400, {"error": str(e)}
 
     created = store_activities(source, fetched)
     source.last_synced_at = timezone.now()
     source.save(update_fields=["last_synced_at"])
-    return JsonResponse({"ok": True, "created": created, "received": len(fetched)})
+    return 200, {"ok": True, "created": created, "received": len(fetched)}
+
+
+@csrf_exempt
+@require_POST
+def webhook(request: HttpRequest, token: str) -> JsonResponse:
+    source = get_object_or_404(Source, webhook_token=token, kind="webhook")
+    # Read before request.POST: once a multipart body is parsed, the raw bytes are gone
+    body = request.body
+    status, response = _handle_webhook(request, source, body)
+    WebhookDelivery.record(source, request, body, status, response)
+    return JsonResponse(response, status=status)

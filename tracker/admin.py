@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from tracker.models import Activity, Goal, Source
+from tracker.models import Activity, Goal, Source, WebhookDelivery
 
 
 @admin.register(Source)
@@ -22,3 +22,9 @@ class ActivityAdmin(admin.ModelAdmin):
     list_filter = ["type", "source"]
     date_hierarchy = "occurred_at"
     search_fields = ["title", "external_id"]
+
+
+@admin.register(WebhookDelivery)
+class WebhookDeliveryAdmin(admin.ModelAdmin):
+    list_display = ["received_at", "source", "status_code", "content_type", "user_agent"]
+    list_filter = ["status_code", "source"]

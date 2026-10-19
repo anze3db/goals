@@ -1,6 +1,8 @@
+import json
 import secrets
 
 from django.db import models
+from django.http import HttpRequest
 from django.utils import timezone
 
 from tracker.providers import Provider, get_provider
@@ -108,3 +110,54 @@ class Activity(models.Model):
 
     def __str__(self) -> str:
         return f"{self.type} {self.value} @ {self.occurred_at:%Y-%m-%d}"
+
+
+class WebhookDelivery(models.Model):
+    """A request that reached a webhook URL and what we answered, so Shortcuts and friends can be debugged."""
+
+    KEEP_PER_SOURCE = 50
+    MAX_BODY_LENGTH = 20_000
+
+    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="deliveries")
+    received_at = models.DateTimeField(auto_now_add=True)
+    content_type = models.CharField(max_length=255, blank=True)
+    user_agent = models.CharField(max_length=255, blank=True)
+    body = models.TextField(blank=True)
+    status_code = models.PositiveSmallIntegerField()
+    response = models.JSONField(default=dict)
+
+    class Meta:
+        ordering = ["-received_at", "-pk"]
+        verbose_name_plural = "webhook deliveries"
+
+    def __str__(self) -> str:
+        return f"{self.status_code} @ {self.received_at:%Y-%m-%d %H:%M}"
+
+    @property
+    def ok(self) -> bool:
+        return self.status_code < 400
+
+    @property
+    def pretty_body(self) -> str:
+        try:
+            return json.dumps(json.loads(self.body), indent=2, ensure_ascii=False)
+        except ValueError:
+            return self.body
+
+    @property
+    def pretty_response(self) -> str:
+        return json.dumps(self.response, indent=2, ensure_ascii=False)
+
+    @classmethod
+    def record(cls, source: Source, request: HttpRequest, body: bytes, status_code: int, response: dict) -> WebhookDelivery:
+        delivery = cls.objects.create(
+            source=source,
+            content_type=request.content_type or "",
+            user_agent=request.headers.get("User-Agent", "")[:255],
+            body=body.decode("utf-8", errors="replace")[: cls.MAX_BODY_LENGTH],
+            status_code=status_code,
+            response=response,
+        )
+        stale = cls.objects.filter(source=source).values_list("pk", flat=True)[cls.KEEP_PER_SOURCE :]
+        cls.objects.filter(pk__in=list(stale)).delete()
+        return delivery

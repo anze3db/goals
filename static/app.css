@@ -730,6 +730,57 @@ pre.code {
     white-space: nowrap;
 }
 
+.delivery {
+    border-top: 1px solid var(--line);
+}
+
+.delivery summary {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-height: 44px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.delivery summary span:nth-child(2) {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.delivery summary time {
+    font: 400 12px var(--mono);
+    color: var(--muted);
+    white-space: nowrap;
+}
+
+.delivery[open] {
+    padding-bottom: 12px;
+}
+
+.delivery[open] > *:not(summary) {
+    margin-top: 8px;
+}
+
+.status {
+    font: 500 12px/1 var(--mono);
+    padding: 5px 7px;
+    border-radius: 6px;
+}
+
+.status.ok {
+    color: var(--ahead);
+    background: var(--ahead-bg);
+}
+
+.status.bad {
+    color: var(--behind);
+    background: var(--behind-bg);
+}
+
 /* Year in squares */
 .legend {
     display: flex;
