@@ -1,3 +1,4 @@
+import json
 import math
 from collections import defaultdict
 from collections.abc import Sequence
@@ -16,6 +17,7 @@ CHART_HEIGHT = 110
 CHART_PADDING = 6
 
 MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
+WEEKDAY_NAMES = ("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun")
 
 # (singular, plural, the current one)
 PERIOD_WORDS = {
@@ -30,6 +32,14 @@ def format_number(value: float) -> str:
     if abs(value) >= 100 or float(value).is_integer():
         return f"{round(value):,}"
     return f"{value:,.1f}"
+
+
+def day_label(day: date) -> str:
+    return f"{WEEKDAY_NAMES[day.weekday()]} {day.day} {MONTH_NAMES[day.month - 1]}"
+
+
+def with_unit(value: str, unit: str) -> str:
+    return f"{value} {unit}".strip()
 
 
 def days_in_year(year: int) -> int:
@@ -149,6 +159,8 @@ class Chart:
     # Per-period goals draw bars instead of the burn-up line
     hit_bars: str = ""
     miss_bars: str = ""
+    # JSON rows for the hover readout, one per day so far: [x, y, date, value, note]
+    hover: str = "[]"
 
 
 @dataclass
@@ -358,6 +370,9 @@ def build_bars(progress: GoalProgress) -> Chart:
     def y(value: float) -> float:
         return base - min(1.0, value / high) * (CHART_HEIGHT - 2 * CHART_PADDING)
 
+    def top(period: PeriodTotal) -> float:
+        return y(period.total) if period.total else base - 1
+
     hit: list[str] = []
     miss: list[str] = []
     for period in progress.periods:
@@ -365,9 +380,29 @@ def build_bars(progress: GoalProgress) -> Chart:
         right = x(day_of_year(period.end))
         # Leave a gap between wider bars; daily bars are too thin for one
         gap = (right - left) * 0.15 if goal.period != Goal.Period.DAY else 0
-        top = y(period.total) if period.total else base - 1
-        bar = f"M{left + gap / 2:.1f} {base:.1f} V{top:.1f} H{right - gap / 2:.1f} V{base:.1f} Z"
+        bar = f"M{left + gap / 2:.1f} {base:.1f} V{top(period):.1f} H{right - gap / 2:.1f} V{base:.1f} Z"
         (hit if period.hit else miss).append(bar)
+
+    hover = []
+    periods = iter(progress.periods)
+    current = next(periods, None)
+    for index in range(round(progress.fraction * total_days)):
+        day = date(goal.year, 1, 1) + timedelta(days=index)
+        while current and current.end < day:
+            current = next(periods, None)
+        if current is None:
+            break
+        notes = []
+        if goal.period == Goal.Period.WEEK:
+            notes.append(f"week of {current.start.day} {MONTH_NAMES[current.start.month - 1]}")
+        elif goal.period == Goal.Period.MONTH:
+            notes.append(f"{MONTH_NAMES[current.start.month - 1]} total")
+        if goal.period != Goal.Period.DAY and progress.daily.get(day):
+            notes.append(f"+{format_number(progress.daily[day])} that day")
+        if current.hit:
+            notes.append("hit")
+        value = with_unit(f"{format_number(current.total)} / {progress.target_label}", goal.unit)
+        hover.append([round(x(index + 0.5), 1), round(top(current), 1), day_label(day), value, " · ".join(notes)])
 
     target_y = f"{y(goal.target):.1f}"
     return Chart(
@@ -382,6 +417,7 @@ def build_bars(progress: GoalProgress) -> Chart:
         ),
         hit_bars=" ".join(hit),
         miss_bars=" ".join(miss),
+        hover=json.dumps(hover, separators=(",", ":")),
     )
 
 
@@ -410,6 +446,26 @@ def build_chart(progress: GoalProgress) -> Chart:
     segments.append(f"L{x(progress.fraction)} {y(progress.current)}")
     actual = " ".join(segments)
 
+    hover = []
+    reached = dict(progress.points)
+    value = low
+    for index in range(round(progress.fraction * total_days)):
+        day = date(goal.year, 1, 1) + timedelta(days=index)
+        value = reached.get(day, value)
+        notes = []
+        if goal.aggregation != Goal.Aggregation.LATEST and progress.daily.get(day):
+            notes.append(f"+{format_number(progress.daily[day])} that day")
+        notes.append(f"pace {format_number(low + (goal.target - low) * (index + 1) / total_days)}")
+        hover.append(
+            [
+                float(x((index + 1) / total_days)),
+                float(y(value)),
+                day_label(day),
+                with_unit(f"{format_number(value)} / {progress.target_label}", goal.unit),
+                " · ".join(notes),
+            ]
+        )
+
     projection = ""
     if 0 < progress.fraction < 1 and not progress.done:
         projection = f"M{x(progress.fraction)} {y(progress.current)} L{x(1)} {y(progress.projected)}"
@@ -424,6 +480,7 @@ def build_chart(progress: GoalProgress) -> Chart:
             f"{goal.name}: {progress.current_label} of {progress.target_label} {goal.unit}, "
             f"projected {progress.projected_label} by the end of the year"
         ),
+        hover=json.dumps(hover, separators=(",", ":")),
     )
 
 
@@ -458,9 +515,17 @@ def headline(progress: Sequence[GoalProgress], manual_count: int) -> str:
 
 
 @dataclass
+class Cell:
+    css: str
+    # Hover readout; empty for slots outside the year and days still ahead
+    day: str = ""
+    value: str = ""
+
+
+@dataclass
 class Squares:
     progress: GoalProgress
-    weeks: list[list[str]]
+    weeks: list[list[Cell]]
     month_slots: list[str]
     streak: int
     best_streak: int
@@ -529,18 +594,32 @@ def squares(progress: GoalProgress, today: date | None = None) -> Squares:
     offset = start.weekday()
     week_count = math.ceil((offset + days_in_year(goal.year)) / 7)
 
+    reading = progress.baseline
+
+    def readout(day: date) -> str:
+        nonlocal reading
+        if goal.aggregation == Goal.Aggregation.LATEST:
+            # Days are visited in order, so the last reading carries over the days without one
+            reading = progress.daily.get(day, reading)
+            change = per_day.get(day, 0)
+            return with_unit(format_number(reading), goal.unit) + (f" · +{format_number(change)}" if change else "")
+        value = per_day.get(day, 0)
+        if by_target:
+            return with_unit(f"{format_number(value)} / {progress.target_label}", goal.unit)
+        return with_unit(format_number(value), goal.unit) if value else "Nothing"
+
     weeks = []
     for week in range(week_count):
         cells = []
         for weekday in range(7):
             day = start + timedelta(days=week * 7 + weekday - offset)
             if day.year != goal.year:
-                cells.append("out")
+                cells.append(Cell("out"))
             elif day > last:
-                cells.append("future")
+                cells.append(Cell("future"))
             else:
                 shade = level(per_day.get(day, 0))
-                cells.append(f"l{shade} today" if day == today else f"l{shade}")
+                cells.append(Cell(f"l{shade} today" if day == today else f"l{shade}", day_label(day), readout(day)))
         weeks.append(cells)
 
     month_slots = [""] * week_count

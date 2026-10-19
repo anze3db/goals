@@ -56,23 +56,27 @@
                                 <strong>{{ p.current_label }}</strong>
                                 <span>/ {{ p.target_label }} {{ p.goal.unit }}{% if p.is_recurring %} {{ p.period_now }}{% endif %}</span>
                             </div>
-                            <svg class="chart {{ p.status }}"
-                                 viewBox="0 0 320 110"
-                                 preserveAspectRatio="none"
-                                 role="img"
-                                 aria-label="{{ p.chart.label }}">
-                                <line class="td" x1="{{ p.chart.today_x }}" y1="0" x2="{{ p.chart.today_x }}" y2="110"></line>
-                                {% if p.is_recurring %}
-                                    <path class="bar miss" d="{{ p.chart.miss_bars }}"></path>
-                                    <path class="bar hit" d="{{ p.chart.hit_bars }}"></path>
-                                    <path class="pc" d="{{ p.chart.pace }}"></path>
-                                {% else %}
-                                    <path class="pc" d="{{ p.chart.pace }}"></path>
-                                    <path class="ar" d="{{ p.chart.area }}"></path>
-                                    <path class="ln" d="{{ p.chart.actual }}"></path>
-                                    {% if p.chart.projection %}<path class="pj" d="{{ p.chart.projection }}"></path>{% endif %}
-                                {% endif %}
-                            </svg>
+                            <div class="chart-wrap" data-hover="{{ p.chart.hover }}">
+                                <svg class="chart {{ p.status }}"
+                                     viewBox="0 0 320 110"
+                                     preserveAspectRatio="none"
+                                     role="img"
+                                     aria-label="{{ p.chart.label }}">
+                                    <line class="td" x1="{{ p.chart.today_x }}" y1="0" x2="{{ p.chart.today_x }}" y2="110"></line>
+                                    {% if p.is_recurring %}
+                                        <path class="bar miss" d="{{ p.chart.miss_bars }}"></path>
+                                        <path class="bar hit" d="{{ p.chart.hit_bars }}"></path>
+                                        <path class="pc" d="{{ p.chart.pace }}"></path>
+                                    {% else %}
+                                        <path class="pc" d="{{ p.chart.pace }}"></path>
+                                        <path class="ar" d="{{ p.chart.area }}"></path>
+                                        <path class="ln" d="{{ p.chart.actual }}"></path>
+                                        {% if p.chart.projection %}<path class="pj" d="{{ p.chart.projection }}"></path>{% endif %}
+                                    {% endif %}
+                                </svg>
+                                <span class="chart-guide {{ p.status }}" aria-hidden="true"></span>
+                                <span class="chart-dot {{ p.status }}" aria-hidden="true"></span>
+                            </div>
                             <div class="card-foot">
                                 {% if p.is_recurring %}
                                     <span>Hit {{ p.hit_count }} of {{ p.elapsed_count }} {{ p.period_plural }}</span>

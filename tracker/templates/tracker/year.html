@@ -55,7 +55,10 @@
                              aria-label="{{ row.progress.goal.name }}: {{ row.active_days }} {{ row.count_label }}, current streak {{ row.streak }}, best {{ row.best_streak }}">
                             {% for week in row.weeks %}
                                 <div class="sq-week">
-                                    {% for cell in week %}<span class="c {{ cell }}"></span>{% endfor %}
+                                    {% for cell in week %}
+                                        <span class="c {{ cell.css }}"
+                                              {% if cell.day %}data-tip="{{ cell.day }}" data-tip-value="{{ cell.value }}"{% endif %}></span>
+                                    {% endfor %}
                                 </div>
                             {% endfor %}
                         </div>

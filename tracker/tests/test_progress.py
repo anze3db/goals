@@ -1,3 +1,4 @@
+import json
 from datetime import date
 from typing import Any
 
@@ -93,6 +94,15 @@ class ComputeProgressTest(SimpleTestCase):
         self.assertTrue(chart.projection.startswith(f"M{chart.today_x}"))
         self.assertIn("Run: 40 of 100 km", chart.label)
 
+    def test_chart_hover_has_a_row_per_day_so_far(self):
+        progress = compute_progress(make_goal(), [activity(date(2026, 3, 1), 40)], TODAY)
+        rows = json.loads(progress.chart.hover)
+        self.assertEqual(len(rows), 183)
+        self.assertEqual(rows[0][2:], ["Thu 1 Jan", "0 / 100 km", "pace 0.3"])
+        self.assertEqual(rows[59][2:], ["Sun 1 Mar", "40 / 100 km", "+40 that day · pace 16.4"])
+        self.assertEqual(rows[60][3], "40 / 100 km")
+        self.assertEqual(rows[-1][0], float(progress.chart.today_x))
+
 
 class SquaresTest(SimpleTestCase):
     def test_grid_and_streaks(self):
@@ -101,10 +111,13 @@ class SquaresTest(SimpleTestCase):
         result = squares(progress, TODAY)
 
         # 2026 starts on a Thursday, so the first column has three empty slots
-        self.assertEqual(result.weeks[0][:4], ["out", "out", "out", "l4"])
+        self.assertEqual([c.css for c in result.weeks[0][:4]], ["out", "out", "out", "l4"])
         self.assertEqual(len(result.weeks), 53)
-        self.assertEqual(result.weeks[26][3], "l4 today")
-        self.assertEqual(result.weeks[26][4], "future")
+        self.assertEqual(result.weeks[26][3].css, "l4 today")
+        self.assertEqual(result.weeks[26][4].css, "future")
+        self.assertEqual((result.weeks[26][3].day, result.weeks[26][3].value), ("Thu 2 Jul", "5 km"))
+        self.assertEqual((result.weeks[26][1].day, result.weeks[26][1].value), ("Tue 30 Jun", "Nothing"))
+        self.assertEqual(result.weeks[26][4].day, "")
         self.assertEqual(result.streak, 2)
         self.assertEqual(result.best_streak, 2)
         self.assertEqual(result.active_days, 5)
@@ -119,13 +132,14 @@ class SquaresTest(SimpleTestCase):
         values = {date(2026, 1, d): v for d, v in [(5, 1), (6, 2), (7, 3), (8, 4)]}
         progress = compute_progress(make_goal(), [activity(day, v) for day, v in values.items()], TODAY)
         week = squares(progress, TODAY).weeks[1]
-        self.assertEqual(week[:4], ["l1", "l2", "l3", "l4"])
+        self.assertEqual([c.css for c in week[:4]], ["l1", "l2", "l3", "l4"])
 
     def test_latest_goal_lights_up_days_that_grew(self):
         goal = make_goal(aggregation=Goal.Aggregation.LATEST, target=200)
         readings = [activity(date(2026, 1, 5), 100), activity(date(2026, 1, 6), 100), activity(date(2026, 1, 7), 110)]
         week = squares(compute_progress(goal, readings, TODAY), TODAY).weeks[1]
-        self.assertEqual(week[:3], ["l0", "l0", "l4"])
+        self.assertEqual([c.css for c in week[:3]], ["l0", "l0", "l4"])
+        self.assertEqual([c.value for c in week[:4]], ["100 km", "100 km", "110 km · +10", "110 km"])
 
 
 class MonthBarsTest(SimpleTestCase):
@@ -191,6 +205,9 @@ class RecurringGoalTest(SimpleTestCase):
         self.assertEqual((progress.hit_count, progress.streak), (2, 1))
         self.assertEqual(progress.chip, "3 sessions to go")
         self.assertIn("hit 2 of 27 weeks", progress.chart.label)
+        rows = json.loads(progress.chart.hover)
+        self.assertEqual(rows[1][2:], ["Fri 2 Jan", "3 / 3 sessions", "week of 1 Jan · +1 that day · hit"])
+        self.assertEqual(rows[-1][2:], ["Thu 2 Jul", "0 / 3 sessions", "week of 29 Jun"])
 
     def test_monthly_target(self):
         goal = make_goal(name="Posts", target=2, unit="posts", period=Goal.Period.MONTH, aggregation=Goal.Aggregation.COUNT)
@@ -216,5 +233,5 @@ class RecurringGoalTest(SimpleTestCase):
     def test_squares_shade_by_target_and_count_hits(self):
         values = {date(2026, 1, 5): 2_000, date(2026, 1, 6): 5_000, date(2026, 1, 7): 9_000, date(2026, 1, 8): 10_000}
         result = squares(compute_progress(self.daily_goal(), [activity(day, v) for day, v in values.items()], TODAY), TODAY)
-        self.assertEqual(result.weeks[1][:5], ["l1", "l2", "l3", "l4", "l0"])
+        self.assertEqual([c.css for c in result.weeks[1][:5]], ["l1", "l2", "l3", "l4", "l0"])
         self.assertEqual((result.active_days, result.streak_label, result.count_label), (1, "day streak", "days hit"))

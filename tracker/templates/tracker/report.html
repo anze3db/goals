@@ -83,7 +83,8 @@
                             <h2>{{ featured.goal.name }}, month by month</h2>
                             <div class="bars">
                                 {% for bar in bars %}
-                                    <div class="col">
+                                    <div class="col"
+                                         {% if not bar.future %}title="{{ bar.name }}: {{ bar.label|default:'0' }} {{ featured.goal.unit }}"{% endif %}>
                                         <span>{{ bar.label }}</span>
                                         <div class="{% if bar.best %}best{% elif bar.future %}future{% endif %}"
                                              style="height: {% if bar.future %}220{% else %}{{ bar.height }}{% endif %}px">
