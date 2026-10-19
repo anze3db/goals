@@ -36,6 +36,19 @@ uv run ptw
 | Mastodon | `@you@instance` | posts, likes/boosts/replies, followers |
 | Webhook | Nothing; POST `type`, `value`, `date` | anything: Apple Health steps via iOS Shortcuts, surf sessions, ... |
 
+### Backfilling Apple Health steps
+
+Health app → profile picture → Export All Health Data gives you `export.zip`. Copy it to the server and run:
+
+```
+uv run python manage.py import_apple_health export.zip --source "Apple Health" --year 2026 --dry-run
+uv run python manage.py import_apple_health export.zip --source "Apple Health" --year 2026
+```
+
+It stores one total per day on the webhook source, under the same ids the daily Shortcut post uses, so re-running it or
+posting the same day later replaces the total instead of adding to it. iPhone and Watch both record the same steps; the
+import keeps the larger device total per day, which comes close to what the Health app shows.
+
 ## Deploying
 
 `.deploy/update.sh` pulls, syncs, migrates and restarts. The worker runs as its own service:

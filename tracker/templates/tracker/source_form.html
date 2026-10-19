@@ -77,6 +77,11 @@
                 <code>type</code> = steps, <code>value</code> = the sum, <code>date</code> = Current Date formatted yyyy-MM-dd.
                 Surf sessions work the same way with a Workout trigger and <code>type</code> = surf.
             </p>
+            <h2>Backfill past days</h2>
+            <p class="muted">
+                Health → profile picture → Export All Health Data, copy <code>export.zip</code> to the server, then run
+                <code>manage.py import_apple_health export.zip --source {{ source.pk }}</code>.
+            </p>
         </section>
         <section class="card tight" style="margin-top: 24px">
             <h2 style="margin-bottom: 8px">Recent deliveries</h2>
