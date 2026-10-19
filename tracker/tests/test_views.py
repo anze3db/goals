@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from model_bakery import baker
 
-from tracker.models import Activity, Goal, Source, WebhookDelivery
+from tracker.models import Activity, Goal, Source, SyncRun, WebhookDelivery
 from tracker.providers import SyncError
 from tracker.providers.base import midday
 from users.models import User
@@ -249,6 +249,23 @@ class SourceViewsTest(TrackerViewTestCase):
         github.refresh_from_db()
         self.assertEqual((github.name, github.config["username"], github.secrets["token"]), ("Renamed", "b", "keep"))
         delay.assert_called_once_with(github.pk)
+
+    def test_edit_shows_recent_syncs(self):
+        github = baker.make(Source, user=self.user, kind="github", config={"username": "a"})
+        now = timezone.now()
+        SyncRun.objects.create(
+            source=github,
+            started_at=now,
+            finished_at=now,
+            fetched=211,
+            created=3,
+            summary={"contribution": {"count": 210, "total": 1234}, "release": {"count": 1, "total": 1}},
+        )
+        SyncRun.objects.create(source=github, started_at=now - timedelta(days=1), finished_at=now, error="HTTPStatusError: 401")
+        response = self.client.get(reverse("source_edit", args=[github.pk]))
+        self.assertContains(response, "211 fetched, 3 new")
+        self.assertContains(response, "Contributions: 1,234 across 210 entries · Releases: 1")
+        self.assertContains(response, "HTTPStatusError: 401")
 
     def test_edit_webhook_shows_url(self):
         response = self.client.get(reverse("source_edit", args=[self.hook.pk]))

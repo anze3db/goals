@@ -5,7 +5,7 @@ import httpx
 from django.db import transaction
 from django.utils import timezone
 
-from tracker.models import Activity, Source
+from tracker.models import Activity, Source, SyncRun
 from tracker.providers import FetchedActivity
 
 logger = logging.getLogger(__name__)
@@ -69,10 +69,12 @@ def sync_source(source: Source, client: httpx.Client | None = None) -> int:
         logger.exception("Syncing source %s (%s) failed", source.pk, source.kind)
         source.last_error = f"{type(e).__name__}: {e}"[:2000]
         source.save(update_fields=["last_error"])
+        SyncRun.record(source, started_at, error=source.last_error)
         return 0
 
     created = store_activities(source, fetched)
     source.last_synced_at = started_at
     source.last_error = ""
     source.save(update_fields=["last_synced_at", "last_error"])
+    SyncRun.record(source, started_at, fetched, created)
     return created

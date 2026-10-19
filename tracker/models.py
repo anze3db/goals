@@ -1,11 +1,13 @@
 import json
 import secrets
+from collections.abc import Sequence
+from datetime import datetime
 
 from django.db import models
 from django.http import HttpRequest
 from django.utils import timezone
 
-from tracker.providers import Provider, get_provider
+from tracker.providers import FetchedActivity, Provider, get_provider
 from users.models import User
 
 
@@ -169,3 +171,54 @@ class WebhookDelivery(models.Model):
         stale = cls.objects.filter(source=source).values_list("pk", flat=True)[cls.KEEP_PER_SOURCE :]
         cls.objects.filter(pk__in=list(stale)).delete()
         return delivery
+
+
+class SyncRun(models.Model):
+    """One pull from a source's service and how it went, so a failing or suspiciously empty sync can be spotted."""
+
+    KEEP_PER_SOURCE = 50
+
+    source = models.ForeignKey(Source, on_delete=models.CASCADE, related_name="sync_runs")
+    started_at = models.DateTimeField()
+    finished_at = models.DateTimeField()
+    fetched = models.PositiveIntegerField(default=0)
+    created = models.PositiveIntegerField(default=0)
+    # {activity type: {"count": n, "total": sum of values}} for what came back
+    summary = models.JSONField(default=dict)
+    error = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["-started_at", "-pk"]
+
+    def __str__(self) -> str:
+        return f"{'ok' if self.ok else 'failed'} @ {self.started_at:%Y-%m-%d %H:%M}"
+
+    @property
+    def ok(self) -> bool:
+        return not self.error
+
+    @property
+    def seconds(self) -> float:
+        return (self.finished_at - self.started_at).total_seconds()
+
+    @classmethod
+    def record(
+        cls, source: Source, started_at: datetime, fetched: Sequence[FetchedActivity] = (), created: int = 0, error: str = ""
+    ) -> SyncRun:
+        summary: dict[str, dict[str, float]] = {}
+        for item in fetched:
+            entry = summary.setdefault(item.type, {"count": 0, "total": 0})
+            entry["count"] += 1
+            entry["total"] += item.value
+        run = cls.objects.create(
+            source=source,
+            started_at=started_at,
+            finished_at=timezone.now(),
+            fetched=len(fetched),
+            created=created,
+            summary=summary,
+            error=error,
+        )
+        stale = cls.objects.filter(source=source).values_list("pk", flat=True)[cls.KEEP_PER_SOURCE :]
+        cls.objects.filter(pk__in=list(stale)).delete()
+        return run

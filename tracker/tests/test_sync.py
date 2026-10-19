@@ -7,7 +7,7 @@ from model_bakery import baker
 from potatoq import current_app
 from potatoq.testing import due
 
-from tracker.models import Activity, Source
+from tracker.models import Activity, Source, SyncRun
 from tracker.providers import FetchedActivity
 from tracker.sync import store_activities, sync_source
 from tracker.tasks import sync_all_sources, sync_source_task
@@ -68,6 +68,10 @@ class SyncSourceTest(TestCase):
         self.assertIsNotNone(self.source.last_synced_at)
         self.assertEqual(self.source.last_error, "")
         self.assertEqual(self.source.activities.get().title, "One")
+        latest, first = self.source.sync_runs.all()
+        self.assertTrue(first.ok)
+        self.assertEqual((first.fetched, first.created, first.summary), (1, 1, {"post": {"count": 1, "total": 1}}))
+        self.assertEqual((latest.fetched, latest.created), (1, 0))
 
     def test_failure_is_recorded_not_raised(self):
         with self.assertLogs("tracker.sync", level="ERROR"):
@@ -75,6 +79,15 @@ class SyncSourceTest(TestCase):
         self.source.refresh_from_db()
         self.assertIn("HTTPStatusError", self.source.last_error)
         self.assertIsNone(self.source.last_synced_at)
+        run = self.source.sync_runs.get()
+        self.assertFalse(run.ok)
+        self.assertEqual(run.error, self.source.last_error)
+
+    def test_keeps_the_last_runs_only(self):
+        with mock.patch.object(SyncRun, "KEEP_PER_SOURCE", 2):
+            for _ in range(3):
+                sync_source(self.source, feed_client())
+        self.assertEqual(self.source.sync_runs.count(), 2)
 
     def test_push_only_sources_are_skipped(self):
         self.assertEqual(sync_source(baker.make(Source, kind="webhook")), 0)

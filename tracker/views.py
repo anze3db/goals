@@ -320,6 +320,7 @@ def source_edit(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
             "source": source,
             "webhook_url": request.build_absolute_uri(reverse("webhook", args=[source.webhook_token])),
             "deliveries": source.deliveries.all()[:20],
+            "sync_runs": source.sync_runs.all() if source.provider.pulls else [],
             "nav": "sources",
         },
     )

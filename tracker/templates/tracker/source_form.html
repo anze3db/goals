@@ -110,6 +110,43 @@
             {% endfor %}
         </section>
     {% endif %}
+    {% if source and source.provider.pulls %}
+        <section class="card tight" style="margin-top: 24px">
+            <h2 style="margin-bottom: 8px">Recent syncs</h2>
+            <p class="sub"
+               style="margin-bottom: 8px">The last {{ sync_runs|length }} syncs, newest first. Older ones are dropped after 50.</p>
+            {% for run in sync_runs %}
+                <details class="delivery">
+                    <summary>
+                        <span class="status {% if run.ok %}ok{% else %}bad{% endif %}">
+                            {% if run.ok %}
+                                OK
+                            {% else %}
+                                Failed
+                            {% endif %}
+                        </span>
+                        <span>
+                            {% if run.ok %}
+                                {{ run.fetched }} fetched, {{ run.created }} new
+                            {% else %}
+                                {{ run.error }}
+                            {% endif %}
+                        </span>
+                        <time datetime="{{ run.started_at|date:'c' }}"
+                              title="{{ run.started_at }}">{{ run.started_at|ago }}</time>
+                    </summary>
+                    <p class="sub">Took {{ run.seconds|floatformat:1 }}s</p>
+                    {% if run.ok %}
+                        <p class="muted">{{ run|sync_summary|default:"Nothing came back." }}</p>
+                    {% else %}
+                        <pre class="code">{{ run.error }}</pre>
+                    {% endif %}
+                </details>
+            {% empty %}
+                <p class="muted">No syncs yet. They run every morning at 05:00, or press Sync on the sources page.</p>
+            {% endfor %}
+        </section>
+    {% endif %}
     {% if source %}
         <form method="post"
               action="{% url 'source_delete' source.pk %}"
