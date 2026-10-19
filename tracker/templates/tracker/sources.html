@@ -59,6 +59,14 @@
                                 <strong>{{ provider.label }}</strong>
                                 <span>{{ provider.description }} Needs STRAVA_CLIENT_ID and STRAVA_CLIENT_SECRET.</span>
                             </div>
+                        {% elif provider.connect_url_name %}
+                            {# OAuth ends on another site, which a boosted (XHR) request can't follow #}
+                            <a class="provider"
+                               href="{% url provider.connect_url_name %}"
+                               hx-boost="false">
+                                <strong>{{ provider.label }}</strong>
+                                <span>{{ provider.description }}</span>
+                            </a>
                         {% else %}
                             <a class="provider" href="{% url 'source_new' provider.kind %}">
                                 <strong>{{ provider.label }}</strong>

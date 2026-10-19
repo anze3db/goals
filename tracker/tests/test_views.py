@@ -272,6 +272,11 @@ class SourceViewsTest(TrackerViewTestCase):
 
 @override_settings(STRAVA_CLIENT_ID="123", STRAVA_CLIENT_SECRET="shh")
 class StravaOAuthTest(TrackerViewTestCase):
+    def test_sources_page_links_straight_to_oauth_without_boost(self):
+        response = self.client.get(reverse("sources"))
+        self.assertRegex(response.content.decode(), rf'href="{reverse("strava_connect")}"\s+hx-boost="false"')
+        self.assertNotContains(response, "Needs STRAVA_CLIENT_ID")
+
     def test_connect_and_callback(self):
         response = self.client.get(reverse("strava_connect"))
         self.assertTrue(response.url.startswith("https://www.strava.com/oauth/authorize?client_id=123"))
