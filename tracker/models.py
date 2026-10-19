@@ -48,6 +48,12 @@ class Goal(models.Model):
         COUNT = "count", "Count the activities"
         LATEST = "latest", "Latest value (e.g. followers)"
 
+    class Period(models.TextChoices):
+        YEAR = "year", "Per year"
+        MONTH = "month", "Per month"
+        WEEK = "week", "Per week"
+        DAY = "day", "Per day"
+
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tracked_goals")
     name = models.CharField(max_length=255)
     year = models.PositiveIntegerField(default=_current_year)
@@ -57,6 +63,8 @@ class Goal(models.Model):
     source = models.ForeignKey(Source, on_delete=models.SET_NULL, null=True, blank=True, related_name="goals")
     activity_type = models.CharField(max_length=64, blank=True)
     aggregation = models.CharField(max_length=16, choices=Aggregation.choices, default=Aggregation.SUM)
+    # The target applies to each period: 10,000 steps per day, 3 workouts per week, 1,000 km per year
+    period = models.CharField(max_length=8, choices=Period.choices, default=Period.YEAR)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:

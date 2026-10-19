@@ -17,6 +17,14 @@ CHART_PADDING = 6
 
 MONTH_NAMES = ("Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec")
 
+# (singular, plural, the current one)
+PERIOD_WORDS = {
+    Goal.Period.DAY: ("day", "days", "today"),
+    Goal.Period.WEEK: ("week", "weeks", "this week"),
+    Goal.Period.MONTH: ("month", "months", "this month"),
+    Goal.Period.YEAR: ("year", "years", "this year"),
+}
+
 
 def format_number(value: float) -> str:
     if abs(value) >= 100 or float(value).is_integer():
@@ -73,6 +81,64 @@ def cumulative(goal: Goal, daily: dict[date, float]) -> list[tuple[date, float]]
 
 
 @dataclass
+class PeriodTotal:
+    start: date
+    end: date
+    total: float
+    hit: bool
+    current: bool
+
+
+def period_bounds(goal: Goal) -> list[tuple[date, date]]:
+    """The days, weeks (Monday to Sunday, cut at the year's edges) or months of the goal's year."""
+    start, end = date(goal.year, 1, 1), date(goal.year, 12, 31)
+    match goal.period:
+        case Goal.Period.DAY:
+            return [(start + timedelta(days=i), start + timedelta(days=i)) for i in range(days_in_year(goal.year))]
+        case Goal.Period.WEEK:
+            bounds = []
+            day = start
+            while day <= end:
+                week_end = min(day + timedelta(days=6 - day.weekday()), end)
+                bounds.append((day, week_end))
+                day = week_end + timedelta(days=1)
+            return bounds
+        case Goal.Period.MONTH:
+            return [
+                (date(goal.year, m, 1), (date(goal.year, m + 1, 1) if m < 12 else date(goal.year + 1, 1, 1)) - timedelta(days=1))
+                for m in range(1, 13)
+            ]
+        case _:
+            return [(start, end)]
+
+
+def period_totals(goal: Goal, daily: dict[date, float], today: date) -> list[PeriodTotal]:
+    """Every period that has started so far, with its total and whether it reached the target."""
+    totals = []
+    for start, end in period_bounds(goal):
+        if start > today:
+            break
+        total = sum(value for day, value in daily.items() if start <= day <= end)
+        totals.append(PeriodTotal(start, end, total, total >= goal.target, start <= today <= end))
+    return totals
+
+
+def period_streaks(periods: Sequence[PeriodTotal]) -> tuple[int, int]:
+    best = run = 0
+    for period in periods:
+        run = run + 1 if period.hit else 0
+        best = max(best, run)
+    # The period still in progress doesn't break the streak until it's over
+    finished = periods[:-1] if periods and periods[-1].current and not periods[-1].hit else periods
+    current = 0
+    for period in reversed(finished):
+        if not period.hit:
+            break
+        current += 1
+    return current, best
+
+
+@dataclass
 class Chart:
     actual: str
     area: str
@@ -80,6 +146,9 @@ class Chart:
     projection: str
     today_x: str
     label: str
+    # Per-period goals draw bars instead of the burn-up line
+    hit_bars: str = ""
+    miss_bars: str = ""
 
 
 @dataclass
@@ -95,6 +164,9 @@ class GoalProgress:
     daily: dict[date, float]
     points: list[tuple[date, float]]
     completed_on: date | None
+    periods: list[PeriodTotal] = field(default_factory=list)
+    streak: int = 0
+    best_streak: int = 0
     chart: Chart | None = field(default=None)
 
     @property
@@ -102,11 +174,37 @@ class GoalProgress:
         return self.status == "done"
 
     @property
+    def is_recurring(self) -> bool:
+        return self.goal.period != Goal.Period.YEAR
+
+    @property
+    def period_noun(self) -> str:
+        return PERIOD_WORDS[Goal.Period(self.goal.period)][0]
+
+    @property
+    def period_plural(self) -> str:
+        return PERIOD_WORDS[Goal.Period(self.goal.period)][1]
+
+    @property
+    def period_now(self) -> str:
+        return PERIOD_WORDS[Goal.Period(self.goal.period)][2]
+
+    @property
+    def hit_count(self) -> int:
+        return sum(1 for period in self.periods if period.hit)
+
+    @property
+    def elapsed_count(self) -> int:
+        return len(self.periods)
+
+    @property
     def delta(self) -> float:
         return self.current - self.expected
 
     @property
     def percent(self) -> float:
+        if self.is_recurring:
+            return self.hit_count / self.elapsed_count * 100 if self.elapsed_count else 0.0
         span = self.goal.target - self.baseline
         if span <= 0:
             return 100.0
@@ -115,6 +213,8 @@ class GoalProgress:
     @property
     def chip(self) -> str:
         unit = f" {self.goal.unit}" if self.goal.unit else ""
+        if self.is_recurring:
+            return self._recurring_chip(unit)
         match self.status:
             case "done":
                 extra = self.current - self.goal.target
@@ -125,6 +225,19 @@ class GoalProgress:
                 return f"{format_number(-self.delta)}{unit} behind"
             case _:
                 return "On pace"
+
+    def _recurring_chip(self, unit: str) -> str:
+        streak = f"{self.streak}-{self.period_noun} streak" if self.streak > 1 else ""
+        to_go = f"{format_number(self.goal.target - self.current)}{unit} to go"
+        match self.status:
+            case "done":
+                return f"Hit {self.period_now}" + (f" · {streak}" if streak else "")
+            case "pace":
+                return f"{streak} · {to_go}" if streak else to_go
+            case _ if self.fraction == 1:
+                return f"Hit {self.hit_count} of {self.elapsed_count}"
+            case _:
+                return to_go
 
     @property
     def current_label(self) -> str:
@@ -151,6 +264,9 @@ def compute_progress(goal: Goal, activities: Sequence[Activity], today: date | N
     else:
         baseline = 0.0
         current = points[-1][1] if points else 0.0
+
+    if goal.period != Goal.Period.YEAR:
+        return _recurring_progress(goal, activities, today, fraction, daily, points)
 
     expected = baseline + (goal.target - baseline) * fraction
     projected = baseline + (current - baseline) / fraction if fraction else current
@@ -181,6 +297,92 @@ def compute_progress(goal: Goal, activities: Sequence[Activity], today: date | N
     )
     progress.chart = build_chart(progress)
     return progress
+
+
+def _recurring_progress(
+    goal: Goal,
+    activities: Sequence[Activity],
+    today: date,
+    fraction: float,
+    daily: dict[date, float],
+    points: list[tuple[date, float]],
+) -> GoalProgress:
+    """Per-day/week/month targets: progress is the current period's total, success is periods hit and the streak."""
+    periods = period_totals(goal, daily, today)
+    streak, best = period_streaks(periods)
+    now = periods[-1] if periods and periods[-1].current else None
+    hits = sum(1 for period in periods if period.hit)
+
+    if now and now.hit:
+        status = "done"
+    elif now is None:
+        # The year is over (or hasn't started): judge it on how many periods were hit
+        status = "ahead" if periods and hits * 2 >= len(periods) else ("pace" if not periods else "behind")
+    elif streak:
+        status = "pace"
+    else:
+        status = "behind"
+
+    current = now.total if now else (periods[-1].total if periods else 0.0)
+    progress = GoalProgress(
+        goal=goal,
+        current=current,
+        baseline=0.0,
+        expected=goal.target,
+        projected=current,
+        fraction=fraction,
+        status=status,
+        activity_count=len(activities),
+        daily=daily,
+        points=points,
+        completed_on=None,
+        periods=periods,
+        streak=streak,
+        best_streak=best,
+    )
+    progress.chart = build_bars(progress)
+    return progress
+
+
+def build_bars(progress: GoalProgress) -> Chart:
+    """One bar per period so far, against a flat target line."""
+    goal = progress.goal
+    total_days = days_in_year(goal.year)
+    high = max([goal.target, *(period.total for period in progress.periods)]) * 1.08 or 1
+    usable_width = CHART_WIDTH - 2 * CHART_PADDING
+    base = CHART_HEIGHT - CHART_PADDING
+
+    def x(day_index: float) -> float:
+        return CHART_PADDING + day_index / total_days * usable_width
+
+    def y(value: float) -> float:
+        return base - min(1.0, value / high) * (CHART_HEIGHT - 2 * CHART_PADDING)
+
+    hit: list[str] = []
+    miss: list[str] = []
+    for period in progress.periods:
+        left = x(day_of_year(period.start) - 1)
+        right = x(day_of_year(period.end))
+        # Leave a gap between wider bars; daily bars are too thin for one
+        gap = (right - left) * 0.15 if goal.period != Goal.Period.DAY else 0
+        top = y(period.total) if period.total else base - 1
+        bar = f"M{left + gap / 2:.1f} {base:.1f} V{top:.1f} H{right - gap / 2:.1f} V{base:.1f} Z"
+        (hit if period.hit else miss).append(bar)
+
+    target_y = f"{y(goal.target):.1f}"
+    return Chart(
+        actual="",
+        area="",
+        pace=f"M{x(0):.1f} {target_y} L{x(total_days):.1f} {target_y}",
+        projection="",
+        today_x=f"{x(progress.fraction * total_days):.1f}",
+        label=(
+            f"{goal.name}: hit {progress.hit_count} of {progress.elapsed_count} {progress.period_plural}, "
+            f"current streak {progress.streak}, best {progress.best_streak}"
+        ),
+        hit_bars=" ".join(hit),
+        miss_bars=" ".join(miss),
+    )
 
 
 def build_chart(progress: GoalProgress) -> Chart:
@@ -263,6 +465,8 @@ class Squares:
     streak: int
     best_streak: int
     active_days: int
+    streak_label: str = "day streak"
+    count_label: str = "active days"
 
 
 def _streaks(active: set[date], start: date, today: date) -> tuple[int, int]:
@@ -312,6 +516,16 @@ def squares(progress: GoalProgress, today: date | None = None) -> Squares:
         per_day = progress.daily
 
     thresholds = _levels(list(per_day.values()))
+    # With a daily target the shade says how close each day came, and only a hit is full strength
+    by_target = goal.period == Goal.Period.DAY
+
+    def level(value: float) -> int:
+        if value <= 0:
+            return 0
+        if by_target:
+            return 4 if value >= goal.target else 1 + min(2, int(value / goal.target * 3))
+        return 1 + sum(value > t for t in thresholds)
+
     offset = start.weekday()
     week_count = math.ceil((offset + days_in_year(goal.year)) / 7)
 
@@ -325,15 +539,26 @@ def squares(progress: GoalProgress, today: date | None = None) -> Squares:
             elif day > last:
                 cells.append("future")
             else:
-                value = per_day.get(day, 0)
-                level = 0 if value <= 0 else 1 + sum(value > t for t in thresholds)
-                cells.append(f"l{level} today" if day == today else f"l{level}")
+                shade = level(per_day.get(day, 0))
+                cells.append(f"l{shade} today" if day == today else f"l{shade}")
         weeks.append(cells)
 
     month_slots = [""] * week_count
     for month in range(12):
         first = date(goal.year, month + 1, 1)
         month_slots[(day_of_year(first) - 1 + offset) // 7] = MONTH_NAMES[month]
+
+    if progress.is_recurring:
+        return Squares(
+            progress=progress,
+            weeks=weeks,
+            month_slots=month_slots,
+            streak=progress.streak,
+            best_streak=progress.best_streak,
+            active_days=progress.hit_count,
+            streak_label=f"{progress.period_noun} streak",
+            count_label=f"{progress.period_plural} hit",
+        )
 
     active = {day for day, value in per_day.items() if value > 0}
     streak, best = _streaks(active, start, last)

@@ -160,10 +160,10 @@ def _highlights(progress, featured, bars) -> list[Highlight]:
                     f"{biggest.title or featured.goal.name} · {timezone.localtime(biggest.occurred_at):%-d %B}",
                 )
             )
-    streaks = [(squares(p).best_streak, p.goal.name) for p in progress]
+    streaks = [(squares(p).best_streak, p.goal.name, p.period_plural if p.is_recurring else "days") for p in progress]
     if streaks and max(streaks)[0] > 1:
-        days, name = max(streaks)
-        highlights.append(Highlight(f"Longest streak: {days} days", name))
+        length, name, unit = max(streaks)
+        highlights.append(Highlight(f"Longest streak: {length} {unit}", name))
     for p in progress:
         if p.completed_on:
             highlights.append(Highlight(f"{p.goal.name}: done", f"Reached on {p.completed_on:%-d %B}"))

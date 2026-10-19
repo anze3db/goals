@@ -400,6 +400,19 @@ p {
     vector-effect: non-scaling-stroke;
 }
 
+.chart .bar {
+    stroke: none;
+}
+
+.chart .bar.hit {
+    fill: var(--ahead);
+}
+
+.chart .bar.miss {
+    fill: var(--faint);
+    opacity: 0.55;
+}
+
 .chart .td {
     stroke: #3A3D42;
     stroke-width: 1;

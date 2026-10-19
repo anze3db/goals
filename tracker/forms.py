@@ -38,14 +38,19 @@ class GoalForm(forms.ModelForm):
 
     class Meta:
         model = Goal
-        fields = ["name", "target", "unit", "year"]
-        help_texts = {"unit": "Leave empty to use the metric's unit"}
+        fields = ["name", "target", "period", "unit", "year"]
+        labels = {"period": "Target applies"}
+        help_texts = {
+            "unit": "Leave empty to use the metric's unit",
+            "period": "Per day, week or month shows how many of them you hit, and your streak",
+        }
 
     def __init__(self, *args, user: User, **kwargs):
         super().__init__(*args, **kwargs)
         self.user = user
         cast(forms.ChoiceField, self.fields["metric"]).choices = metric_choices(user)
         self.fields["unit"].required = False
+        self.fields["period"].required = False
         self.fields["year"].initial = timezone.localdate().year
         goal = self.instance
         if goal.pk:
@@ -60,6 +65,7 @@ class GoalForm(forms.ModelForm):
 
     def clean(self):
         cleaned = super().clean()
+        cleaned["period"] = cleaned.get("period") or Goal.Period.YEAR
         metric = cleaned.get("metric")
         if not metric:
             return cleaned
@@ -85,6 +91,9 @@ class GoalForm(forms.ModelForm):
         cleaned["activity_type"] = slug
         cleaned["default_aggregation"] = activity_type.aggregation if activity_type else Goal.Aggregation.SUM
         cleaned["default_unit"] = activity_type.unit if activity_type else ""
+        aggregation = cleaned.get("aggregation") or cleaned["default_aggregation"]
+        if aggregation == Goal.Aggregation.LATEST and cleaned.get("period", Goal.Period.YEAR) != Goal.Period.YEAR:
+            self.add_error("period", "A latest value (like followers) can only have a yearly target")
         return cleaned
 
     def save(self, commit: bool = True) -> Goal:

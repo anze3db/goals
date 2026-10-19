@@ -41,22 +41,35 @@
                     {% for p in progress %}
                         <article class="stat">
                             <span class="kicker">{{ p.goal.name }}</span>
-                            <div class="value">
-                                <strong {% if p.current_label|length > 6 %}class="long"{% endif %}>{{ p.current_label }}</strong>
-                                <span>{{ p.goal.unit }}</span>
-                            </div>
-                            <div class="bar">
-                                <div class="{% if p.done %}done{% endif %}"
-                                     style="width: {{ p.percent|floatformat:1 }}%"></div>
-                            </div>
-                            <span class="note">
-                                of {{ p.target_label }}
-                                {% if p.done %}
-                                    · reached {{ p.completed_on|date:"j F" }}
-                                {% elif live %}
-                                    · on track for {{ p.projected_label }}
-                                {% endif %}
-                            </span>
+                            {% if p.is_recurring %}
+                                <div class="value">
+                                    <strong>{{ p.hit_count }}</strong>
+                                    <span>{{ p.period_plural }} hit</span>
+                                </div>
+                                <div class="bar">
+                                    <div style="width: {{ p.percent|floatformat:1 }}%"></div>
+                                </div>
+                                <span class="note">
+                                    of {{ p.elapsed_count }} · {{ p.target_label }} {{ p.goal.unit }} a {{ p.period_noun }} · best streak {{ p.best_streak }}
+                                </span>
+                            {% else %}
+                                <div class="value">
+                                    <strong {% if p.current_label|length > 6 %}class="long"{% endif %}>{{ p.current_label }}</strong>
+                                    <span>{{ p.goal.unit }}</span>
+                                </div>
+                                <div class="bar">
+                                    <div class="{% if p.done %}done{% endif %}"
+                                         style="width: {{ p.percent|floatformat:1 }}%"></div>
+                                </div>
+                                <span class="note">
+                                    of {{ p.target_label }}
+                                    {% if p.done %}
+                                        · reached {{ p.completed_on|date:"j F" }}
+                                    {% elif live %}
+                                        · on track for {{ p.projected_label }}
+                                    {% endif %}
+                                </span>
+                            {% endif %}
                         </article>
                     {% endfor %}
                 </section>

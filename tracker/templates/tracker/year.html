@@ -31,16 +31,17 @@
                             Logged by hand
                         {% endif %}
                         · {{ row.progress.current_label }} / {{ row.progress.target_label }} {{ row.progress.goal.unit }}
+                        {% if row.progress.is_recurring %}{{ row.progress.period_now }}{% endif %}
                     </span>
                     <div class="sq-stats">
                         <div>
-                            <strong>{{ row.streak }}</strong><span>day streak</span>
+                            <strong>{{ row.streak }}</strong><span>{{ row.streak_label }}</span>
                         </div>
                         <div>
                             <strong class="muted">{{ row.best_streak }}</strong><span>best</span>
                         </div>
                         <div>
-                            <strong class="muted">{{ row.active_days }}</strong><span>active days</span>
+                            <strong class="muted">{{ row.active_days }}</strong><span>{{ row.count_label }}</span>
                         </div>
                     </div>
                 </div>
@@ -51,7 +52,7 @@
                         </div>
                         <div class="sq-weeks"
                              role="img"
-                             aria-label="{{ row.progress.goal.name }}: active on {{ row.active_days }} days, current streak {{ row.streak }}, best {{ row.best_streak }}">
+                             aria-label="{{ row.progress.goal.name }}: {{ row.active_days }} {{ row.count_label }}, current streak {{ row.streak }}, best {{ row.best_streak }}">
                             {% for week in row.weeks %}
                                 <div class="sq-week">
                                     {% for cell in week %}<span class="c {{ cell }}"></span>{% endfor %}

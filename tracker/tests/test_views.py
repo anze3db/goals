@@ -11,6 +11,7 @@ from model_bakery import baker
 
 from tracker.models import Activity, Goal, Source, WebhookDelivery
 from tracker.providers import SyncError
+from tracker.providers.base import midday
 from users.models import User
 
 RSS = b"""<rss><channel>
@@ -414,3 +415,50 @@ class WebhookTest(TrackerViewTestCase):
 
     def test_only_webhook_sources_accept_pushes(self):
         self.assertEqual(self.client.post(reverse("webhook", args=[self.feed.webhook_token]), {}).status_code, 404)
+
+
+class RecurringGoalViewsTest(TrackerViewTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.steps_goal = baker.make(
+            Goal,
+            user=cls.user,
+            name="10k steps",
+            year=cls.year,
+            target=10_000,
+            unit="steps",
+            source=cls.hook,
+            activity_type="steps",
+            period=Goal.Period.DAY,
+        )
+        today = timezone.localdate()
+        for days_ago, steps in [(0, 12_000), (1, 11_000), (2, 4_000)]:
+            day = today - timedelta(days=days_ago)
+            if day.year == cls.year:
+                baker.make(
+                    Activity, user=cls.user, source=cls.hook, type="steps", value=steps, occurred_at=midday(day), external_id=f"steps:{day}"
+                )
+
+    def test_dashboard_card(self):
+        response = self.client.get("/")
+        self.assertContains(response, "/ 10,000 steps today")
+        self.assertContains(response, 'class="bar hit"')
+        self.assertContains(response, "Hit 2 of")
+        self.assertContains(response, "Hit today · 2-day streak")
+
+    def test_year_view(self):
+        response = self.client.get(reverse("year"))
+        self.assertContains(response, "days hit")
+
+    def test_report(self):
+        response = self.client.get(reverse("report", args=["anze", self.year]))
+        self.assertContains(response, "days hit")
+        self.assertContains(response, "10,000 steps a day · best streak 2")
+
+    def test_form_saves_period_and_rejects_periodic_latest_values(self):
+        data = {"name": "Walk", "target": 8000, "year": self.year, "metric": f"{self.hook.pk}:steps", "period": "day"}
+        self.client.post(reverse("goal_new"), data)
+        self.assertEqual(Goal.objects.get(name="Walk").period, "day")
+        response = self.client.post(reverse("goal_new"), data | {"name": "Fans", "aggregation": "latest", "period": "week"})
+        self.assertContains(response, "can only have a yearly target")
