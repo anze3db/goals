@@ -30,7 +30,10 @@ class GitHubForm(forms.Form):
         label="Personal access token",
         required=False,
         widget=forms.PasswordInput(render_value=False),
-        help_text="Read-only, no scopes needed. Required for daily contributions; without it only releases are tracked.",
+        help_text=(
+            "Read-only, no scopes needed. Required for daily contributions; without it only releases are tracked. "
+            'Private contributions only count with "Include private contributions on my profile" turned on in GitHub.'
+        ),
     )
 
 
