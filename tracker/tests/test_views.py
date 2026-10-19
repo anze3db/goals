@@ -244,14 +244,18 @@ class SourceViewsTest(TrackerViewTestCase):
         response = self.client.get(reverse("source_edit", args=[github.pk]))
         self.assertContains(response, "Leave empty to keep the current one")
         self.assertNotContains(response, 'value="keep"')
-        self.client.post(reverse("source_edit", args=[github.pk]), {"name": "Renamed", "username": "b", "token": "", "enabled": "on"})
+        with mock.patch("tracker.views.sync_source_task.delay") as delay:
+            self.client.post(reverse("source_edit", args=[github.pk]), {"name": "Renamed", "username": "b", "token": "", "enabled": "on"})
         github.refresh_from_db()
         self.assertEqual((github.name, github.config["username"], github.secrets["token"]), ("Renamed", "b", "keep"))
+        delay.assert_called_once_with(github.pk)
 
     def test_edit_webhook_shows_url(self):
         response = self.client.get(reverse("source_edit", args=[self.hook.pk]))
         self.assertContains(response, f"/in/{self.hook.webhook_token}")
-        self.client.post(reverse("source_edit", args=[self.hook.pk]), {"name": "Phone"})
+        with mock.patch("tracker.views.sync_source_task.delay") as delay:
+            self.client.post(reverse("source_edit", args=[self.hook.pk]), {"name": "Phone"})
+        delay.assert_not_called()
         self.hook.refresh_from_db()
         self.assertEqual(self.hook.name, "Phone")
         self.assertFalse(self.hook.enabled)

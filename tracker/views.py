@@ -304,7 +304,12 @@ def source_edit(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
             source.name = name or source.name
             source.enabled = request.POST.get("enabled") == "on"
             source.save()
-            messages.success(request, f"Saved {source.name}")
+            # A new token or username can change what comes back, so don't wait for the daily sync
+            if source.provider.pulls and source.enabled:
+                sync_source_task.delay(source.pk)
+                messages.success(request, f"Saved {source.name}. Syncing now.")
+            else:
+                messages.success(request, f"Saved {source.name}")
             return redirect("sources")
     return render(
         request,
