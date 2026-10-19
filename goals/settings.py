@@ -181,7 +181,8 @@ except FileNotFoundError:
 
 POTATOQ = {
     "beat_schedule": {
-        "sync-sources": {"task": "tracker.tasks.sync_all_sources", "schedule": "*/15 * * * *"},
+        # Daily, in TIME_ZONE: early enough to have the previous day complete before the morning
+        "sync-sources": {"task": "tracker.tasks.sync_all_sources", "schedule": "0 5 * * *"},
     },
 }
 

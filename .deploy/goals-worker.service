@@ -1,5 +1,5 @@
 [Unit]
-Description=Goals background worker (potatoq: syncs sources every 15 minutes)
+Description=Goals background worker (potatoq: syncs sources daily)
 After=postgresql.service
 
 [Service]

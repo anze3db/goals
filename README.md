@@ -1,7 +1,7 @@
 # Goals 🎯
 
 Yearly goals that track themselves. Sources (Strava, GitHub, PyPI, an RSS feed, Goodreads, Mastodon, or anything that can
-POST to a webhook) are synced every 15 minutes by a [potatoq](https://github.com/anze3db/potatoq) worker. Each goal picks
+POST to a webhook) are synced once a day (05:00) by a [potatoq](https://github.com/anze3db/potatoq) worker. Each goal picks
 a metric from a source and a yearly target. Goals nothing can measure get a Log button instead.
 
 - **Today** (`/`): pace charts per goal, what was captured recently, and the goals you log by hand

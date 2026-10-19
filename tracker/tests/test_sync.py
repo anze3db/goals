@@ -4,6 +4,8 @@ from unittest import mock
 import httpx
 from django.test import TestCase
 from model_bakery import baker
+from potatoq import current_app
+from potatoq.testing import due
 
 from tracker.models import Activity, Source
 from tracker.providers import FetchedActivity
@@ -86,6 +88,12 @@ class TasksTest(TestCase):
         with mock.patch("tracker.sync.make_client", side_effect=lambda: feed_client()):
             self.assertEqual(sync_all_sources.delay().get(), 1)
         self.assertEqual(feed.activities.count(), 1)
+
+    def test_sources_sync_once_a_day_at_five(self):
+        runs = due(current_app(), datetime(2026, 1, 1), datetime(2026, 1, 3))
+        self.assertEqual(
+            [(name, run.day, run.hour, run.minute) for name, run in runs], [("sync-sources", 1, 5, 0), ("sync-sources", 2, 5, 0)]
+        )
 
     def test_missing_source(self):
         self.assertEqual(sync_source_task.delay(123456).get(), 0)
