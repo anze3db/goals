@@ -45,7 +45,9 @@
                        {% if nav == "today" %}class="active" aria-current="page"{% endif %}>Today</a>
                     <a href="{% url 'year' %}{% if year %}?year={{ year }}{% endif %}"
                        {% if nav == "year" %}class="active" aria-current="page"{% endif %}>Year</a>
-                    <a href="{% url 'my_report' %}{% if year %}?year={{ year }}{% endif %}">Report</a>
+                    {# The report is a standalone page with its own stylesheet; a boosted swap would keep only this page's <head> #}
+                    <a href="{% url 'my_report' %}{% if year %}?year={{ year }}{% endif %}"
+                       hx-boost="false">Report</a>
                     <a href="{% url 'sources' %}"
                        {% if nav == "sources" %}class="active" aria-current="page"{% endif %}>Sources</a>
                     <a href="{% url 'archive' %}"

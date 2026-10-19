@@ -143,6 +143,10 @@ class ReportTest(TrackerViewTestCase):
         self.assertContains(response, "Sources: RSS / Atom feed, Strava")
         self.assertNotContains(response, "Back to the app")
 
+    def test_nav_loads_report_as_a_full_page(self):
+        response = self.client.get("/")
+        self.assertRegex(response.content.decode(), rf'href="{reverse("my_report")}\?year={self.year}"\s+hx-boost="false"')
+
     def test_my_report_redirects(self):
         response = self.client.get(reverse("my_report") + "?year=2025")
         self.assertRedirects(response, reverse("report", args=["anze", 2025]))
