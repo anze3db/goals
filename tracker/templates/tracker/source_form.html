@@ -59,6 +59,22 @@
             <a class="btn" href="{% url 'sources' %}">Cancel</a>
         </div>
     </form>
+    {% if source and source.kind == "x" %}
+        <section class="card note" style="margin-top: 24px">
+            <h2>Push to this URL</h2>
+            <p class="muted">
+                POST one JSON object a day: your <code>followers</code> count and the <code>posts</code> from the last few days.
+                Each post is matched on its <code>id</code>, so sending it again on later days updates its likes, reposts, replies, quotes and views.
+                The follower count lands on <code>date</code>.
+            </p>
+            <pre class="code">curl -X POST {{ webhook_url }} \
+  -H "Content-Type: application/json" \
+  -d '{"date": "{% now "Y-m-d" %}", "username": "you", "followers": 1144, "posts": [
+        {"id": "1847000000000000001", "url": "https://x.com/you/status/1847000000000000001",
+         "created_at": "{% now "Y-m-d" %}T08:42:05Z", "text": "Hello",
+         "likes": 12, "reposts": 3, "replies": 4, "quotes": 1, "views": 1830}]}'</pre>
+        </section>
+    {% endif %}
     {% if source and source.kind == "webhook" %}
         <section class="card note" style="margin-top: 24px">
             <h2>Push to this URL</h2>
@@ -83,6 +99,8 @@
                 <code>manage.py import_apple_health export.zip --source {{ source.pk }}</code>.
             </p>
         </section>
+    {% endif %}
+    {% if source and not source.provider.pulls %}
         <section class="card tight" style="margin-top: 24px">
             <h2 style="margin-bottom: 8px">Recent deliveries</h2>
             <p class="sub" style="margin-bottom: 8px">The last {{ deliveries|length }} requests to this URL, newest first. Older ones are dropped after 50.</p>

@@ -483,3 +483,94 @@ class RecurringGoalViewsTest(TrackerViewTestCase):
         self.assertEqual(Goal.objects.get(name="Walk").period, "day")
         response = self.client.post(reverse("goal_new"), data | {"name": "Fans", "aggregation": "latest", "period": "week"})
         self.assertContains(response, "can only have a yearly target")
+
+
+class XWebhookTest(TrackerViewTestCase):
+    x: ClassVar[Source]
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.x = baker.make(Source, user=cls.user, kind="x", name="X (Twitter)")
+
+    def payload(self, followers: int = 1144, likes: int = 12) -> dict:
+        return {
+            "date": "2026-10-21",
+            "fetched_at": "2026-10-21T09:00:12+01:00",
+            "username": "anze3db",
+            "followers": followers,
+            "following": 1775,
+            "total_posts": 10084,
+            "posts": [
+                {
+                    "id": "1847000000000000001",
+                    "url": "https://x.com/anze3db/status/1847000000000000001",
+                    "created_at": "2026-10-20T18:42:05Z",
+                    "text": "Example post text goes here",
+                    "likes": likes,
+                    "reposts": 3,
+                    "replies": 4,
+                    "quotes": 1,
+                    "bookmarks": 2,
+                    "views": 1830,
+                }
+            ],
+        }
+
+    def post(self, payload: object):
+        self.client.logout()
+        return self.client.post(reverse("webhook", args=[self.x.webhook_token]), payload, content_type="application/json")
+
+    def test_daily_push_records_followers_posts_engagement_and_views(self):
+        response = self.post(self.payload())
+        self.assertEqual(json.loads(response.content), {"ok": True, "created": 4, "received": 4})
+        values = {a.type: a.value for a in self.x.activities.all()}
+        self.assertEqual(values, {"followers": 1144, "post": 1, "engagement": 20, "views": 1830})
+        post = self.x.activities.get(type="post")
+        self.assertEqual(post.title, "Example post text goes here")
+        self.assertEqual(post.url, "https://x.com/anze3db/status/1847000000000000001")
+        followers = self.x.activities.get(type="followers")
+        self.assertEqual(timezone.localtime(followers.occurred_at).date().isoformat(), "2026-10-21")
+
+    def test_next_day_updates_engagement_instead_of_duplicating(self):
+        self.post(self.payload(likes=12))
+        response = self.post(self.payload(likes=30) | {"date": "2026-10-22", "followers": 1150})
+        self.assertEqual(json.loads(response.content)["created"], 1)
+        self.assertEqual(self.x.activities.filter(type="post").count(), 1)
+        self.assertEqual(self.x.activities.get(type="engagement").value, 38)
+        self.assertEqual(list(self.x.activities.filter(type="followers").values_list("value", flat=True)), [1150, 1144])
+
+    def test_bad_payloads(self):
+        post = self.payload()["posts"][0]
+        cases = [
+            ([self.payload()], "Send one JSON object per day"),
+            (self.payload() | {"date": "today"}, "date must be YYYY-MM-DD"),
+            ({"date": "2026-10-21"}, "followers is required"),
+            (self.payload(followers="many"), "followers must be a whole number"),
+            (self.payload() | {"posts": [post | {"likes": None}]}, "likes must be a whole number"),
+            (self.payload() | {"posts": [post | {"created_at": "yesterday"}]}, "ISO 8601 created_at"),
+            (self.payload() | {"posts": [{"text": "no id"}]}, "with an id"),
+        ]
+        for payload, error in cases:
+            response = self.post(payload)
+            self.assertEqual(response.status_code, 400, error)
+            self.assertIn(error, json.loads(response.content)["error"])
+        self.assertFalse(self.x.activities.exists())
+        self.assertEqual(self.x.deliveries.count(), len(cases))
+
+    def test_source_page_shows_url_and_deliveries(self):
+        self.post(self.payload())
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("source_edit", args=[self.x.pk]))
+        self.assertContains(response, f"/in/{self.x.webhook_token}")
+        self.assertContains(response, "Recent deliveries")
+        self.assertContains(response, "4 received, 4 new")
+        self.assertNotContains(response, "Apple Health steps")
+
+    def test_goal_can_track_followers(self):
+        self.client.force_login(self.user)
+        self.client.post(
+            reverse("goal_new"), {"name": "Reach 1,500 followers", "metric": f"{self.x.pk}:followers", "target": 1500, "year": self.year}
+        )
+        goal = Goal.objects.get(name="Reach 1,500 followers")
+        self.assertEqual((goal.source, goal.activity_type, goal.aggregation), (self.x, "followers", Goal.Aggregation.LATEST))

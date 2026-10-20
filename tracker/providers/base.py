@@ -35,6 +35,10 @@ class SyncError(Exception):
     pass
 
 
+class WebhookError(ValueError):
+    pass
+
+
 class Provider:
     kind: ClassVar[str]
     label: ClassVar[str]
@@ -43,7 +47,7 @@ class Provider:
     config_form: ClassVar[type[forms.Form] | None] = None
     # Config form fields stored in Source.secrets instead of Source.config
     secret_fields: ClassVar[tuple[str, ...]] = ()
-    # False for push-only sources (webhooks)
+    # False for push-only sources, which get a webhook URL instead of a daily sync
     pulls: ClassVar[bool] = True
     # True when goals can use any activity type, not only the listed ones
     custom_types: ClassVar[bool] = False
@@ -54,6 +58,10 @@ class Provider:
         return self.label
 
     def fetch(self, source: Source, client: httpx.Client, since: datetime | None) -> Iterable[FetchedActivity]:
+        raise NotImplementedError
+
+    def parse_webhook(self, payload: object) -> list[FetchedActivity]:
+        """Turn a pushed JSON or form payload into activities. Raises WebhookError for a bad payload."""
         raise NotImplementedError
 
     def activity_type(self, slug: str) -> ActivityType | None:

@@ -1,7 +1,7 @@
 import json
 import secrets
 from dataclasses import dataclass
-from datetime import date, datetime
+from datetime import date
 from typing import cast
 
 from django.conf import settings
@@ -27,15 +27,13 @@ from tracker.progress import (
     squares,
     year_fraction,
 )
-from tracker.providers import PROVIDERS, FetchedActivity, SyncError, get_provider
+from tracker.providers import PROVIDERS, SyncError, WebhookError, get_provider
 from tracker.providers.base import midday
 from tracker.providers.strava import authorize_url, request_token, tokens_to_secrets
 from tracker.sync import make_client, store_activities
 from tracker.tasks import sync_source_task
 from users.http import AuthenticatedHttpRequest
 from users.models import User
-
-WEBHOOK_BATCH_LIMIT = 1000
 
 
 def _year(request: HttpRequest) -> int:
@@ -384,43 +382,6 @@ def strava_callback(request: AuthenticatedHttpRequest) -> HttpResponse:
     return redirect("sources")
 
 
-class WebhookError(ValueError):
-    pass
-
-
-def _webhook_activity(item: object) -> FetchedActivity:
-    if not isinstance(item, dict):
-        raise WebhookError("Each item must be an object")
-    activity_type = str(item.get("type") or "event").strip().lower()[:64]
-    try:
-        value = float(item.get("value", 1))
-    except TypeError, ValueError:
-        raise WebhookError("value must be a number") from None
-
-    day = item.get("date")
-    try:
-        if day:
-            occurred_at = midday(date.fromisoformat(str(day)))
-        elif item.get("occurred_at"):
-            occurred_at = datetime.fromisoformat(str(item["occurred_at"]))
-            if timezone.is_naive(occurred_at):
-                occurred_at = timezone.make_aware(occurred_at)
-        else:
-            occurred_at = timezone.now()
-    except ValueError:
-        raise WebhookError("date must be YYYY-MM-DD and occurred_at ISO 8601") from None
-
-    # A value per type per day (like steps) replaces the earlier report for that day
-    external_id = str(item.get("id") or (f"{activity_type}:{day}" if day else ""))[:255]
-    return FetchedActivity(
-        type=activity_type,
-        external_id=external_id,
-        occurred_at=occurred_at,
-        value=value,
-        title=str(item.get("title", ""))[:500],
-    )
-
-
 def _handle_webhook(request: HttpRequest, source: Source, body: bytes) -> tuple[int, dict]:
     if not source.enabled:
         return 403, {"error": "This webhook is disabled"}
@@ -432,11 +393,8 @@ def _handle_webhook(request: HttpRequest, source: Source, body: bytes) -> tuple[
     else:
         payload = request.POST.dict()
 
-    items = payload if isinstance(payload, list) else [payload]
-    if len(items) > WEBHOOK_BATCH_LIMIT:
-        return 400, {"error": f"At most {WEBHOOK_BATCH_LIMIT} items per request"}
     try:
-        fetched = [_webhook_activity(item) for item in items]
+        fetched = source.provider.parse_webhook(payload)
     except WebhookError as e:
         return 400, {"error": str(e)}
 
@@ -449,7 +407,7 @@ def _handle_webhook(request: HttpRequest, source: Source, body: bytes) -> tuple[
 @csrf_exempt
 @require_POST
 def webhook(request: HttpRequest, token: str) -> JsonResponse:
-    source = get_object_or_404(Source, webhook_token=token, kind="webhook")
+    source = get_object_or_404(Source, webhook_token=token, kind__in=[p.kind for p in PROVIDERS.values() if not p.pulls])
     # Read before request.POST: once a multipart body is parsed, the raw bytes are gone
     body = request.body
     status, response = _handle_webhook(request, source, body)
