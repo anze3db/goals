@@ -278,13 +278,38 @@ def goal_preview(request: AuthenticatedHttpRequest, pk: int | None = None) -> Ht
     return render(request, "tracker/_goal_preview.html", context)
 
 
-def _apply_arrangement(user: User, year: int, data: QueryDict) -> None:
+def _moved(items: list[str], move: str) -> list[str]:
+    """The posted order with one goal or group a step up or down, for an arrow pressed while the page has no script."""
+    item, _, direction = move.rpartition(":")
+    if item not in items or item == "group:" or direction not in ("up", "down"):
+        return items
+    step = -1 if direction == "up" else 1
+    if item.startswith("goal:"):
+        index = items.index(item)
+        # Swapping with a group marker carries the goal into the neighbouring group. Nothing goes above the first marker.
+        if 0 < index + step < len(items):
+            items[index], items[index + step] = items[index + step], items[index]
+        return items
+    blocks: list[list[str]] = []
+    for entry in items:
+        if entry.startswith("group:"):
+            blocks.append([entry])
+        elif blocks:
+            blocks[-1].append(entry)
+    index = next(i for i, block in enumerate(blocks) if block[0] == item)
+    # The first block holds the ungrouped goals and stays on top
+    if 0 < index + step < len(blocks):
+        blocks[index], blocks[index + step] = blocks[index + step], blocks[index]
+    return [entry for block in blocks for entry in block]
+
+
+def _apply_arrangement(user: User, year: int, items: list[str], data: QueryDict) -> None:
     """Save the order the Arrange page posts: "group:<id>" markers, each followed by its "goal:<id>" items."""
     groups = {group.pk: group for group in user.tracked_goal_groups.all()}
     goals = {goal.pk: goal for goal in Goal.objects.filter(user=user, year=year)}
     current: GoalGroup | None = None
     group_position = goal_position = 0
-    for item in data.getlist("item"):
+    for item in items:
         kind, _, raw = item.partition(":")
         pk = int(raw) if raw.isdigit() else None
         if kind == "group":
@@ -307,7 +332,10 @@ def arrange(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
     year = _year(request)
     if request.method == "POST":
-        _apply_arrangement(user, year, request.POST)
+        items = request.POST.getlist("item")
+        if move := request.POST.get("move"):
+            items = _moved(items, move)
+        _apply_arrangement(user, year, items, request.POST)
         here = f"{reverse('arrange')}?year={year}"
         # A typed group name is added however the form was sent, so Enter doesn't lose it
         if name := request.POST.get("new_group", "").strip()[:100]:
@@ -322,6 +350,8 @@ def arrange(request: AuthenticatedHttpRequest) -> HttpResponse:
             group = get_object_or_404(GoalGroup, pk=delete, user=user)
             group.delete()
             messages.success(request, f"Removed {group.name}. Its goals are ungrouped now.")
+            return redirect(here)
+        if move:
             return redirect(here)
         messages.success(request, "Saved the layout")
         return redirect(f"{reverse('index')}?year={year}")

@@ -5,11 +5,15 @@
             aria-label="Drag {{ goal.name }}"
             title="Drag to reorder">⠿</button>
     <span class="arrange-name">{{ goal.name }}</span>
-    <button type="button"
+    <button type="submit"
+            name="move"
+            value="goal:{{ goal.pk }}:up"
             class="btn small"
             data-move="up"
             aria-label="Move {{ goal.name }} up">↑</button>
-    <button type="button"
+    <button type="submit"
+            name="move"
+            value="goal:{{ goal.pk }}:down"
             class="btn small"
             data-move="down"
             aria-label="Move {{ goal.name }} down">↓</button>

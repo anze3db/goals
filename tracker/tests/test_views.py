@@ -344,6 +344,35 @@ class ArrangeTest(TrackerViewTestCase):
         self.assertIsNone(self.run_goal.group)
         self.assertFalse(GoalGroup.objects.filter(pk=self.fitness.pk).exists())
 
+    def test_arrows_move_goals_and_groups_without_javascript(self):
+        run, posts, dinners = f"goal:{self.run_goal.pk}", f"goal:{self.posts_goal.pk}", f"goal:{self.manual_goal.pk}"
+        fitness, writing = f"group:{self.fitness.pk}", f"group:{self.writing.pk}"
+
+        def layout() -> list[tuple[str, str | None]]:
+            return [(g.name, g.group.name if g.group else None) for g in Goal.objects.filter(user=self.user)]
+
+        response = self.arrange(["group:", run, posts, fitness, dinners, writing], move=f"{posts}:up")
+        self.assertRedirects(response, f"{reverse('arrange')}?year={self.year}")
+        self.assertEqual(layout(), [("Publish 12 posts", None), ("Run 1,000 km", None), ("Dinners with friends", "Fitness")])
+        # Down past the end of a group lands at the start of the next one, and up from there goes back
+        self.arrange(["group:", posts, run, fitness, dinners, writing], move=f"{run}:down")
+        self.assertEqual(layout(), [("Publish 12 posts", None), ("Run 1,000 km", "Fitness"), ("Dinners with friends", "Fitness")])
+        # Nothing moves above the ungrouped goals or past the end
+        self.arrange(["group:", posts, fitness, run, dinners, writing], move=f"{posts}:up")
+        self.arrange(["group:", posts, fitness, run, dinners, writing], move=f"{dinners}:down")
+        self.assertEqual(layout(), [("Publish 12 posts", None), ("Run 1,000 km", "Fitness"), ("Dinners with friends", "Writing")])
+
+        self.arrange(["group:", posts, fitness, run, writing, dinners], move=f"{writing}:up")
+        self.assertEqual(list(self.user.tracked_goal_groups.values_list("name", flat=True)), ["Writing", "Fitness"])
+        self.arrange(["group:", posts, writing, dinners, fitness, run], move=f"{writing}:up")
+        self.arrange(["group:", posts, writing, dinners, fitness, run], move="group::down")
+        self.assertEqual(list(self.user.tracked_goal_groups.values_list("name", flat=True)), ["Writing", "Fitness"])
+        self.assertEqual(layout(), [("Publish 12 posts", None), ("Dinners with friends", "Writing"), ("Run 1,000 km", "Fitness")])
+
+    def test_page_loads_its_script_in_the_body(self):
+        self.assertContains(self.client.get(reverse("arrange")), '<script src="/static/arrange.')
+        self.assertNotContains(self.client.get("/"), "arrange.")
+
     def test_other_users_goals_and_groups_are_left_alone(self):
         theirs = baker.make(GoalGroup, user=self.other, name="Theirs")
         their_goal = baker.make(Goal, user=self.other, year=self.year, target=1)

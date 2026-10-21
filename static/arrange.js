@@ -1,8 +1,12 @@
 // Drag-and-drop for the Arrange page: goals move within and between groups, groups move among
 // themselves. The form posts its hidden inputs in document order, so moving an element is all it
-// takes. Pointer events cover mouse and touch; the arrow buttons do the same from the keyboard.
-// Listeners sit on the document, so they keep working after hx-boost swaps the page.
+// takes. Pointer events cover mouse and touch; the arrow buttons do the same from the keyboard,
+// and post the move to the server instead when this script isn't running.
+// The Arrange page loads this from its body, so hx-boost runs it on every visit; the listeners sit on
+// the document, so they only need adding once.
 (() => {
+    if (window.arrangeReady) return;
+    window.arrangeReady = true;
     const EDGE = 60;
     let drag = null;
 
@@ -87,7 +91,10 @@
     document.addEventListener("click", (event) => {
         const button = event.target instanceof Element ? event.target.closest("[data-move]") : null;
         const item = button?.closest("[data-sortable-item]");
-        if (item) step(item, button.dataset.move === "up" ? -1 : 1);
+        if (!item) return;
+        // Move it here instead of submitting the form
+        event.preventDefault();
+        step(item, button.dataset.move === "up" ? -1 : 1);
     });
 
     document.addEventListener("input", (event) => {

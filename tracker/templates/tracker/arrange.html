@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% load static %}
 {% block title %}Arrange · Goals{% endblock title %}
 {% block page_class %}narrow{% endblock page_class %}
 {% block content %}
@@ -48,11 +49,15 @@
                                value="{{ group.name }}"
                                maxlength="100"
                                aria-label="Group name" />
-                        <button type="button"
+                        <button type="submit"
+                                name="move"
+                                value="group:{{ group.pk }}:up"
                                 class="btn small"
                                 data-move="up"
                                 aria-label="Move {{ group.name }} up">↑</button>
-                        <button type="button"
+                        <button type="submit"
+                                name="move"
+                                value="group:{{ group.pk }}:down"
                                 class="btn small"
                                 data-move="down"
                                 aria-label="Move {{ group.name }} down">↓</button>
@@ -84,4 +89,6 @@
             <span class="sub unsaved" hidden>Unsaved changes</span>
         </div>
     </form>
+    {# In the body rather than the head: a boosted navigation only swaps the body, so a head script added since the page was first opened would never load #}
+    <script src="{% static 'arrange.js' %}"></script>
 {% endblock content %}
