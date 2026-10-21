@@ -643,3 +643,11 @@ class XWebhookTest(TrackerViewTestCase):
         )
         goal = Goal.objects.get(name="Reach 1,500 followers")
         self.assertEqual((goal.source, goal.activity_type, goal.aggregation), (self.x, "followers", Goal.Aggregation.LATEST))
+
+    def test_weekly_follower_target_counts_growth(self):
+        self.client.force_login(self.user)
+        data = {"name": "10 new followers a week", "metric": f"{self.x.pk}:followers", "target": 10, "period": "week", "year": self.year}
+        self.client.post(reverse("goal_new"), data)
+        self.assertEqual(Goal.objects.get(name="10 new followers a week").aggregation, Goal.Aggregation.GAIN)
+        response = self.client.get(reverse("goal_preview"), data | {"aggregation": "latest"})
+        self.assertContains(response, "Pick Growth to count new followers per week or month.")

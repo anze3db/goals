@@ -38,6 +38,10 @@ def day_label(day: date) -> str:
     return f"{WEEKDAY_NAMES[day.weekday()]} {day.day} {MONTH_NAMES[day.month - 1]}"
 
 
+def signed(value: float) -> str:
+    return f"+{format_number(value)}" if value >= 0 else format_number(value)
+
+
 def with_unit(value: str, unit: str) -> str:
     return f"{value} {unit}".strip()
 
@@ -63,8 +67,23 @@ def local_day(activity: Activity) -> date:
     return timezone.localtime(activity.occurred_at).date()
 
 
+def daily_gains(activities: Sequence[Activity]) -> dict[date, float]:
+    """How much a reading (like followers) moved each day, against the day before. The first reading is the baseline."""
+    readings: dict[date, float] = {}
+    for activity in sorted(activities, key=lambda a: a.occurred_at):
+        readings[local_day(activity)] = activity.value
+    gains = {}
+    previous = None
+    for day, reading in sorted(readings.items()):
+        gains[day] = 0.0 if previous is None else reading - previous
+        previous = reading
+    return gains
+
+
 def daily_values(goal: Goal, activities: Sequence[Activity]) -> dict[date, float]:
-    """One number per day: the day's sum, count, or (for "latest" goals) the last reading."""
+    """One number per day: the day's sum, count, growth, or (for "latest" goals) the last reading."""
+    if goal.aggregation == Goal.Aggregation.GAIN:
+        return daily_gains(activities)
     values: dict[date, float] = defaultdict(float)
     for activity in sorted(activities, key=lambda a: a.occurred_at):
         day = local_day(activity)
@@ -368,7 +387,8 @@ def build_bars(progress: GoalProgress) -> Chart:
         return CHART_PADDING + day_index / total_days * usable_width
 
     def y(value: float) -> float:
-        return base - min(1.0, value / high) * (CHART_HEIGHT - 2 * CHART_PADDING)
+        # A week that lost followers dips below the axis, but only into the padding
+        return base - max(-0.05, min(1.0, value / high)) * (CHART_HEIGHT - 2 * CHART_PADDING)
 
     def top(period: PeriodTotal) -> float:
         return y(period.total) if period.total else base - 1
@@ -398,7 +418,7 @@ def build_bars(progress: GoalProgress) -> Chart:
         elif goal.period == Goal.Period.MONTH:
             notes.append(f"{MONTH_NAMES[current.start.month - 1]} total")
         if goal.period != Goal.Period.DAY and progress.daily.get(day):
-            notes.append(f"+{format_number(progress.daily[day])} that day")
+            notes.append(f"{signed(progress.daily[day])} that day")
         if current.hit:
             notes.append("hit")
         value = with_unit(f"{format_number(current.total)} / {progress.target_label}", goal.unit)
@@ -454,7 +474,7 @@ def build_chart(progress: GoalProgress) -> Chart:
         value = reached.get(day, value)
         notes = []
         if goal.aggregation != Goal.Aggregation.LATEST and progress.daily.get(day):
-            notes.append(f"+{format_number(progress.daily[day])} that day")
+            notes.append(f"{signed(progress.daily[day])} that day")
         notes.append(f"pace {format_number(low + (goal.target - low) * (index + 1) / total_days)}")
         hover.append(
             [
@@ -524,14 +544,22 @@ def counting_options(goal: Goal, activities: Sequence[Activity]) -> list[Countin
         Goal.Aggregation.SUM: sum(a.value for a in activities),
         Goal.Aggregation.COUNT: len(activities),
         Goal.Aggregation.LATEST: latest,
+        Goal.Aggregation.GAIN: sum(daily_gains(activities).values()),
     }
-    labels = {Goal.Aggregation.SUM: "Add up", Goal.Aggregation.COUNT: "Count", Goal.Aggregation.LATEST: "Latest"}
+    labels = {
+        Goal.Aggregation.SUM: "Add up",
+        Goal.Aggregation.COUNT: "Count",
+        Goal.Aggregation.LATEST: "Latest",
+        Goal.Aggregation.GAIN: "Growth",
+    }
     # A count is of entries, not of the unit: 101 runs, not 101 km
     return [
         CountingOption(
             aggregation,
             labels[aggregation],
-            format_number(value) if aggregation == Goal.Aggregation.COUNT else with_unit(format_number(value), goal.unit),
+            format_number(value)
+            if aggregation == Goal.Aggregation.COUNT
+            else with_unit(signed(value) if aggregation == Goal.Aggregation.GAIN else format_number(value), goal.unit),
             aggregation == goal.aggregation,
         )
         for aggregation, value in values.items()
@@ -730,7 +758,7 @@ def month_bars(progress: GoalProgress, today: date | None = None, max_height: in
                 name=MONTH_NAMES[index],
                 value=total,
                 label=format_number(total) if total else "",
-                height=round(total / peak * max_height),
+                height=max(0, round(total / peak * max_height)),
                 best=index == best,
                 future=future,
             )

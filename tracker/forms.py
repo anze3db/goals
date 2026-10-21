@@ -16,10 +16,12 @@ CUSTOM = "custom"
 
 # What each way of counting does, shown next to it on the goal form
 AGGREGATION_HELP = {
-    "": "Whatever fits the metric: kilometres add up, posts are counted, followers use the latest reading.",
+    "": "Whatever fits the metric: kilometres add up, posts are counted, followers use the latest reading "
+    "(or their growth, for a weekly or monthly target).",
     Goal.Aggregation.SUM: "Each entry adds its value: a 5 km run and a 10 km run make 15 km.",
     Goal.Aggregation.COUNT: "Each entry counts as one, whatever its value: those two runs make 2.",
-    Goal.Aggregation.LATEST: "The most recent reading, for numbers that go up and down like followers.",
+    Goal.Aggregation.LATEST: "The most recent reading, for reaching a number like 1,500 followers by the end of the year.",
+    Goal.Aggregation.GAIN: "How much a reading went up, for targets like 10 new followers a week.",
 }
 
 
@@ -196,9 +198,12 @@ class GoalForm(forms.ModelForm):
         cleaned["activity_type"] = slug
         cleaned["default_aggregation"] = activity_type.aggregation if activity_type else Goal.Aggregation.SUM
         cleaned["default_unit"] = activity_type.unit if activity_type else ""
+        # A weekly or monthly target on a reading like followers can only mean new followers
+        if cleaned["default_aggregation"] == Goal.Aggregation.LATEST and cleaned["period"] != Goal.Period.YEAR:
+            cleaned["default_aggregation"] = Goal.Aggregation.GAIN
         aggregation = cleaned.get("aggregation") or cleaned["default_aggregation"]
-        if aggregation == Goal.Aggregation.LATEST and cleaned.get("period", Goal.Period.YEAR) != Goal.Period.YEAR:
-            self.add_error("period", "A latest value (like followers) can only have a yearly target")
+        if aggregation == Goal.Aggregation.LATEST and cleaned["period"] != Goal.Period.YEAR:
+            self.add_error("period", "A latest value can only have a yearly target. Pick Growth to count new followers per week or month.")
         return cleaned
 
     def save(self, commit: bool = True) -> Goal:

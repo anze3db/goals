@@ -1,6 +1,6 @@
 import json
 from datetime import date
-from typing import Any
+from typing import Any, ClassVar
 
 from django.test import SimpleTestCase
 from model_bakery import baker
@@ -255,5 +255,36 @@ class ChartDataTest(SimpleTestCase):
         activities = [activity(date(2026, 3, 1), 40), activity(date(2026, 6, 1), 30)]
         options = counting_options(make_goal(aggregation=Goal.Aggregation.COUNT), activities)
         self.assertEqual(
-            [(o.label, o.value, o.active) for o in options], [("Add up", "70 km", False), ("Count", "2", True), ("Latest", "30 km", False)]
+            [(o.label, o.value, o.active) for o in options],
+            [("Add up", "70 km", False), ("Count", "2", True), ("Latest", "30 km", False), ("Growth", "-10 km", False)],
         )
+
+
+class GrowthGoalTest(SimpleTestCase):
+    readings: ClassVar[list[tuple[date, float]]] = [
+        (date(2026, 6, 22), 90),
+        (date(2026, 6, 29), 100),
+        (date(2026, 6, 30), 104),
+        (date(2026, 7, 1), 103),
+        (date(2026, 7, 2), 112),
+    ]
+
+    def activities(self) -> list[Activity]:
+        return [activity(day, value) for day, value in self.readings]
+
+    def test_counts_how_much_the_reading_moved_each_day(self):
+        goal = make_goal(aggregation=Goal.Aggregation.GAIN, target=10, unit="followers", period=Goal.Period.WEEK)
+        progress = compute_progress(goal, self.activities(), TODAY)
+        self.assertEqual(list(progress.daily.values()), [0, 10, 4, -1, 9])
+        # The week of 22 June only has the baseline reading; this week grew by 10 + 4 - 1 + 9
+        self.assertEqual((progress.periods[-2].total, progress.periods[-2].hit), (0, False))
+        self.assertEqual(progress.current, 22)
+        self.assertEqual(progress.status, "done")
+        self.assertEqual(progress.chip, "Hit this week")
+        self.assertIn("-1 that day", progress.chart.hover)
+
+    def test_yearly_growth(self):
+        goal = make_goal(aggregation=Goal.Aggregation.GAIN, target=50, unit="followers")
+        progress = compute_progress(goal, self.activities(), TODAY)
+        self.assertEqual(progress.current, 22)
+        self.assertEqual(progress.target_label, "50")

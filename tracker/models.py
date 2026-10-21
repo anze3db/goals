@@ -49,6 +49,7 @@ class Goal(models.Model):
         SUM = "sum", "Add up the values"
         COUNT = "count", "Count the activities"
         LATEST = "latest", "Latest value (e.g. followers)"
+        GAIN = "gain", "Growth (e.g. new followers)"
 
     class Period(models.TextChoices):
         YEAR = "year", "Per year"

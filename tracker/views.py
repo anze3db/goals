@@ -65,7 +65,8 @@ def _feed(user: User, goals: list[Goal], limit: int = 8) -> list[FeedItem]:
     items = []
     for activity in Activity.objects.filter(user=user).select_related("source", "goal")[:limit]:
         goal = activity.goal or goals_by_metric.get((activity.source_id, activity.type))
-        latest = goal is not None and goal.aggregation == Goal.Aggregation.LATEST
+        # Readings (followers) show as they are, even when the goal counts their growth
+        latest = goal is not None and goal.aggregation in (Goal.Aggregation.LATEST, Goal.Aggregation.GAIN)
         counted = goal is not None and goal.aggregation == Goal.Aggregation.COUNT
         delta = format_number(activity.value) if latest else f"+{format_number(1 if counted else activity.value)}"
         items.append(
@@ -219,6 +220,8 @@ def _preview(user: User, goal: Goal | None, data: QueryDict | None, data_open: b
                 return context | {"hint": "Pick what counts to see this year's chart."}
             if "target" in form.errors:
                 return context | {"hint": "Set a target to see the chart."}
+            if "period" in form.errors:
+                return context | {"hint": form.errors["period"][0]}
             fields = [str(form.fields[name].label or name) for name in form.errors if name in form.fields]
             return context | {"hint": f"Fix {', '.join(fields).lower() or 'the form'} to see the chart."}
         preview = form.save(commit=False)
