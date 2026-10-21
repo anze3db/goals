@@ -8,6 +8,7 @@ urlpatterns = [
     path("report/", views.my_report, name="my_report"),
     path("u/<str:username>/<int:year>/", views.report, name="report"),
     path("goals/new/", views.goal_new, name="goal_new"),
+    path("arrange/", views.arrange, name="arrange"),
     path("goals/preview/", views.goal_preview, name="goal_preview"),
     path("goals/<int:pk>/", views.goal_edit, name="goal_edit"),
     path("goals/<int:pk>/preview/", views.goal_preview, name="goal_preview"),

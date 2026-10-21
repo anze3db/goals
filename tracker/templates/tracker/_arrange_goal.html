@@ -1,0 +1,16 @@
+<li class="arrange-item" data-sortable-item="goal">
+    <input type="hidden" name="item" value="goal:{{ goal.pk }}" />
+    <button type="button"
+            class="drag-handle"
+            aria-label="Drag {{ goal.name }}"
+            title="Drag to reorder">⠿</button>
+    <span class="arrange-name">{{ goal.name }}</span>
+    <button type="button"
+            class="btn small"
+            data-move="up"
+            aria-label="Move {{ goal.name }} up">↑</button>
+    <button type="button"
+            class="btn small"
+            data-move="down"
+            aria-label="Move {{ goal.name }} down">↓</button>
+</li>

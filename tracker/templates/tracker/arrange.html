@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% block title %}Arrange · Goals{% endblock title %}
+{% block page_class %}narrow{% endblock page_class %}
+{% block content %}
+    <section class="intro">
+        <div class="actions" style="justify-content: space-between">
+            <span class="eyebrow">Arrange {{ year }}</span>
+            <nav class="year-tabs" aria-label="Year">
+                {% for y in years %}
+                    <a href="?year={{ y }}"
+                       {% if y == year %}class="active" aria-current="page"{% endif %}>{{ y }}</a>
+                {% endfor %}
+            </nav>
+        </div>
+        <h1 class="display">Arrange goals</h1>
+        <p class="lede">
+            Drag goals by their handle to reorder them or move them into a group. Groups are headings on the Today page, and you can drag them too.
+        </p>
+    </section>
+    <form method="post" class="arrange" id="arrange-form">
+        {% csrf_token %}
+        {# Enter in a text box submits with the form's first button, so make that Save instead of a Delete #}
+        <button type="submit"
+                name="save"
+                class="visually-hidden"
+                tabindex="-1"
+                aria-hidden="true">Save</button>
+        <section class="arrange-group ungrouped">
+            <input type="hidden" name="item" value="group:" />
+            <h2 class="section-title">Not in a group</h2>
+            <ul class="arrange-list">
+                {% for goal in ungrouped %}
+                    {% include "tracker/_arrange_goal.html" %}
+                {% endfor %}
+            </ul>
+        </section>
+        <div class="arrange-groups">
+            {% for group, goals in groups %}
+                <section class="arrange-group card tight" data-sortable-item="group">
+                    <input type="hidden" name="item" value="group:{{ group.pk }}" />
+                    <div class="arrange-group-head">
+                        <button type="button"
+                                class="drag-handle"
+                                aria-label="Drag {{ group.name }}"
+                                title="Drag to reorder">⠿</button>
+                        <input type="text"
+                               name="name-{{ group.pk }}"
+                               value="{{ group.name }}"
+                               maxlength="100"
+                               aria-label="Group name" />
+                        <button type="button"
+                                class="btn small"
+                                data-move="up"
+                                aria-label="Move {{ group.name }} up">↑</button>
+                        <button type="button"
+                                class="btn small"
+                                data-move="down"
+                                aria-label="Move {{ group.name }} down">↓</button>
+                        <button type="submit"
+                                class="btn small danger"
+                                name="delete_group"
+                                value="{{ group.pk }}"
+                                formnovalidate>Delete</button>
+                    </div>
+                    <ul class="arrange-list">
+                        {% for goal in goals %}
+                            {% include "tracker/_arrange_goal.html" %}
+                        {% endfor %}
+                    </ul>
+                </section>
+            {% endfor %}
+        </div>
+        <div class="inline-form new-group">
+            <input type="text"
+                   name="new_group"
+                   maxlength="100"
+                   placeholder="New group, e.g. Fitness"
+                   aria-label="New group name" />
+            <button type="submit" class="btn" name="add_group">Add group</button>
+        </div>
+        <div class="actions arrange-actions">
+            <button type="submit" class="btn primary" name="save">Save</button>
+            <a class="btn" href="{% url 'index' %}?year={{ year }}">Cancel</a>
+            <span class="sub unsaved" hidden>Unsaved changes</span>
+        </div>
+    </form>
+{% endblock content %}

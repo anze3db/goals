@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from tracker.models import Activity, Goal, Source, SyncRun, WebhookDelivery
+from tracker.models import Activity, Goal, GoalGroup, Source, SyncRun, WebhookDelivery
 
 
 @admin.register(Source)
@@ -12,8 +12,13 @@ class SourceAdmin(admin.ModelAdmin):
 
 @admin.register(Goal)
 class GoalAdmin(admin.ModelAdmin):
-    list_display = ["name", "year", "target", "unit", "source", "activity_type", "aggregation", "user"]
+    list_display = ["name", "year", "target", "unit", "source", "activity_type", "aggregation", "group", "position", "user"]
     list_filter = ["year", "aggregation"]
+
+
+@admin.register(GoalGroup)
+class GoalGroupAdmin(admin.ModelAdmin):
+    list_display = ["name", "position", "user"]
 
 
 @admin.register(Activity)

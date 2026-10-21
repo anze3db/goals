@@ -1014,6 +1014,139 @@ fieldset.field legend {
     }
 }
 
+/* Dashboard groups and the Arrange page */
+.goal-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.arrange {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.arrange-groups {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.arrange-group {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.arrange-group.card {
+    padding: 12px;
+}
+
+.arrange-group-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.arrange-group-head input[type="text"] {
+    flex: 1;
+    min-width: 0;
+    font-weight: 600;
+}
+
+.arrange-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    min-height: 48px;
+}
+
+.arrange-list:not(:has(.arrange-item)) {
+    border: 1px dashed var(--line-strong);
+    border-radius: 10px;
+}
+
+.arrange-list:not(:has(.arrange-item))::after {
+    content: "Drag goals here";
+    display: block;
+    padding: 14px;
+    color: var(--faint);
+    font-size: 13px;
+}
+
+.arrange-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    border-radius: 10px;
+    border: 1px solid var(--line);
+    background: #141618;
+}
+
+.arrange-name {
+    flex: 1;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.drag-handle {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    min-height: 36px;
+    border: 0;
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-size: 18px;
+    cursor: grab;
+    touch-action: none;
+}
+
+.drag-handle:hover {
+    background: var(--panel-raised);
+    color: var(--text);
+}
+
+.dragging {
+    opacity: 0.85;
+    border-color: var(--ahead);
+    box-shadow: 0 8px 24px rgb(0 0 0 / 40%);
+}
+
+.dragging .drag-handle {
+    cursor: grabbing;
+}
+
+.new-group input[type="text"] {
+    flex: 1 1 200px;
+}
+
+.arrange-actions {
+    position: sticky;
+    bottom: 0;
+    padding: 12px 0;
+    background: var(--bg);
+}
+
+.visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    min-height: 0;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+    border: 0;
+}
+
 /* Sources */
 .source-row {
     display: flex;

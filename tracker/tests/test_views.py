@@ -9,7 +9,7 @@ from django.urls import reverse
 from django.utils import timezone
 from model_bakery import baker
 
-from tracker.models import Activity, Goal, Source, SyncRun, WebhookDelivery
+from tracker.models import Activity, Goal, GoalGroup, Source, SyncRun, WebhookDelivery
 from tracker.providers import SyncError
 from tracker.providers.base import midday
 from users.models import User
@@ -280,6 +280,87 @@ class GoalEditorTest(TrackerViewTestCase):
     def test_other_users_goal_preview(self):
         self.client.force_login(self.other)
         self.assertEqual(self.preview(self.run_goal.pk).status_code, 404)
+
+
+class ArrangeTest(TrackerViewTestCase):
+    fitness: ClassVar[GoalGroup]
+    writing: ClassVar[GoalGroup]
+
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        cls.fitness = baker.make(GoalGroup, user=cls.user, name="Fitness", position=0)
+        cls.writing = baker.make(GoalGroup, user=cls.user, name="Writing", position=1)
+
+    def arrange(self, items: list[str], **extra):
+        return self.client.post(f"{reverse('arrange')}?year={self.year}", {"item": items} | extra)
+
+    def test_page_lists_goals_and_groups(self):
+        response = self.client.get(reverse("arrange"), {"year": self.year})
+        self.assertContains(response, "Run 1,000 km")
+        self.assertContains(response, 'value="Writing"')
+        self.assertContains(response, f'name="name-{self.fitness.pk}"')
+
+    def test_save_order_groups_and_names(self):
+        response = self.arrange(
+            [
+                "group:",
+                f"goal:{self.manual_goal.pk}",
+                f"group:{self.writing.pk}",
+                f"goal:{self.posts_goal.pk}",
+                f"group:{self.fitness.pk}",
+                f"goal:{self.run_goal.pk}",
+            ],
+            save="",
+            **{f"name-{self.writing.pk}": "Blog"},
+        )
+        self.assertRedirects(response, f"/?year={self.year}")
+        self.writing.refresh_from_db()
+        self.assertEqual((self.writing.name, self.writing.position), ("Blog", 0))
+        self.assertEqual(
+            [(g.name, g.group) for g in Goal.objects.filter(user=self.user)],
+            [("Dinners with friends", None), ("Publish 12 posts", self.writing), ("Run 1,000 km", self.fitness)],
+        )
+
+        response = self.client.get("/")
+        content = response.content.decode()
+        self.assertLess(content.index("Blog"), content.index("Fitness"))
+        self.assertLess(content.index("Dinners with friends"), content.index("Publish 12 posts"))
+
+    def test_add_and_delete_groups(self):
+        self.assertRedirects(self.arrange([], add_group="", new_group="Social"), f"{reverse('arrange')}?year={self.year}")
+        # Enter in the new group box submits as Save, and still adds the group
+        self.arrange([], save="", new_group="Reading")
+        self.assertEqual(
+            list(self.user.tracked_goal_groups.values_list("name", "position")),
+            [("Fitness", 0), ("Writing", 1), ("Social", 2), ("Reading", 3)],
+        )
+        self.arrange([], add_group="", new_group=" ")
+        self.assertEqual(self.user.tracked_goal_groups.count(), 4)
+
+        Goal.objects.filter(pk=self.run_goal.pk).update(group=self.fitness)
+        self.arrange([], delete_group=self.fitness.pk)
+        self.run_goal.refresh_from_db()
+        self.assertIsNone(self.run_goal.group)
+        self.assertFalse(GoalGroup.objects.filter(pk=self.fitness.pk).exists())
+
+    def test_other_users_goals_and_groups_are_left_alone(self):
+        theirs = baker.make(GoalGroup, user=self.other, name="Theirs")
+        their_goal = baker.make(Goal, user=self.other, year=self.year, target=1)
+        self.arrange([f"group:{theirs.pk}", f"goal:{self.run_goal.pk}", f"goal:{their_goal.pk}"], save="")
+        their_goal.refresh_from_db()
+        self.run_goal.refresh_from_db()
+        self.assertIsNone(self.run_goal.group)
+        self.assertIsNone(their_goal.group)
+        self.assertEqual(self.arrange([], delete_group=theirs.pk).status_code, 404)
+
+    def test_goal_form_picks_a_group_and_goes_to_its_end(self):
+        Goal.objects.filter(pk=self.run_goal.pk).update(group=self.fitness, position=4)
+        data = {"name": "Swim", "target": 10, "year": self.year, "metric": "manual", "group": self.fitness.pk}
+        self.client.post(reverse("goal_new"), data)
+        self.assertEqual(Goal.objects.get(name="Swim").position, 5)
+        response = self.client.post(reverse("goal_new"), data | {"name": "Nope", "group": baker.make(GoalGroup, user=self.other).pk})
+        self.assertContains(response, "Select a valid choice")
 
 
 class SourceViewsTest(TrackerViewTestCase):

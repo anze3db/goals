@@ -44,6 +44,20 @@ class Source(models.Model):
         return get_provider(self.kind)
 
 
+class GoalGroup(models.Model):
+    """A heading goals sit under on the dashboard, like Fitness or Writing. Groups carry over from year to year."""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="tracked_goal_groups")
+    name = models.CharField(max_length=100)
+    position = models.PositiveIntegerField(default=0)
+
+    class Meta:
+        ordering = ["position", "pk"]
+
+    def __str__(self) -> str:
+        return self.name
+
+
 class Goal(models.Model):
     class Aggregation(models.TextChoices):
         SUM = "sum", "Add up the values"
@@ -68,10 +82,13 @@ class Goal(models.Model):
     aggregation = models.CharField(max_length=16, choices=Aggregation.choices, default=Aggregation.SUM)
     # The target applies to each period: 10,000 steps per day, 3 workouts per week, 1,000 km per year
     period = models.CharField(max_length=8, choices=Period.choices, default=Period.YEAR)
+    group = models.ForeignKey(GoalGroup, on_delete=models.SET_NULL, null=True, blank=True, related_name="goals")
+    # Order on the dashboard: ungrouped goals first, then each group in its own order
+    position = models.PositiveIntegerField(default=0)
     date_created = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ["date_created"]
+        ordering = [models.F("group__position").asc(nulls_first=True), "group_id", "position", "date_created"]
         indexes = [models.Index(fields=["user", "year"])]
 
     def __str__(self) -> str:

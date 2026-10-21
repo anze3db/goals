@@ -4,6 +4,7 @@ from datetime import datetime
 from typing import cast
 
 from django import forms
+from django.db.models import Max
 from django.utils import timezone
 
 from tracker.models import Activity, Goal, Source
@@ -132,7 +133,7 @@ class GoalForm(forms.ModelForm):
 
     class Meta:
         model = Goal
-        fields = ["name", "target", "period", "unit", "year"]
+        fields = ["name", "group", "target", "period", "unit", "year"]
         labels = {"period": "Target applies", "unit": "Unit label"}
         help_texts = {"unit": "Only shown after the numbers, as in 1,000 km. Leave empty to use the metric's own unit."}
         widgets = {"period": forms.RadioSelect}
@@ -147,6 +148,10 @@ class GoalForm(forms.ModelForm):
         choices += [(group.name, [(o.value, o.label) for o in group.options]) for group in self.metric_groups[1:]]
         cast(forms.ChoiceField, self.fields["metric"]).choices = choices
         cast(forms.ChoiceField, self.fields["period"]).choices = Goal.Period.choices
+        group = cast(forms.ModelChoiceField, self.fields["group"])
+        group.queryset = user.tracked_goal_groups.all()
+        group.empty_label = "No group"
+        group.help_text = "A heading on the dashboard, like Fitness. Add groups on the Arrange page."
         self.fields["unit"].required = False
         self.fields["period"].required = False
         self.fields["year"].initial = timezone.localdate().year
@@ -213,6 +218,10 @@ class GoalForm(forms.ModelForm):
         goal.activity_type = self.cleaned_data["activity_type"]
         goal.aggregation = self.cleaned_data.get("aggregation") or self.cleaned_data["default_aggregation"]
         goal.unit = goal.unit or self.cleaned_data["default_unit"]
+        if goal.pk is None or "group" in self.changed_data or "year" in self.changed_data:
+            # A new goal, or one moved to another group or year, goes to the end of it
+            siblings = Goal.objects.filter(user=self.user, year=goal.year, group=goal.group).exclude(pk=goal.pk)
+            goal.position = (siblings.aggregate(last=Max("position"))["last"] or 0) + 1
         if commit:
             goal.save()
         return goal

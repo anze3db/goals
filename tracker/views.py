@@ -2,11 +2,13 @@ import json
 import secrets
 from dataclasses import dataclass
 from datetime import date
+from itertools import groupby
 from typing import cast
 
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Max
 from django.http import Http404, HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
@@ -15,9 +17,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST
 
 from tracker.forms import GoalForm, LogForm, apply_source_form, source_form
-from tracker.models import Activity, Goal, Source, WebhookDelivery
+from tracker.models import Activity, Goal, GoalGroup, Source, WebhookDelivery
 from tracker.progress import (
     MONTH_NAMES,
+    GoalProgress,
     compute_progress,
     counting_options,
     data_rows,
@@ -86,12 +89,23 @@ def index(request: HttpRequest) -> HttpResponse:
     return dashboard(cast(AuthenticatedHttpRequest, request))
 
 
+@dataclass
+class Section:
+    group: GoalGroup | None
+    progress: list[GoalProgress]
+
+
+def _sections(progress: list[GoalProgress]) -> list[Section]:
+    """Goals under their group headings, in the order they were arranged. Ungrouped goals come first."""
+    return [Section(group, list(items)) for group, items in groupby(progress, key=lambda p: p.goal.group)]
+
+
 @login_required
 def dashboard(request: AuthenticatedHttpRequest) -> HttpResponse:
     user = request.user
     year = _year(request)
     today = timezone.localdate()
-    goals = list(Goal.objects.filter(user=user, year=year).select_related("source"))
+    goals = list(Goal.objects.filter(user=user, year=year).select_related("source", "group"))
     progress = progress_for_goals(goals, today)
     manual = [p for p in progress if p.goal.is_manual]
     sources = list(user.sources.all())
@@ -115,6 +129,7 @@ def dashboard(request: AuthenticatedHttpRequest) -> HttpResponse:
             "year_percent": f"{year_fraction(year, today) * 100:.1f}",
             "headline": headline(progress, len(manual)),
             "progress": progress,
+            "sections": _sections(progress),
             "manual": manual,
             "feed": _feed(user, goals),
             "last_synced": max(synced) if synced else None,
@@ -261,6 +276,71 @@ def goal_preview(request: AuthenticatedHttpRequest, pk: int | None = None) -> Ht
     goal = get_object_or_404(Goal, pk=pk, user=request.user) if pk else None
     context = _preview(request.user, goal, request.GET, data_open=request.GET.get("data_open") == "true")
     return render(request, "tracker/_goal_preview.html", context)
+
+
+def _apply_arrangement(user: User, year: int, data: QueryDict) -> None:
+    """Save the order the Arrange page posts: "group:<id>" markers, each followed by its "goal:<id>" items."""
+    groups = {group.pk: group for group in user.tracked_goal_groups.all()}
+    goals = {goal.pk: goal for goal in Goal.objects.filter(user=user, year=year)}
+    current: GoalGroup | None = None
+    group_position = goal_position = 0
+    for item in data.getlist("item"):
+        kind, _, raw = item.partition(":")
+        pk = int(raw) if raw.isdigit() else None
+        if kind == "group":
+            current = groups.get(pk) if pk else None
+            goal_position = 0
+            if current:
+                current.position = group_position
+                current.name = data.get(f"name-{current.pk}", "").strip()[:100] or current.name
+                group_position += 1
+        elif kind == "goal" and pk in goals:
+            goals[pk].group = current
+            goals[pk].position = goal_position
+            goal_position += 1
+    GoalGroup.objects.bulk_update(groups.values(), ["position", "name"])
+    Goal.objects.bulk_update(goals.values(), ["group", "position"])
+
+
+@login_required
+def arrange(request: AuthenticatedHttpRequest) -> HttpResponse:
+    user = request.user
+    year = _year(request)
+    if request.method == "POST":
+        _apply_arrangement(user, year, request.POST)
+        here = f"{reverse('arrange')}?year={year}"
+        # A typed group name is added however the form was sent, so Enter doesn't lose it
+        if name := request.POST.get("new_group", "").strip()[:100]:
+            last = user.tracked_goal_groups.aggregate(last=Max("position"))["last"]
+            GoalGroup.objects.create(user=user, name=name, position=0 if last is None else last + 1)
+            messages.success(request, f"Added {name}. Drag goals into it.")
+            return redirect(here)
+        if "add_group" in request.POST:
+            messages.error(request, "Name the group first")
+            return redirect(here)
+        if delete := request.POST.get("delete_group"):
+            group = get_object_or_404(GoalGroup, pk=delete, user=user)
+            group.delete()
+            messages.success(request, f"Removed {group.name}. Its goals are ungrouped now.")
+            return redirect(here)
+        messages.success(request, "Saved the layout")
+        return redirect(f"{reverse('index')}?year={year}")
+
+    goals = list(Goal.objects.filter(user=user, year=year).select_related("group"))
+    by_group: dict[int | None, list[Goal]] = {}
+    for goal in goals:
+        by_group.setdefault(goal.group_id, []).append(goal)
+    return render(
+        request,
+        "tracker/arrange.html",
+        {
+            "nav": "today",
+            "year": year,
+            "years": _year_links(user, year),
+            "ungrouped": by_group.get(None, []),
+            "groups": [(group, by_group.get(group.pk, [])) for group in user.tracked_goal_groups.all()],
+        },
+    )
 
 
 @login_required

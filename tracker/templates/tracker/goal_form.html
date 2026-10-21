@@ -45,10 +45,18 @@
                 <span class="help">{{ form.custom_type.help_text }}</span>
                 {{ form.custom_type.errors }}
             </div>
-            <div class="field">
-                {{ form.name.label_tag }}
-                {{ form.name }}
-                {{ form.name.errors }}
+            <div class="field-row">
+                <div class="field">
+                    {{ form.name.label_tag }}
+                    {{ form.name }}
+                    {{ form.name.errors }}
+                </div>
+                <div class="field">
+                    {{ form.group.label_tag }}
+                    {{ form.group }}
+                    <span class="help">{{ form.group.help_text }}</span>
+                    {{ form.group.errors }}
+                </div>
             </div>
             <div class="field-row">
                 <div class="field">

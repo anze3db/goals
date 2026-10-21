@@ -34,11 +34,16 @@
     <div class="layout">
         <div class="main-col">
             {% if progress %}
-                <div class="goal-grid">
-                    {% for p in progress %}
-                        {% include "tracker/_goal_card.html" %}
-                    {% endfor %}
-                </div>
+                {% for section in sections %}
+                    <section class="goal-section">
+                        {% if section.group %}<h2 class="section-title">{{ section.group.name }}</h2>{% endif %}
+                        <div class="goal-grid">
+                            {% for p in section.progress %}
+                                {% include "tracker/_goal_card.html" %}
+                            {% endfor %}
+                        </div>
+                    </section>
+                {% endfor %}
             {% else %}
                 <div class="empty-state">
                     <h2 class="goal-name">No goals for {{ year }} yet</h2>
@@ -61,6 +66,7 @@
             {% if progress %}
                 <div class="actions">
                     <a class="btn" href="{% url 'goal_new' %}">Add a goal</a>
+                    <a class="btn" href="{% url 'arrange' %}?year={{ year }}">Arrange</a>
                 </div>
             {% endif %}
         </div>
