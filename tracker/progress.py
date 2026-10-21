@@ -484,6 +484,60 @@ def build_chart(progress: GoalProgress) -> Chart:
     )
 
 
+@dataclass
+class DataRow:
+    label: str
+    value: str
+    total: str = ""
+    hit: bool = False
+
+
+def data_rows(progress: GoalProgress) -> list[DataRow]:
+    """The numbers the chart draws, newest first: one row per period for bars, per day with activity for the line."""
+    goal = progress.goal
+    if progress.is_recurring:
+        rows = []
+        for period in progress.periods:
+            label = day_label(period.start)
+            if goal.period == Goal.Period.WEEK:
+                label = f"Week of {label}"
+            elif goal.period == Goal.Period.MONTH:
+                label = f"{MONTH_NAMES[period.start.month - 1]} {period.start.year}"
+            rows.append(DataRow(label, format_number(period.total), hit=period.hit))
+        return rows[::-1]
+    running = dict(progress.points)
+    return [DataRow(day_label(day), format_number(value), format_number(running[day])) for day, value in reversed(progress.daily.items())]
+
+
+@dataclass
+class CountingOption:
+    aggregation: str
+    label: str
+    value: str
+    active: bool
+
+
+def counting_options(goal: Goal, activities: Sequence[Activity]) -> list[CountingOption]:
+    """What this year's activities come to under each way of counting, so the choice is easier to make."""
+    latest = max(activities, key=lambda a: a.occurred_at).value if activities else 0
+    values = {
+        Goal.Aggregation.SUM: sum(a.value for a in activities),
+        Goal.Aggregation.COUNT: len(activities),
+        Goal.Aggregation.LATEST: latest,
+    }
+    labels = {Goal.Aggregation.SUM: "Add up", Goal.Aggregation.COUNT: "Count", Goal.Aggregation.LATEST: "Latest"}
+    # A count is of entries, not of the unit: 101 runs, not 101 km
+    return [
+        CountingOption(
+            aggregation,
+            labels[aggregation],
+            format_number(value) if aggregation == Goal.Aggregation.COUNT else with_unit(format_number(value), goal.unit),
+            aggregation == goal.aggregation,
+        )
+        for aggregation, value in values.items()
+    ]
+
+
 def progress_for_goals(goals: Sequence[Goal], today: date | None = None) -> list[GoalProgress]:
     return [compute_progress(goal, list(goal.activities()), today) for goal in goals]
 

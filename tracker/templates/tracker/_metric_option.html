@@ -1,0 +1,16 @@
+<label class="option metric">
+    <input type="radio"
+           name="{{ form.metric.html_name }}"
+           value="{{ option.value }}"
+           required
+           {% if option.value == form.metric.value %}checked{% endif %} />
+    <strong>{{ option.label }}</strong>
+    <span class="sub">{{ option.summary }}</span>
+    {% if option.bars %}
+        <span class="spark" aria-hidden="true">
+            {% for height in option.bars %}
+                <i style="height: {{ height }}%"></i>
+            {% endfor %}
+        </span>
+    {% endif %}
+</label>

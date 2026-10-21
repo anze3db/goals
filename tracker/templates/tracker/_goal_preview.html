@@ -1,0 +1,102 @@
+{% if hint %}
+    <div class="card dashed preview-hint">
+        <p class="muted">{{ hint }}</p>
+    </div>
+{% else %}
+    {% include "tracker/_goal_card.html" with preview=True %}
+    <section class="card tight counting">
+        <h2>This year's {{ activities|length }} entr{{ activities|length|pluralize:"y,ies" }}, counted each way</h2>
+        <div class="counting-options">
+            {% for option in counting %}
+                <span {% if option.active %}class="active"{% endif %}>
+                    <small>{{ option.label }}</small>
+                    {{ option.value }}
+                </span>
+            {% endfor %}
+        </div>
+        <p class="sub">
+            Counting: {{ p.goal.get_aggregation_display|lower }}
+            {% if automatic %}(automatic for this metric){% endif %}
+        </p>
+    </section>
+    <details class="card tight chart-data"
+             id="goal-data"
+             {% if data_open %}open{% endif %}>
+        <summary>Data behind this chart</summary>
+        {% if rows %}
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            {% if p.is_recurring %}
+                                <th>{{ p.period_noun|capfirst }}</th>
+                                <th>Total</th>
+                                <th>Hit</th>
+                            {% elif p.goal.aggregation == "latest" %}
+                                <th>Day</th>
+                                <th>Reading</th>
+                            {% else %}
+                                <th>Day</th>
+                                <th>That day</th>
+                                <th>Running total</th>
+                            {% endif %}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for row in rows %}
+                            <tr>
+                                <td>{{ row.label }}</td>
+                                <td>{{ row.value }}</td>
+                                {% if p.is_recurring %}
+                                    <td class="{% if row.hit %}met{% else %}missed{% endif %}">
+                                        {% if row.hit %}
+                                            Yes
+                                        {% else %}
+                                            No
+                                        {% endif %}
+                                    </td>
+                                {% elif p.goal.aggregation != "latest" %}
+                                    <td>{{ row.total }}</td>
+                                {% endif %}
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% else %}
+            <p class="muted">Nothing counted toward this goal in {{ p.goal.year }} yet.</p>
+        {% endif %}
+        {% if activities %}
+            <h3 class="sub">Every entry, newest first</h3>
+            <div class="table-scroll">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>When</th>
+                            <th class="what">What</th>
+                            <th>Value</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for activity in activities %}
+                            <tr>
+                                <td>
+                                    <time datetime="{{ activity.occurred_at|date:'c' }}">{{ activity.occurred_at|date:"j M H:i" }}</time>
+                                </td>
+                                <td class="what">
+                                    {% if activity.url|slice:":4" == "http" %}
+                                        <a href="{{ activity.url }}"
+                                           rel="noopener">{{ activity.title|default:activity.type }}</a>
+                                    {% else %}
+                                        {{ activity.title|default:activity.type }}
+                                    {% endif %}
+                                </td>
+                                <td>{{ activity.value|floatformat:"-2g" }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </details>
+{% endif %}

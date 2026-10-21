@@ -82,6 +82,9 @@ class Goal(models.Model):
 
     def activities(self) -> models.QuerySet[Activity]:
         if self.source_id is None:
+            if self.pk is None:
+                # A goal being previewed before it's saved has nothing logged yet
+                return Activity.objects.none()
             qs = Activity.objects.filter(goal=self)
         else:
             qs = Activity.objects.filter(source_id=self.source_id, type=self.activity_type)

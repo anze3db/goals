@@ -1,5 +1,5 @@
 import json
-from datetime import timedelta
+from datetime import date, timedelta
 from typing import ClassVar
 from unittest import mock
 
@@ -211,6 +211,75 @@ class GoalViewsTest(TrackerViewTestCase):
         self.client.post(reverse("goal_log", args=[self.manual_goal.pk]), {"amount": "lots"})
         self.assertEqual(self.manual_goal.manual_activities.count(), 1)
         self.assertEqual(self.client.post(reverse("goal_log", args=[self.run_goal.pk]), {"amount": 1}).status_code, 404)
+
+
+class GoalEditorTest(TrackerViewTestCase):
+    @classmethod
+    def setUpTestData(cls):
+        super().setUpTestData()
+        for day, steps in [(1, 9000), (2, 1000)]:
+            baker.make(
+                Activity,
+                user=cls.user,
+                source=cls.hook,
+                type="steps",
+                value=steps,
+                occurred_at=midday(date(cls.year, 1, day)),
+                external_id=f"steps:{day}",
+            )
+        baker.make(Activity, user=cls.user, source=cls.hook, type="swim", occurred_at=midday(date(cls.year, 1, 3)))
+
+    def preview(self, pk: int | None = None, **params):
+        url = reverse("goal_preview", args=[pk]) if pk else reverse("goal_preview")
+        return self.client.get(url, {"year": self.year} | params)
+
+    def test_metric_cards_show_this_years_numbers(self):
+        response = self.client.get(reverse("goal_new"))
+        self.assertContains(response, "10,000 steps this year · 2 entries")
+        self.assertContains(response, "more with nothing this year")
+        self.assertContains(response, "Pick what counts to see this year&#x27;s chart.")
+
+    def test_types_a_webhook_already_sent_get_their_own_card(self):
+        self.assertContains(self.client.get(reverse("goal_new")), f'value="{self.hook.pk}:swim"')
+        goal = baker.make(Goal, user=self.user, name="Swims", year=self.year, target=20, source=self.hook, activity_type="swim")
+        response = self.client.get(reverse("goal_edit", args=[goal.pk]))
+        self.assertRegex(response.content.decode(), rf'value="{self.hook.pk}:swim"\s+required\s+checked')
+
+    def test_preview_draws_the_chart_and_the_data_behind_it(self):
+        response = self.preview(metric=f"{self.hook.pk}:steps", target=12000, aggregation="")
+        self.assertContains(response, "New goal")
+        self.assertContains(response, "/ 12,000 steps")
+        self.assertContains(response, "Running total")
+        self.assertContains(response, "9,000")
+        self.assertContains(response, "(automatic for this metric)")
+        self.assertNotRegex(response.content.decode(), r'id="goal-data"\s+open')
+
+        response = self.preview(metric=f"{self.hook.pk}:steps", target=5000, period="day", aggregation="count", data_open="true")
+        self.assertContains(response, "<th>Hit</th>")
+        self.assertRegex(response.content.decode(), r'id="goal-data"\s+open')
+        self.assertContains(response, 'class="active"')
+
+    def test_preview_hints(self):
+        self.assertContains(self.preview(), "Pick what counts")
+        self.assertContains(self.preview(metric=f"{self.hook.pk}:steps"), "Set a target")
+        self.assertContains(self.preview(metric="manual", target=5, year="soon"), "Fix year")
+
+    def test_preview_of_a_manual_goal(self):
+        self.assertContains(self.preview(metric="manual", target=5), "Nothing counted toward this goal")
+        response = self.preview(self.manual_goal.pk, metric="manual", target=52, name="")
+        self.assertContains(response, "Dinners with friends")
+        self.assertContains(response, "Every entry, newest first")
+
+    def test_edit_page_shows_the_saved_goals_data(self):
+        response = self.client.get(reverse("goal_edit", args=[self.run_goal.pk]))
+        self.assertContains(response, "Data behind this chart")
+        self.assertContains(response, "Morning run")
+        self.assertContains(response, 'value="1000"')
+        self.assertContains(response, reverse("goal_preview", args=[self.run_goal.pk]))
+
+    def test_other_users_goal_preview(self):
+        self.client.force_login(self.other)
+        self.assertEqual(self.preview(self.run_goal.pk).status_code, 404)
 
 
 class SourceViewsTest(TrackerViewTestCase):

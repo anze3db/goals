@@ -8,6 +8,8 @@ from model_bakery import baker
 from tracker.models import Activity, Goal
 from tracker.progress import (
     compute_progress,
+    counting_options,
+    data_rows,
     format_number,
     headline,
     month_bars,
@@ -235,3 +237,23 @@ class RecurringGoalTest(SimpleTestCase):
         result = squares(compute_progress(self.daily_goal(), [activity(day, v) for day, v in values.items()], TODAY), TODAY)
         self.assertEqual([c.css for c in result.weeks[1][:5]], ["l1", "l2", "l3", "l4", "l0"])
         self.assertEqual((result.active_days, result.streak_label, result.count_label), (1, "day streak", "days hit"))
+
+
+class ChartDataTest(SimpleTestCase):
+    def test_line_chart_rows_are_days_with_a_running_total(self):
+        progress = compute_progress(make_goal(), [activity(date(2026, 3, 1), 40), activity(date(2026, 6, 1), 30)], TODAY)
+        self.assertEqual([(r.label, r.value, r.total) for r in data_rows(progress)], [("Mon 1 Jun", "30", "70"), ("Sun 1 Mar", "40", "40")])
+
+    def test_bar_chart_rows_are_periods(self):
+        goal = make_goal(period=Goal.Period.MONTH, target=50)
+        progress = compute_progress(goal, [activity(date(2026, 6, 3), 60), activity(date(2026, 7, 1), 5)], TODAY)
+        rows = data_rows(progress)
+        self.assertEqual(len(rows), 7)
+        self.assertEqual([(r.label, r.value, r.hit) for r in rows[:2]], [("Jul 2026", "5", False), ("Jun 2026", "60", True)])
+
+    def test_counting_options(self):
+        activities = [activity(date(2026, 3, 1), 40), activity(date(2026, 6, 1), 30)]
+        options = counting_options(make_goal(aggregation=Goal.Aggregation.COUNT), activities)
+        self.assertEqual(
+            [(o.label, o.value, o.active) for o in options], [("Add up", "70 km", False), ("Count", "2", True), ("Latest", "30 km", False)]
+        )

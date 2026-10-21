@@ -7,7 +7,7 @@ from typing import cast
 from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpRequest, HttpResponse, JsonResponse
+from django.http import Http404, HttpRequest, HttpResponse, JsonResponse, QueryDict
 from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 from django.utils import timezone
@@ -18,6 +18,9 @@ from tracker.forms import GoalForm, LogForm, apply_source_form, source_form
 from tracker.models import Activity, Goal, Source, WebhookDelivery
 from tracker.progress import (
     MONTH_NAMES,
+    compute_progress,
+    counting_options,
+    data_rows,
     day_of_year,
     days_in_year,
     format_number,
@@ -199,25 +202,62 @@ def my_report(request: AuthenticatedHttpRequest) -> HttpResponse:
     return redirect("report", username=request.user.username, year=_year(request))
 
 
+def _preview(user: User, goal: Goal | None, data: QueryDict | None, data_open: bool = False) -> dict:
+    """The chart a goal would draw with the form's current values, and the numbers behind it."""
+    context: dict = {"data_open": data_open}
+    if data is None:
+        if goal is None:
+            return context | {"hint": "Pick what counts to see this year's chart."}
+        preview = goal
+    else:
+        data = data.copy()
+        if not data.get("name", "").strip():
+            data["name"] = goal.name if goal else "New goal"
+        form = GoalForm(data, instance=goal, user=user)
+        if not form.is_valid():
+            if "metric" in form.errors:
+                return context | {"hint": "Pick what counts to see this year's chart."}
+            if "target" in form.errors:
+                return context | {"hint": "Set a target to see the chart."}
+            fields = [str(form.fields[name].label or name) for name in form.errors if name in form.fields]
+            return context | {"hint": f"Fix {', '.join(fields).lower() or 'the form'} to see the chart."}
+        preview = form.save(commit=False)
+    activities = list(preview.activities().order_by("-occurred_at"))
+    progress = compute_progress(preview, activities)
+    return context | {
+        "p": progress,
+        "rows": data_rows(progress),
+        "activities": activities,
+        "counting": counting_options(preview, activities),
+        "automatic": data is not None and not data.get("aggregation"),
+    }
+
+
+def _goal_form(request: AuthenticatedHttpRequest, goal: Goal | None) -> HttpResponse:
+    form = GoalForm(request.POST or None, instance=goal, user=request.user)
+    if request.method == "POST" and form.is_valid():
+        saved = form.save()
+        messages.success(request, f"{'Saved' if goal else 'Added'} {saved.name}")
+        return redirect(f"{reverse('index')}?year={saved.year}")
+    preview = _preview(request.user, goal, request.POST if request.method == "POST" else None)
+    return render(request, "tracker/goal_form.html", {"form": form, "goal": goal, "nav": "today"} | preview)
+
+
 @login_required
 def goal_new(request: AuthenticatedHttpRequest) -> HttpResponse:
-    form = GoalForm(request.POST or None, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        goal = form.save()
-        messages.success(request, f"Added {goal.name}")
-        return redirect(f"{reverse('index')}?year={goal.year}")
-    return render(request, "tracker/goal_form.html", {"form": form, "nav": "today"})
+    return _goal_form(request, None)
 
 
 @login_required
 def goal_edit(request: AuthenticatedHttpRequest, pk: int) -> HttpResponse:
-    goal = get_object_or_404(Goal, pk=pk, user=request.user)
-    form = GoalForm(request.POST or None, instance=goal, user=request.user)
-    if request.method == "POST" and form.is_valid():
-        goal = form.save()
-        messages.success(request, f"Saved {goal.name}")
-        return redirect(f"{reverse('index')}?year={goal.year}")
-    return render(request, "tracker/goal_form.html", {"form": form, "goal": goal, "nav": "today"})
+    return _goal_form(request, get_object_or_404(Goal, pk=pk, user=request.user))
+
+
+@login_required
+def goal_preview(request: AuthenticatedHttpRequest, pk: int | None = None) -> HttpResponse:
+    goal = get_object_or_404(Goal, pk=pk, user=request.user) if pk else None
+    context = _preview(request.user, goal, request.GET, data_open=request.GET.get("data_open") == "true")
+    return render(request, "tracker/_goal_preview.html", context)
 
 
 @login_required

@@ -1,6 +1,5 @@
 {% extends "base.html" %}
 {% block title %}{% if goal %}{{ goal.name }}{% else %}New goal{% endif %} · Goals{% endblock title %}
-{% block page_class %}narrow{% endblock page_class %}
 {% block content %}
     <section class="intro">
         <h1 class="display">
@@ -10,24 +9,110 @@
                 New goal
             {% endif %}
         </h1>
-        <p class="lede">A yearly target, and the metric that counts toward it. Past activity counts too.</p>
+        <p class="lede">Pick what counts, then set a target. Past activity counts too, and the preview shows the chart as you go.</p>
     </section>
-    <form method="post" class="form card">
-        {% csrf_token %}
-        {{ form.non_field_errors }}
-        {% for field in form %}
-            <div class="field">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.help_text %}<span class="help">{{ field.help_text }}</span>{% endif %}
-                {{ field.errors }}
+    <div class="goal-editor">
+        <form method="post" class="form card goal-form" id="goal-form">
+            {% csrf_token %}
+            {{ form.non_field_errors }}
+            <fieldset class="field">
+                <legend>{{ form.metric.label }}</legend>
+                {{ form.metric.errors }}
+                {% for group in form.metric_groups %}
+                    <div class="metric-group">
+                        <h3 class="sub">{{ group.name }}</h3>
+                        <div class="metric-grid">
+                            {% for option in group.filled %}
+                                {% include "tracker/_metric_option.html" %}
+                            {% endfor %}
+                        </div>
+                        {% if group.empty %}
+                            <details class="more-metrics" {% if group.show_empty %}open{% endif %}>
+                                <summary class="sub">{{ group.empty|length }} more with nothing this year</summary>
+                                <div class="metric-grid">
+                                    {% for option in group.empty %}
+                                        {% include "tracker/_metric_option.html" %}
+                                    {% endfor %}
+                                </div>
+                            </details>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+            </fieldset>
+            <div class="field custom-type">
+                {{ form.custom_type.label_tag }}
+                {{ form.custom_type }}
+                <span class="help">{{ form.custom_type.help_text }}</span>
+                {{ form.custom_type.errors }}
             </div>
-        {% endfor %}
-        <div class="actions">
-            <button type="submit" class="btn primary">Save</button>
-            <a class="btn" href="{% url 'index' %}">Cancel</a>
-        </div>
-    </form>
+            <div class="field">
+                {{ form.name.label_tag }}
+                {{ form.name }}
+                {{ form.name.errors }}
+            </div>
+            <div class="field-row">
+                <div class="field">
+                    {{ form.target.label_tag }}
+                    {{ form.target }}
+                    {{ form.target.errors }}
+                </div>
+                <fieldset class="field">
+                    <legend>{{ form.period.label }}</legend>
+                    <div class="segmented">
+                        {% for radio in form.period %}
+                            <label>
+                                {{ radio.tag }}
+                                <span>{{ radio.choice_label }}</span>
+                            </label>
+                        {% endfor %}
+                    </div>
+                    <span class="help">Per day, week or month counts how many of them you hit, and your streak.</span>
+                    {{ form.period.errors }}
+                </fieldset>
+            </div>
+            <fieldset class="field">
+                <legend>{{ form.aggregation.label }}</legend>
+                <div class="option-list">
+                    {% for radio, help in form.aggregation_options %}
+                        <label class="option">
+                            {{ radio.tag }}
+                            <strong>{{ radio.choice_label }}</strong>
+                            <span class="sub">{{ help }}</span>
+                        </label>
+                    {% endfor %}
+                </div>
+                {{ form.aggregation.errors }}
+            </fieldset>
+            <div class="field-row">
+                <div class="field">
+                    {{ form.unit.label_tag }}
+                    {{ form.unit }}
+                    <span class="help">{{ form.unit.help_text }}</span>
+                    {{ form.unit.errors }}
+                </div>
+                <div class="field">
+                    {{ form.year.label_tag }}
+                    {{ form.year }}
+                    {{ form.year.errors }}
+                </div>
+            </div>
+            <div class="actions">
+                <button type="submit" class="btn primary">Save</button>
+                <a class="btn" href="{% url 'index' %}">Cancel</a>
+            </div>
+        </form>
+        <aside class="goal-preview"
+               id="goal-preview"
+               aria-live="polite"
+               hx-get="{% if goal %}{% url 'goal_preview' goal.pk %}{% else %}{% url 'goal_preview' %}{% endif %}"
+               hx-trigger="input delay:300ms from:#goal-form"
+               hx-include="#goal-form"
+               hx-params="not csrfmiddlewaretoken"
+               hx-vals='js:{data_open: !!document.querySelector("#goal-data[open]")}'
+               hx-sync="this:replace">
+            {% include "tracker/_goal_preview.html" %}
+        </aside>
+    </div>
     {% if goal %}
         <form method="post"
               action="{% url 'goal_delete' goal.pk %}"

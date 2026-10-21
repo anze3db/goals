@@ -1,67 +1,172 @@
+from collections import defaultdict
+from dataclasses import dataclass, field
+from datetime import datetime
 from typing import cast
 
 from django import forms
 from django.utils import timezone
 
-from tracker.models import Goal, Source
+from tracker.models import Activity, Goal, Source
+from tracker.progress import format_number, with_unit
 from tracker.providers import get_provider
 from users.models import User
 
 MANUAL = "manual"
 CUSTOM = "custom"
 
+# What each way of counting does, shown next to it on the goal form
+AGGREGATION_HELP = {
+    "": "Whatever fits the metric: kilometres add up, posts are counted, followers use the latest reading.",
+    Goal.Aggregation.SUM: "Each entry adds its value: a 5 km run and a 10 km run make 15 km.",
+    Goal.Aggregation.COUNT: "Each entry counts as one, whatever its value: those two runs make 2.",
+    Goal.Aggregation.LATEST: "The most recent reading, for numbers that go up and down like followers.",
+}
 
-def metric_choices(user: User) -> list[tuple[str, object]]:
-    """Grouped options for "what counts toward this goal": every activity type of every source."""
-    choices: list[tuple[str, object]] = [(MANUAL, "Log it by hand")]
+
+@dataclass
+class MetricOption:
+    value: str
+    label: str
+    unit: str = ""
+    aggregation: str = Goal.Aggregation.SUM
+    summary: str = ""
+    # Bar heights in percent, one per month of the year
+    bars: list[int] = field(default_factory=list)
+    has_data: bool = True
+
+
+@dataclass
+class MetricGroup:
+    name: str
+    options: list[MetricOption]
+    # Metrics with nothing this year fold away unless one of them is picked
+    show_empty: bool = False
+
+    @property
+    def filled(self) -> list[MetricOption]:
+        return [option for option in self.options if option.has_data]
+
+    @property
+    def empty(self) -> list[MetricOption]:
+        return [option for option in self.options if not option.has_data]
+
+
+@dataclass
+class _Stats:
+    count: int = 0
+    total: float = 0
+    latest: float = 0
+    last_at: datetime | None = None
+    months: list[list[float]] = field(default_factory=lambda: [[] for _ in range(12)])
+
+
+def _metric_stats(user: User, year: int) -> dict[tuple[int, str], _Stats]:
+    stats: dict[tuple[int, str], _Stats] = defaultdict(_Stats)
+    rows = Activity.objects.filter(user=user, source__isnull=False, occurred_at__year=year).order_by("occurred_at")
+    for source_id, activity_type, value, occurred_at in rows.values_list("source_id", "type", "value", "occurred_at"):
+        entry = stats[(source_id, activity_type)]
+        entry.count += 1
+        entry.total += value
+        entry.latest = value
+        entry.last_at = occurred_at
+        entry.months[timezone.localtime(occurred_at).month - 1].append(value)
+    return stats
+
+
+def _describe(option: MetricOption, stats: _Stats | None) -> None:
+    """This year's number for the metric as its default count would show it, and a bar per month."""
+    if stats is None:
+        option.summary = "Nothing this year yet"
+        option.has_data = False
+        return
+    match option.aggregation:
+        case Goal.Aggregation.COUNT:
+            option.summary = f"{with_unit(format_number(stats.count), option.unit)} this year"
+            per_month = [float(len(month)) for month in stats.months]
+        case Goal.Aggregation.LATEST:
+            option.summary = f"{with_unit(format_number(stats.latest), option.unit)} now"
+            per_month = [month[-1] if month else 0.0 for month in stats.months]
+        case _:
+            entries = f"{format_number(stats.count)} entr{'y' if stats.count == 1 else 'ies'}"
+            option.summary = f"{with_unit(format_number(stats.total), option.unit)} this year · {entries}"
+            per_month = [sum(month) for month in stats.months]
+    peak = max(per_month)
+    option.bars = [round(value / peak * 100) if peak > 0 else 0 for value in per_month]
+
+
+def metric_groups(user: User, year: int) -> list[MetricGroup]:
+    """Every activity type of every source, with this year's numbers, for picking what counts toward a goal."""
+    stats = _metric_stats(user, year)
+    groups = [MetricGroup("By hand", [MetricOption(MANUAL, "Log it by hand", summary="A Log button on the Today page")])]
     for source in user.sources.all():
         provider = source.provider
-        options = [(f"{source.pk}:{t.slug}", f"{t.label} ({t.unit})" if t.unit else t.label) for t in provider.activity_types]
+        options = [MetricOption(f"{source.pk}:{t.slug}", t.label, t.unit, t.aggregation) for t in provider.activity_types]
         if provider.custom_types:
-            options.append((f"{source.pk}:{CUSTOM}", "Other type…"))
-        choices.append((source.name, options))
-    return choices
+            # Types a webhook has already sent get their own card, so they don't have to be typed in
+            known = {t.slug for t in provider.activity_types}
+            seen = sorted(slug for source_id, slug in stats if source_id == source.pk and slug not in known)
+            options += [MetricOption(f"{source.pk}:{slug}", slug.replace("-", " ").capitalize()) for slug in seen]
+        for option in options:
+            _describe(option, stats.get((source.pk, option.value.split(":", 1)[1])))
+        if provider.custom_types:
+            options.append(MetricOption(f"{source.pk}:{CUSTOM}", "Another type…", summary="One your webhook will send"))
+        groups.append(MetricGroup(source.name, options))
+    return groups
 
 
 class GoalForm(forms.ModelForm):
-    metric = forms.ChoiceField(label="What counts")
+    metric = forms.ChoiceField(label="What counts", widget=forms.RadioSelect)
     custom_type = forms.SlugField(
         required=False,
-        label="Activity type",
-        help_text="The type your webhook sends, e.g. steps or surf",
+        label="Type your webhook sends",
+        help_text="The type field of what it posts, e.g. swim",
     )
     aggregation = forms.ChoiceField(
         required=False,
         label="How to count",
-        choices=[("", "Default for this metric"), *Goal.Aggregation.choices],
+        choices=[("", "Automatic"), *Goal.Aggregation.choices],
+        widget=forms.RadioSelect,
     )
 
     class Meta:
         model = Goal
         fields = ["name", "target", "period", "unit", "year"]
-        labels = {"period": "Target applies"}
-        help_texts = {
-            "unit": "Leave empty to use the metric's unit",
-            "period": "Per day, week or month shows how many of them you hit, and your streak",
-        }
+        labels = {"period": "Target applies", "unit": "Unit label"}
+        help_texts = {"unit": "Only shown after the numbers, as in 1,000 km. Leave empty to use the metric's own unit."}
+        widgets = {"period": forms.RadioSelect}
 
     def __init__(self, *args, user: User, **kwargs):
+        kwargs.setdefault("label_suffix", "")
         super().__init__(*args, **kwargs)
         self.user = user
-        cast(forms.ChoiceField, self.fields["metric"]).choices = metric_choices(user)
+        goal = self.instance
+        self.metric_groups = metric_groups(user, goal.year if goal.pk else timezone.localdate().year)
+        choices = [(MANUAL, "Log it by hand")]
+        choices += [(group.name, [(o.value, o.label) for o in group.options]) for group in self.metric_groups[1:]]
+        cast(forms.ChoiceField, self.fields["metric"]).choices = choices
+        cast(forms.ChoiceField, self.fields["period"]).choices = Goal.Period.choices
         self.fields["unit"].required = False
         self.fields["period"].required = False
         self.fields["year"].initial = timezone.localdate().year
-        goal = self.instance
         if goal.pk:
+            if float(goal.target).is_integer():
+                self.initial["target"] = int(goal.target)
             self.fields["aggregation"].initial = goal.aggregation
+            values = {option.value for group in self.metric_groups for option in group.options}
             if goal.source_id is None:
                 self.fields["metric"].initial = MANUAL
-            elif goal.source and goal.source.provider.activity_type(goal.activity_type):
+            elif f"{goal.source_id}:{goal.activity_type}" in values:
                 self.fields["metric"].initial = f"{goal.source_id}:{goal.activity_type}"
             else:
                 self.fields["metric"].initial = f"{goal.source_id}:{CUSTOM}"
                 self.fields["custom_type"].initial = goal.activity_type
+        selected = self["metric"].value()
+        for group in self.metric_groups:
+            group.show_empty = any(option.value == selected for option in group.empty)
+
+    @property
+    def aggregation_options(self) -> list[tuple[forms.BoundField, str]]:
+        return [(radio, AGGREGATION_HELP[radio.data["value"]]) for radio in self["aggregation"]]
 
     def clean(self):
         cleaned = super().clean()
