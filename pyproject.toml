@@ -9,7 +9,7 @@ dependencies = [
   "django-tui",
   "gunicorn",
   "httpx",
-  "potatoq[postgres]>=26.1a7",
+  "potatoq[postgres]>=26.1a8",
   "psycopg[binary]",
   "sentry-sdk",
   "whitenoise",

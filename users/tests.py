@@ -25,6 +25,13 @@ class LoginTest(TestCase):
         self.assertRedirects(response, "/")
         self.assertTrue(auth.get_user(self.client).is_authenticated)
 
+    def test_login_never_redirects_to_another_site(self):
+        user = baker.make(User, username="Oliver")
+        user.set_password("tart")
+        user.save()
+        response = self.client.post("/login", {"username": "Oliver", "password": "tart", "next": "https://evil.example/"})
+        self.assertRedirects(response, "/")
+
 
 class LogoutTest(TestCase):
     def test_logout_not_logged_in(self):

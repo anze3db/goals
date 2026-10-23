@@ -57,6 +57,10 @@
                 <div class="topbar-meta">
                     {% block topbar_meta %}
                     {% endblock topbar_meta %}
+                    {# The dashboard is a page of its own; a boosted swap would drop its script #}
+                    {% if user.is_staff %}
+                        <a href="{% url 'potatoq-dashboard' path='' %}" hx-boost="false">Tasks</a>
+                    {% endif %}
                     <a href="{% url 'settings' %}">Settings</a>
                     <a href="{% url 'logout' %}">Log out</a>
                 </div>

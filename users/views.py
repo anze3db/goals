@@ -4,6 +4,7 @@ from django.http.response import HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import url_has_allowed_host_and_scheme
 
 
 def login_view(request):
@@ -13,7 +14,11 @@ def login_view(request):
         user = authenticate(request, username=username, password=password)
         if user is not None:
             login(request, user)
-            return HttpResponseRedirect("/")
+            # Back to the page that sent them here, like the potatoq dashboard, but never to another site
+            next_url = request.POST.get("next", "")
+            if not url_has_allowed_host_and_scheme(next_url, {request.get_host()}, require_https=request.is_secure()):
+                next_url = "/"
+            return HttpResponseRedirect(next_url)
         return render(
             request,
             "users/login.html",
