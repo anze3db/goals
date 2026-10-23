@@ -13,5 +13,5 @@ urlpatterns = [
     path("logout", users.views.logout_view, name="logout"),
     path("admin/", admin.site.urls),
     # Workers, queues, the daily sync schedule and dead letters. Staff only, like the admin.
-    path("ops/potatoq/", include("potatoq.contrib.django.dashboard")),
+    path("potatoq/", include("potatoq.contrib.django.dashboard")),
 ]

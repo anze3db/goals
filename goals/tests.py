@@ -60,12 +60,12 @@ class PotatoqDashboardTest(TestCase):
 
     def test_anonymous_visitors_are_sent_to_login_and_back(self):
         response = self.client.get(self.url())
-        self.assertRedirects(response, "/login?next=%2Fops%2Fpotatoq%2F", fetch_redirect_response=False)
-        self.assertContains(self.client.get(response["Location"]), 'name="next" value="/ops/potatoq/"')
+        self.assertRedirects(response, "/login?next=%2Fpotatoq%2F", fetch_redirect_response=False)
+        self.assertContains(self.client.get(response["Location"]), 'name="next" value="/potatoq/"')
         self.staff.set_password("tart")
         self.staff.save()
-        response = self.client.post("/login", {"username": self.staff.username, "password": "tart", "next": "/ops/potatoq/"})
-        self.assertRedirects(response, "/ops/potatoq/", fetch_redirect_response=False)
+        response = self.client.post("/login", {"username": self.staff.username, "password": "tart", "next": "/potatoq/"})
+        self.assertRedirects(response, "/potatoq/", fetch_redirect_response=False)
 
     def test_staff_only(self):
         self.client.force_login(self.member)
