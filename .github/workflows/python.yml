@@ -41,3 +41,17 @@ jobs:
         port: ${{ secrets.SSH_PORT }}
         script: |
           bash projects/goals/.deploy/update.sh
+    - uses: actions/checkout@v4
+      with:
+        # The release's commits resolve the Sentry issues they name ("Fixes GOALS-123")
+        fetch-depth: 0
+    - name: Create Sentry release
+      uses: getsentry/action-release@v3
+      env:
+        SENTRY_AUTH_TOKEN: ${{ secrets.SENTRY_AUTH_TOKEN }}
+        SENTRY_ORG: anze3db
+        SENTRY_PROJECT: goals
+      with:
+        environment: production
+        # settings.RELEASE reports the deployed commit's SHA
+        release: ${{ github.sha }}

@@ -10,6 +10,7 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
 
+import subprocess
 from pathlib import Path
 
 import environ
@@ -174,9 +175,10 @@ STATIC_URL = "/static/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# The deployed commit, so Sentry can tie errors to the release that resolves them ("Fixes GOALS-123")
 try:
-    RELEASE = "v1" + str((BASE_DIR / "goals_update.log").read_text().count("\n"))
-except FileNotFoundError:
+    RELEASE = subprocess.run(["git", "rev-parse", "HEAD"], cwd=BASE_DIR, capture_output=True, text=True, check=True).stdout.strip()
+except OSError, subprocess.CalledProcessError:
     RELEASE = "v1dev"
 
 POTATOQ = {
