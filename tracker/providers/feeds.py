@@ -1,4 +1,3 @@
-import re
 from collections.abc import Iterator
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
@@ -92,49 +91,3 @@ class FeedProvider(Provider):
                 title=entry.get("title", ""),
                 url=entry.get("link", ""),
             )
-
-
-class GoodreadsForm(forms.Form):
-    user_id = forms.CharField(
-        label="Goodreads user id or profile URL",
-        help_text="The number in your profile URL, e.g. goodreads.com/user/show/12345-anze",
-    )
-
-    def clean_user_id(self) -> str:
-        match = re.search(r"\d+", self.cleaned_data["user_id"])
-        if not match:
-            raise forms.ValidationError("Couldn't find a numeric user id")
-        return match.group()
-
-
-class GoodreadsProvider(Provider):
-    """Goodreads closed its API in 2020, but shelves are still published as RSS."""
-
-    kind = "goodreads"
-    label = "Goodreads"
-    description = "Books you put on your 'read' shelf, dated by when you finished them."
-    activity_types = (ActivityType("book", "Books read", "books", "count"),)
-    config_form = GoodreadsForm
-    max_pages = 20
-
-    def fetch(self, source: Source, client: httpx.Client, since: datetime | None) -> Iterator[FetchedActivity]:
-        url = f"https://www.goodreads.com/review/list_rss/{source.config['user_id']}"
-        for page in range(1, self.max_pages + 1):
-            response = get(client, url, params={"shelf": "read", "page": page})
-            entries = list(parse_feed(response.content))
-            if not entries:
-                return
-            for entry in entries:
-                occurred_at = (
-                    parse_date(entry.get("user_read_at")) or parse_date(entry.get("user_date_added")) or parse_date(entry.get("pubDate"))
-                )
-                book_id = entry.get("book_id") or entry.get("guid")
-                if occurred_at is None or not book_id:
-                    continue
-                yield FetchedActivity(
-                    type="book",
-                    external_id=f"book:{book_id}",
-                    occurred_at=occurred_at,
-                    title=entry.get("title", ""),
-                    url=entry.get("link", ""),
-                )

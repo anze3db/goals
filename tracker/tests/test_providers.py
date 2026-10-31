@@ -11,7 +11,7 @@ from model_bakery import baker
 
 from tracker.models import Source
 from tracker.providers import get_provider
-from tracker.providers.feeds import GoodreadsForm, parse_date
+from tracker.providers.feeds import parse_date
 from tracker.providers.mastodon import MastodonForm
 from tracker.providers.pypi import PyPIForm
 from tracker.providers.strava import activity_type_for
@@ -29,14 +29,6 @@ ATOM = b"""<?xml version="1.0" encoding="utf-8"?>
 <entry><id>tag:example.com,2026:1</id><title>Hello</title><link href="https://example.com/hello"/>
 <updated>2026-02-03T10:00:00Z</updated></entry>
 </feed>"""
-
-GOODREADS = b"""<?xml version="1.0"?><rss version="2.0"><channel>
-<item><title>Dune</title><link>https://www.goodreads.com/review/show/1</link><book_id>234225</book_id>
-<user_read_at>Sat, 14 Mar 2026 00:00:00 -0700</user_read_at><user_date_added>Mon, 01 Jan 2024 00:00:00 -0700</user_date_added>
-<pubDate>Mon, 01 Jan 2024 00:00:00 -0700</pubDate></item>
-<item><title>No read date</title><link>https://www.goodreads.com/review/show/2</link><book_id>99</book_id>
-<user_read_at></user_read_at><user_date_added>Tue, 02 Jun 2026 00:00:00 -0700</user_date_added></item>
-</channel></rss>"""
 
 
 def client_for(handler) -> httpx.Client:
@@ -83,31 +75,6 @@ class FeedProviderTest(ProviderTestCase):
         self.assertIsNone(parse_date(""))
         self.assertIsNone(parse_date("not a date"))
         self.assertEqual(parse_date("2026-01-01T10:00:00"), datetime(2026, 1, 1, 10, tzinfo=UTC))
-
-
-class GoodreadsProviderTest(ProviderTestCase):
-    def test_read_shelf(self):
-        source = self.make_source("goodreads", {"user_id": "42"})
-        pages = []
-
-        def handler(request: httpx.Request) -> httpx.Response:
-            pages.append(request.url.params["page"])
-            self.assertEqual(request.url.path, "/review/list_rss/42")
-            self.assertEqual(request.url.params["shelf"], "read")
-            return httpx.Response(200, content=GOODREADS if request.url.params["page"] == "1" else b"<rss><channel/></rss>")
-
-        dune, undated = list(source.provider.fetch(source, client_for(handler), since=None))
-        self.assertEqual(pages, ["1", "2"])
-        self.assertEqual(dune.external_id, "book:234225")
-        self.assertEqual(dune.occurred_at.date().isoformat(), "2026-03-14")
-        # Falls back to when it was added to the shelf
-        self.assertEqual(undated.occurred_at.date().isoformat(), "2026-06-02")
-
-    def test_form_accepts_profile_url(self):
-        form = GoodreadsForm({"user_id": "https://www.goodreads.com/user/show/12345-anze"})
-        self.assertTrue(form.is_valid())
-        self.assertEqual(form.cleaned_data["user_id"], "12345")
-        self.assertFalse(GoodreadsForm({"user_id": "anze"}).is_valid())
 
 
 class GitHubProviderTest(ProviderTestCase):

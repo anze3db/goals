@@ -1,5 +1,5 @@
 from tracker.providers.base import ActivityType, FetchedActivity, Provider, SyncError, WebhookError
-from tracker.providers.feeds import FeedProvider, GoodreadsProvider
+from tracker.providers.feeds import FeedProvider
 from tracker.providers.github import GitHubProvider
 from tracker.providers.mastodon import MastodonProvider
 from tracker.providers.pypi import PyPIProvider
@@ -14,7 +14,6 @@ PROVIDERS: dict[str, Provider] = {
         GitHubProvider(),
         PyPIProvider(),
         FeedProvider(),
-        GoodreadsProvider(),
         MastodonProvider(),
         XProvider(),
         WebhookProvider(),

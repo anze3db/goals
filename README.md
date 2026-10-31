@@ -1,6 +1,6 @@
 # Goals 🎯
 
-Yearly goals that track themselves. Sources (Strava, GitHub, PyPI, an RSS feed, Goodreads, Mastodon, or anything that can
+Yearly goals that track themselves. Sources (Strava, GitHub, PyPI, an RSS feed, Mastodon, or anything that can
 POST to a webhook) are synced once a day (05:00) by a [potatoq](https://github.com/anze3db/potatoq) worker. Each goal picks
 a metric from a source and a yearly target. Goals nothing can measure get a Log button instead.
 
@@ -32,7 +32,6 @@ uv run ptw
 | GitHub | Username, optional token (needed for contributions) | releases, daily contributions |
 | PyPI | Username and/or package names | releases |
 | RSS / Atom | Feed URL, e.g. `https://blog.pecar.me/feed.xml` | posts |
-| Goodreads | User id (the shelf RSS; the API is gone) | books read |
 | Mastodon | `@you@instance` | posts, likes/boosts/replies, followers |
 | Webhook | Nothing; POST `type`, `value`, `date` | anything: Apple Health steps via iOS Shortcuts, surf sessions, ... |
 
