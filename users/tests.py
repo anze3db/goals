@@ -13,6 +13,11 @@ class LoginTest(TestCase):
         self.assertContains(response, "Password")
         self.assertContains(response, "Log in")
 
+    def test_login_form_is_not_boosted(self):
+        # htmx doesn't swap in 4xx responses, so a boosted form would swallow "Invalid login"
+        response = self.client.get("/login")
+        self.assertContains(response, 'hx-boost="false"')
+
     def test_invalid_login(self):
         response = self.client.post("/login", {})
         self.assertContains(response, "Invalid login", status_code=400)
