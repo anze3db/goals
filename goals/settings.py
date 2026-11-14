@@ -127,7 +127,13 @@ WSGI_APPLICATION = "goals.wsgi.application"
 # https://docs.djangoproject.com/en/3.2/ref/settings/#databases
 
 DATABASES = {"default": env.db()}
-if DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
+# Production keeps connections forever; check one before reusing it so a Postgres restart doesn't 500 the next request
+DATABASES["default"]["CONN_HEALTH_CHECKS"] = True
+if DATABASES["default"]["ENGINE"] == "django.db.backends.postgresql":
+    # The stock backend, but it waits out a short Postgres restart when connecting.
+    # The name must end in "postgresql": that's how potatoq recognises a Postgres broker.
+    DATABASES["default"]["ENGINE"] = "goals.db.postgresql"
+elif DATABASES["default"]["ENGINE"] == "django.db.backends.sqlite3":
     # The potatoq worker writes to the same file; take the write lock up front and wait for it
     DATABASES["default"].setdefault("OPTIONS", {}).update({"transaction_mode": "IMMEDIATE", "timeout": 20})
 
